@@ -1,0 +1,118 @@
+{
+  "version": "1.0.2", 
+  "level": 0, 
+  "http": {"http": true, "https": false, "ui": true, "login": false}, 
+  "mqtt": {"enable": false, "url": "mqtt://broker.hivemq.com:1883"}, 
+  "dns": {"type": "default", "url": "udp://8.8.8.8:53", "captive": false}, 
+  "sntp": {"enable": false, "type": 0, "url": "udp://time.google.com:123", "interval": 3600}, 
+  "modbus": {"enable": false, "port": 502}, 
+  "build": {"board": "teensy41", "ide": "Arduino", "rtos": "baremetal", "cores": []}, 
+  "api": {
+    "reboot": {
+      "type": "action", 
+      "read_level": 3, 
+      "write_level": 7, 
+      "value": false
+    }, 
+    "firmware_update": {
+      "type": "ota", 
+      "read_level": 3, 
+      "write_level": 7
+    }, 
+    "file_upload": {
+      "type": "upload", 
+      "read_level": 3, 
+      "write_level": 7
+    }, 
+    "settings": {
+      "type": "object", 
+      "read_level": 3, 
+      "write_level": 7, 
+      "attributes": {
+        "string_val": {"type": "string", "value": "edit & save me", "size": 40}, 
+        "log_level": {"type": "int", "value": 2}, 
+        "double_val": {"type": "double", "value": 123.12345, "format": "%.5f"}, 
+        "bd_ip1": {"type": "int", "value": 192}, 
+        "bd_ip2": {"type": "int", "value": 168}, 
+        "bd_ip3": {"type": "int", "value": 5}, 
+        "bd_ip4": {"type": "int", "value": 126}, 
+        "bd_su1": {"type": "int", "value": 255}, 
+        "bd_su2": {"type": "int", "value": 255}, 
+        "bd_su3": {"type": "int", "value": 255}, 
+        "bd_su4": {"type": "int", "value": 0}, 
+        "bd_gw1": {"type": "int", "value": 192}, 
+        "bd_gw2": {"type": "int", "value": 168}, 
+        "bd_gw3": {"type": "int", "value": 5}, 
+        "bd_gw4": {"type": "int", "value": 1}, 
+        "bool_val": {"type": "bool", "value": true}
+      }
+    }
+  }, 
+  "ui": {
+    "production": false, 
+    "brand": {
+      "value": "AOG Firmware"
+    }, 
+    "logo": {
+      "value": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n    <svg viewBox=\"88.087 148.705 306.419 146.216\" xmlns=\"http://www.w3.org/2000/svg\">\n      <rect x=\"88.087\" y=\"148.705\" width=\"306.419\" height=\"146.216\" rx=\"27.838\" ry=\"27.838\" style=\"stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgba(0, 0, 0, 0.04);\"/>\n      <text style=\"fill: rgba(0, 0, 0, 0.13); font-family: Arial, sans-serif; font-size: 48px; font-weight: 700; white-space: pre;\" x=\"140\" y=\"241\">My Logo</text>\n    </svg>", 
+      "disabled": true
+    }, 
+    "toolbar": {
+      "label": {
+        "value": "AOG Firmware v5.1"
+      }
+    }, 
+    "heartbeat": 10, 
+    "theme": {
+      "name": "azure", 
+      "shadow": 0, 
+      "radius": 1, 
+      "css": "\n:root {\n  --azure-dark-light: #e6e6e7;\n  --azure-dark-light-hover: #d9dadb;\n  --azure-dark-light-active: #b0b2b4;\n  --azure-dark-normal: #00080d;\n  --azure-dark-normal-hover: #00070c;\n  --azure-dark-normal-active: #00060a;\n  --azure-dark-dark: #00060a;\n  --azure-dark-dark-hover: #000508;\n  --azure-dark-dark-active: #000406;\n  --azure-dark-darker: #000305;\n\n  --azure-light-light: #feffff;\n  --azure-light-light-hover: #fdfeff;\n  --azure-light-light-active: #fbfeff;\n  --azure-light-normal: #f2fbff;\n  --azure-light-normal-hover: #dae2e6;\n  --azure-light-normal-active: #c2c9cc;\n  --azure-light-dark: #b6bcbf;\n  --azure-light-dark-hover: #919799;\n  --azure-light-dark-active: #6d7173;\n  --azure-light-darker: #555859;\n\n  --azure-primary-light: #e7f9ff;\n  --azure-primary-light-hover: #dbf6ff;\n  --azure-primary-light-active: #b4ecff;\n  --azure-primary-normal: #0ec2fe;\n  --azure-primary-normal-hover: #0dafe5;\n  --azure-primary-normal-active: #0b9bcb;\n  --azure-primary-dark: #0b92bf;\n  --azure-primary-dark-hover: #087498;\n  --azure-primary-dark-active: #065772;\n  --azure-primary-darker: #054459;\n\n  --azure-secondary-light: #f1f6ff;\n  --azure-secondary-light-hover: #eaf2ff;\n  --azure-secondary-light-active: #d4e3ff;\n  --azure-secondary-normal: #73a5fe;\n  --azure-secondary-normal-hover: #6895e5;\n  --azure-secondary-normal-active: #5c84cb;\n  --azure-secondary-dark: #567cbf;\n  --azure-secondary-dark-hover: #456398;\n  --azure-secondary-dark-active: #344a72;\n  --azure-secondary-darker: #283a59;\n\n  --azure-accent-light: #ebefff;\n  --azure-accent-light-hover: #e1e7ff;\n  --azure-accent-light-active: #c1cdff;\n  --azure-accent-normal: #365dfe;\n  --azure-accent-normal-hover: #3154e5;\n  --azure-accent-normal-active: #2b4acb;\n  --azure-accent-dark: #2946bf;\n  --azure-accent-dark-hover: #203898;\n  --azure-accent-dark-active: #182a72;\n  --azure-accent-darker: #132159;\n\n  --azure-success: #03d470;\n  --azure-warning: #f5d602;\n  --azure-danger: #ff3036;\n}\n\n.theme-azure {\n  --dark-light: var(--azure-dark-light);\n  --dark-light-hover: var(--azure-dark-light-hover);\n  --dark-light-active: var(--azure-dark-light-active);\n\n  --dark: var(--azure-dark-normal);\n  --dark-hover: var(--azure-dark-normal-hover);\n  --dark-active: var(--azure-dark-normal-active);\n\n  --dark-dark: var(--azure-dark-dark);\n  --dark-dark-hover: var(--azure-dark-dark-hover);\n  --dark-dark-active: var(--azure-dark-dark-active);\n\n  --darker: var(--azure-dark-darker);\n\n  --light-light: var(--azure-light-light);\n  --light-light-hover: var(--azure-light-light-hover);\n  --light-light-active: var(--azure-light-light-active);\n\n  --light: var(--azure-light-normal);\n  --light-hover: var(--azure-light-normal-hover);\n  --light-active: var(--azure-light-normal-active);\n\n  --light-dark: var(--azure-light-dark);\n  --light-dark-hover: var(--azure-light-dark-hover);\n  --light-dark-active: var(--azure-light-dark-active);\n\n  --light-darker: var(--azure-light-darker);\n\n  --primary-light: var(--azure-primary-light);\n  --primary-light-hover: var(--azure-primary-light-hover);\n  --primary-light-active: var(--azure-primary-light-active);\n\n  --primary: var(--azure-primary-normal);\n  --primary-hover: var(--azure-primary-normal-hover);\n  --primary-active: var(--azure-primary-normal-active);\n\n  --primary-dark: var(--azure-primary-dark);\n  --primary-dark-hover: var(--azure-primary-dark-hover);\n  --primary-dark-active: var(--azure-primary-dark-active);\n\n  --primary-darker: var(--azure-primary-darker);\n\n  --secondary-light: var(--azure-secondary-light);\n  --secondary-light-hover: var(--azure-secondary-light-hover);\n  --secondary-light-active: var(--azure-secondary-light-active);\n\n  --secondary: var(--azure-secondary-normal);\n  --secondary-hover: var(--azure-secondary-normal-hover);\n  --secondary-active: var(--azure-secondary-normal-active);\n\n  --secondary-dark: var(--azure-secondary-dark);\n  --secondary-dark-hover: var(--azure-secondary-dark-hover);\n  --secondary-dark-active: var(--azure-secondary-dark-active);\n\n  --secondary-darker: var(--azure-secondary-darker);\n\n  --accent-light: var(--azure-accent-light);\n  --accent-light-hover: var(--azure-accent-light-hover);\n  --accent-light-active: var(--azure-accent-light-active);\n\n  --accent: var(--azure-accent-normal);\n  --accent-hover: var(--azure-accent-normal-hover);\n  --accent-active: var(--azure-accent-normal-active);\n\n  --accent-dark: var(--azure-accent-dark);\n  --accent-dark-hover: var(--azure-accent-dark-hover);\n  --accent-dark-active: var(--azure-accent-dark-active);\n\n  --accent-darker: var(--azure-accent-darker);\n\n  --success: var(--azure-success);\n  --warning: var(--azure-warning);\n  --danger: var(--azure-danger);\n}"
+    }, 
+    "css": "\na[href], a[href]:visited { color: blue; text-decoration: none;}\n\ninput:focus, textarea:focus, *:focus {\n  border-color: #ccc !important; outline: none; box-shadow: none !important;\n  -webkit-box-shadow: none !important; -moz-box-shadow: none !important\n}\n\ninput:not(.toggle):not(.hidden) {\n  display:inline-flex; border-radius:0.25rem; border:1px solid #ccc;\n  padding: 0.25rem 0.5rem; outline: none; color:rgb(75,85,99);\n}\n\ninput:disabled:not(.toggle):not(.hidden), select:disabled  { background: #f5f5f5; cursor: not-allowed; }\n\ninput:not(.toggle):not(.hidden).editing { background: rgb(254 252 232) !important; }\n\nselect {\n  border-radius:0.25rem; border: 1px solid #ccc; padding:0.25rem;\n  font-size:0.875rem; line-height:1.25rem; color:rgb(75,85,99);\n}\n\n.loading { animation: loading 1s infinite linear; }\n@keyframes loading {\n  0% { transform:  translateX(0) scaleX(0); }\n  40% { transform:  translateX(0) scaleX(0.4); }\n  100% { transform:  translateX(100%) scaleX(0.5); }\n}\n\n.spin { animation: spin 1s infinite linear; }\n@keyframes spin {\n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(360deg); }\n}\n\n\n.transform { transform:translate(0, 0) rotate(0) skewX(0) skewY(0) scaleX(1) scaleY(1); }\n.translate-x-0 { transform:translate(0px, 0) rotate(0) skewX(0) skewY(0) scaleX(1) scaleY(1); }\n.translate-x-full { transform:translate(100%, 0) rotate(0) skewX(0) skewY(0) scaleX(1) scaleY(1); }\n.-translate-x-full { transform:translate(-100%, 0) rotate(0) skewX(0) skewY(0) scaleX(1) scaleY(1); }\n.ml-72 { margin-left:18rem; }\n.font-bold { font-weight: 700; }\n.w-full, .w-100 { width: 100%; }\n.nowrap { white-space: nowrap; }\n.noround { border-radius:0px; }\n.grow { flex-grow: 1; }\n.rounded-full { border-radius:9999px !important; }\n.text-sm { font-size:0.875rem; line-height:1.25rem;  }\n\n.status-circle { display:flex; align-items:center; gap:0.375rem; white-space:nowrap;  }\n.status-circle-green { color:rgb(34,197,94); }\n.status-circle-red { color:rgb(239,68,68); }\n\na { color: #aaf; }\ntable { padding:0;margin:0;border:0; border-collapse: collapse; }\ntd { padding: 2px 0.25rem; }\n\n.dashboard-wrapper { position:relative; flex-grow: 1; display: flex; flex-direction: column; }\n\n.sidebar-wrapper { position:absolute; bottom:0px; left:0px; top:0px; width:18rem; transition:all; transition-duration:300ms;  }\n.page-wrapper { transition: all; transition-duration:300ms; background: rgb(241,245,249); flex-grow: 1; }\n.sidebar { position:relative; height:100%; user-select:none; background: white; }\n.sidebar-top { display:flex; align-items:center; gap:0.5rem; padding-left:0.75rem; padding-right:0.75rem; padding-top:0.5rem; padding-bottom:0.5rem;  }\n.logo { display: inline-block; height:4rem;width:50%;cursor:pointer;align-items:center;justify-content:center; }\n.logo svg { max-width: 100% !important; max-height: 100% !important; }\n.brand-name { font-weight: bold; font-size: 100%; color: #677589; display:flex; flex-grow:1; justify-content:center;}\n.sidebar-item-list { }\n.sidebar-item { display:flex; cursor:pointer; align-items:center; gap:0.5rem; padding:0.4rem 1rem; border-bottom: 1px solid rgb(226,232,240); }\n.sidebar-selected-item { background:rgb(241,245,249); outline: none; }\n\n.page { padding: 0.75em; gap: 0.75em; min-height: 2em; display: flex; flex-direction: column; flex-grow: 1; }\n\n.card { padding: 0.5em 0.8em; display:flex; flex-direction:column; border-radius:0.5rem; border: 1px solid rgb(226,232,240); background:white; flex: 1 1 auto; gap: 0.25rem; flex: 1 1 0; white-space: nowrap; }\n.card > div:nth-child(1) { font-size: 85%; color: rgb(107,114,128); }\n.card > div:nth-child(2) { font-size: 140%; font-weight: 600; color: rgb(71,85,105); }\n\n.panel { display: flex; flex-direction: column; gap: 0.4rem; background: white; border: 1px solid rgb(226,232,240); border-radius: 0.5rem; padding: 0.5em 0.8em; }\n.panel > .title { border-bottom: 1px solid rgb(226,232,240); margin: -0.5rem -0.8rem 0 -0.8rem; padding: 0.5rem 0.8em 0.3rem 0.8rem; background: #fafafa; border-radius: 0.5rem 0.5rem 0 0; }\n\n.container-h { display: flex; gap: 0.5rem; min-height: 2em;  }\n.container-v { display: flex; gap: 0.5rem; min-height: 2em; flex-direction: column; }\n.wrap { flex-wrap: wrap; }\n.size-equal { flex: 1 1 0; }\n.size-auto { flex: 1 1 auto; }\n\n.form-control { display:flex; align-items:center; justify-content:space-between;  }\n.title { font-size: 0.875rem;  white-space: nowrap; text-overflow: ellipsis; font-weight: bold; color:rgb(71,85,105); }\n.label { font-size: 0.875rem;  white-space: nowrap; text-overflow: ellipsis; color:rgb(71,85,105); }\n\n.note { background: white; border: 1px solid rgb(226,232,240); color: rgb(108,123,144); padding: 0.5em 0.8em; border-radius: 0.5em; font-size: 90%; display: flex; flex-direction: column; gap: 0.5rem; }\n\n@media (max-width: 640px) {\n  .panel, .card { flex: 1 1 100% !important;}\n}\n", 
+    "pages": [
+      {"type": "page", "title": "Device Settings", "icon": "settings", "level": 3, "classes": "page", "layout": [
+          {"type": "container", "classes": "container-h wrap", "css": "align-items: start;", "layout": [
+              {"type": "container", "classes": "panel", "css": "flex: 0 0 22rem;", "layout": [
+                  {"type": "text", "classes": "title", "format": "Device Settings"},
+                  {"type": "container", "classes": "form-control", "layout": [
+                      {"type": "text", "classes": "label", "format": "Board IP"},
+                      {"type": "input", "ref": "settings.bd_ip1"},
+                      {"type": "input", "ref": "settings.bd_ip2"},
+                      {"type": "input", "ref": "settings.bd_ip3"},
+                      {"type": "input", "ref": "settings.bd_ip4"}
+                    ]},
+                  {"type": "container", "classes": "form-control", "layout": [
+                      {"type": "text", "classes": "label", "format": "Subnet"},
+                      {"type": "input", "ref": "settings.bd_su1"},
+                      {"type": "input", "ref": "settings.bd_su2"},
+                      {"type": "input", "ref": "settings.bd_su3"},
+                      {"type": "input", "ref": "settings.bd_su4"}
+                    ]},
+                  {"type": "container", "classes": "form-control", "layout": [
+                      {"type": "text", "classes": "label", "format": "Gateway"},
+                      {"type": "input", "ref": "settings.bd_gw1"},
+                      {"type": "input", "ref": "settings.bd_gw2"},
+                      {"type": "input", "ref": "settings.bd_gw3"},
+                      {"type": "input", "ref": "settings.bd_gw4"}
+                    ]},
+                  {"type": "container", "classes": "form-control", "css": "margin-top: 0.25rem;", "layout": [
+                      {"type": "savebutton", "ref": "settings"}
+                    ]}
+                ]},
+              {"type": "container", "classes": "container-h wrap", "layout": []}
+            ]}
+        ]},
+      {"type": "page", "title": "Firmware Update", "icon": "import", "classes": "page", "layout": [
+          {"type": "container", "classes": "panel", "css": "flex: 0 0 24em;", "layout": [
+              {"type": "text", "classes": "title", "format": "Firmware Update"},
+              {"type": "container", "classes": "form-control", "layout": []},
+              {"type": "container", "classes": "container-h", "layout": [
+                  {"type": "text", "classes": "label", "format": "Update Firmware"},
+                  {"type": "ota", "title": "select .bin file", "icon": "ellipsis-horizontal", "ref": "firmware_update"}
+                ]}
+            ]}
+        ], "level": 0}
+    ]
+  }
+}
