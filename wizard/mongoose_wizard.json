@@ -103,10 +103,6 @@
               {"type": "container", "classes": "container-h wrap", "layout": []}
             ]}
         ]},
-      {"type": "page", "title": "Steer Settings", "icon": "checkmark", "classes": "page", "layout": [], "level": 0},
-      {"type": "page", "title": "Steer Config", "icon": "add-into", "classes": "page", "layout": [], "level": 0},
-      {"type": "page", "title": "Machine Config", "icon": "lightning", "classes": "page", "layout": [], "level": 0},
-      {"type": "page", "title": "OGX Config", "icon": "wrap", "classes": "page", "layout": [], "level": 0},
       {"type": "page", "title": "Firmware Update", "icon": "import", "classes": "page", "layout": [
           {"type": "container", "classes": "panel", "css": "flex: 0 0 24em;", "layout": [
               {"type": "text", "classes": "title", "format": "Firmware Update"},
@@ -116,7 +112,7 @@
                   {"type": "ota", "title": "select .bin file", "icon": "ellipsis-horizontal", "ref": "firmware_update"}
                 ]}
             ]}
-        ], "level": 0}
+        ], "level": "3"}
     ]
   }
 }
