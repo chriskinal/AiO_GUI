@@ -1,3 +1,6 @@
+Need new RingBuffer if pgn parsing in UDP handler too sloe
+Need new machine.h
+
 // connection plan:
 // Teensy Serial 5 RX (21) to F9P Position receiver TX1 (Position data)
 // Teensy Serial 5 TX (20) to F9P Position receiver RX1 (RTCM data for RTK)
