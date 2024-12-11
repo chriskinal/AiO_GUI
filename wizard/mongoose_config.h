@@ -16,9 +16,9 @@
 // For static IP configuration, define MG_TCPIP_{IP,MASK,GW}
 // By default, those are set to zero, meaning that DHCP is used
 //
-// #define MG_TCPIP_IP MG_IPV4(192, 168, 0, 10)
-// #define MG_TCPIP_GW MG_IPV4(192, 168, 0, 1)
-// #define MG_TCPIP_MASK MG_IPV4(255, 255, 255, 0)
+#define MG_TCPIP_IP MG_IPV4(192, 168, 5, 126)
+#define MG_TCPIP_GW MG_IPV4(192, 168, 5, 1)
+#define MG_TCPIP_MASK MG_IPV4(255, 255, 255, 0)
 
 // Construct MAC address from the MCU unique ID
 #define MG_OCOTP_FUSES ((volatile uint32_t *) 0x401f4410)
