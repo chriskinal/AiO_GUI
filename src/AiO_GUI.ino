@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "common.h"
+#include "gnss_handlers.h"
 #include "setup.h"
 #include "mongoose_startup.h"
 
@@ -17,7 +18,7 @@ void setup() {
   ethernet_init();
   mongoose_init();
   serialSetup();                            // setup.ino
-  //parserSetup();                            // setup.ino
+  parserSetup();                            // setup.ino
   BNO.begin(SerialIMU);                     // BNO_RVC.cpp
   //autosteerSetup();                         // Autosteer.ino
   //CAN_Setup();                              //Start CAN3 for Keya

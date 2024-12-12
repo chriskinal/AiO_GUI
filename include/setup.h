@@ -35,15 +35,15 @@ void serialSetup()
     SerialESP32.addMemoryForWrite(ESP32txbuffer, sizeof(ESP32txbuffer));
 }
 
-// void parserSetup()
-// {
-//   // the dash means wildcard
-//   nmeaParser.setErrorHandler(errorHandler);
-//   nmeaParser.addHandler("G-GGA", GGA_Handler);
-//   nmeaParser.addHandler("G-GNS", GNS_Handler);
-//   nmeaParser.addHandler("G-VTG", VTG_Handler);
-//   nmeaParser.addHandler("G-HPR", HPR_Handler);
-// }
+void parserSetup()
+{
+  // the dash means wildcard
+  nmeaParser.setErrorHandler(errorHandler);
+  nmeaParser.addHandler("G-GGA", GGA_Handler);
+  nmeaParser.addHandler("G-GNS", GNS_Handler);
+  nmeaParser.addHandler("G-VTG", VTG_Handler);
+  nmeaParser.addHandler("G-HPR", HPR_Handler);
+}
 
 void resetStartingTimersBuffers()
 {
