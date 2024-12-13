@@ -1,6 +1,10 @@
 #define AIOv50a
 const char inoVersion[] = "AiO v5.0a OGX - " __DATE__;
 
+const uint8_t encoderType = 1;  // 1 - single input
+                                // 2 - dual input (quadrature encoder), uses Kickout_A (Pressure) & Kickout_D (Remote) inputs
+                                // 3 - variable duty cycle, for future updates
+
 extern "C" uint32_t set_arm_clock(uint32_t frequency);  // required prototype to set CPU speed
 
 // ********* IO Defines *********

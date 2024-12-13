@@ -48,6 +48,39 @@ bool printCpuUsages = false;
 bool printStats = false;
 // End
 
+// Autosteer variables
+// Variables for settings - 0 is false
+struct SteerConfigStruct {
+  uint8_t InvertWAS = 0;
+  uint8_t IsRelayActiveHigh = 0;  // if zero, active low (default)
+  uint8_t MotorDriveDirection = 0;
+  uint8_t SingleInputWAS = 1;
+  uint8_t CytronDriver = 1;
+  uint8_t SteerSwitch = 0;  // 1 if switch selected
+  uint8_t SteerButton = 0;  // 1 if button selected
+  uint8_t ShaftEncoder = 0;
+  uint8_t PressureSensor = 0;
+  uint8_t CurrentSensor = 0;
+  uint8_t PulseCountMax = 3;
+  uint8_t IsDanfoss = 0;
+  uint8_t IsUseY_Axis = 0;  // Set to 0 to use X Axis, 1 to use Y avis
+  uint8_t MinSpeed = 0;
+};
+SteerConfigStruct const defaultSteerConfig;  // 9 bytes
+struct SteerConfigStruct steerConfig = defaultSteerConfig;
+
+uint8_t steerReading, prevSteerReading = 1;  // currentState = 0
+int16_t pulseCount = 0;                      // Steering Wheel Encoder
+int16_t lastEnc = -999;
+
+// Switches/Sensors
+uint8_t kickoutInput = 0, workInput = 0, steerState = 0, switchByte = 0;
+float sensorReading, sensorSample;
+
+const int16_t ANALOG_TRIG_THRES = 100;
+const uint8_t ANALOG_TRIG_HYST = 10;
+// End
+
 // GNSS processing and variables
 #include "NMEA.h"
 NMEAParser<4> nmeaParser;
