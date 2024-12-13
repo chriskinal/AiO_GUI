@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "HardwareSerial.h"
 #include "elapsedMillis.h"
 #include <stdint.h>
@@ -90,7 +91,7 @@ Encoder encoder(KICKOUT_D_PIN, KICKOUT_A_PIN);
 BNO_RVC BNO;
 // End
 
-// Keya CANBus sterr motor
+// Keya CANBus steer motor
 #include <FlexCAN_T4.h>
 FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_256> Keya_Bus;
 int8_t KeyaCurrentSensorReading = 0;
