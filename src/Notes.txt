@@ -1,6 +1,14 @@
 Need new RingBuffer if pgn parsing in UDP handler too sloe
 Need new machine.h
 
+Change IP programatically
+After mg_mgr_init(), you can do this:
+struct mg_tcpip_if *ifp = MG_TCPIP_IFACE(&mgr);
+ifp->ip = ...; // must be in network order
+ifp->gw = ...; 
+ifp->mask = ...;
+The mgr->priv is a pointer to the interface, https://github.com/cesanta/mongoose/blob/36e21e53e0871836fb35dc8dd8f8236292cc3464/src/net_builtin.h#L31 . And you have access to all its guts.
+
 // connection plan:
 // Teensy Serial 5 RX (21) to F9P Position receiver TX1 (Position data)
 // Teensy Serial 5 TX (20) to F9P Position receiver RX1 (RTCM data for RTK)

@@ -25,7 +25,7 @@ void setup() {
   parserSetup();                            // setup.h
   BNO.begin(SerialIMU);                     // BNO_RVC.cpp
   autosteerSetup();                         // Autosteer.h
-  //CAN_Setup();                              //Start CAN3 for Keya
+  CAN_Setup();                              //Start CAN3 for Keya
 
   Serial.println("\r\n\nEnd of setup, waiting for GPS...\r\n"); 
   delay(1);
