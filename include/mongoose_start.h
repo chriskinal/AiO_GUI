@@ -1,5 +1,29 @@
-extern "C" {
+#include "mongoose.h"
 #include "mongoose_glue.h"
+#include "udpHandlers.h"
+
+void ipaddrSetup()
+{
+  struct mg_tcpip_if *ifp = MG_TCPIP_IFACE(&g_mgr);
+  ifp->enable_dhcp_client = 0;
+  ifp->ip = MG_IPV4(192, 168, 5, 126);
+  ifp->gw = MG_IPV4(192, 168, 5, 1);
+  ifp->mask = MG_IPV4(255, 255, 255, 0);
+}
+
+void udpSetup()
+{
+  static const char *steerListen = "udp://0.0.0.0:8888";
+  static const char *rtcmListen = "udp://0.0.0.0:2233";
+  // static const char *agioSend = "udp://0.0.0.0:9999";
+
+  mg_listen(&g_mgr, steerListen, steerHandler, NULL);
+  mg_listen(&g_mgr, rtcmListen, rtcmHandler, NULL);
+  // mg_listen(&g_mgr, agioSend, agioHandler, NULL);
+}
+
+extern "C" {
+//#include "mongoose_glue.h"
 #define TRNG_ENT_COUNT 16
 void ENET_IRQHandler(void);
 uint64_t mg_millis(void) {
