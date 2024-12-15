@@ -2,7 +2,7 @@
 #include "common.h"
 #include "gnss_handlers.h"
 #include "setup.h"
-#include "mongoose_start.h"
+#include "mongoose_startup.h"
 #include "KeyaCANBUS.h"
 #include "Autosteer.h"
 #include "AutosteerPID.h"
@@ -21,8 +21,6 @@ void setup() {
   setCpuFrequency(600 * 1000000);           // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
   ethernet_init();
   mongoose_init();
-  ipaddrSetup();
-  udpSetup();
   serialSetup();                            // setup.h
   parserSetup();                            // setup.h
   BNO.begin(SerialIMU);                     // BNO_RVC.cpp

@@ -1,4 +1,3 @@
-
 void calcSteeringPID(void)
 {
   #ifdef JD_DAC_H
