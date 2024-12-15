@@ -13,28 +13,29 @@ LEDS LEDs = LEDS(1000, 255, 64, 127);
 // End
 
 // Usage stats
-ProcessorUsage BNOusage((char *)"BNO   ");
-ProcessorUsage GPS1usage((char *)"GPS1  ");
-ProcessorUsage GPS2usage((char *)"GPS2  ");
-ProcessorUsage PGNusage((char *)"PGN   ");
-ProcessorUsage ASusage((char *)"AG    ");
-ProcessorUsage NTRIPusage((char *)"NTRIP ");
-ProcessorUsage RS232usage((char *)"RS232 ");
-ProcessorUsage LOOPusage((char *)"Loop  ");
-ProcessorUsage IMU_Husage((char *)"IMU_H ");
-ProcessorUsage NMEA_Pusage((char *)"NMEA_H");
-ProcessorUsage RTKusage((char *)"Radio ");
-ProcessorUsage UBX_Pusage((char *)"UBX_H ");
-ProcessorUsage UDP_Susage((char *)"UDP_S ");
-ProcessorUsage DACusage((char *)"DAC   ");
-ProcessorUsage MACHusage((char *)"MACH  ");
-ProcessorUsage LEDSusage((char *)"LEDS  ");
-ProcessorUsage ESP32usage((char *)"ESP32 ");
+ProcessorUsage BNOusage           ((char*)"BNO   ");
+ProcessorUsage GPS1usage          ((char*)"GPS1  ");
+ProcessorUsage GPS2usage          ((char*)"GPS2  ");
+ProcessorUsage PGNusage           ((char*)"PGN   ");
+ProcessorUsage ASusage            ((char*)"AG    ");
+ProcessorUsage NTRIPusage         ((char*)"NTRIP ");
+ProcessorUsage RS232usage         ((char*)"RS232 ");  
+ProcessorUsage LOOPusage          ((char*)"Loop  ");
+ProcessorUsage IMU_Husage         ((char*)"IMU_H ");
+ProcessorUsage NMEA_Pusage        ((char*)"NMEA_H");
+ProcessorUsage RTKusage           ((char*)"Radio ");
+ProcessorUsage UBX_Pusage         ((char*)"UBX_H ");
+ProcessorUsage UDP_Susage         ((char*)"UDP_S ");
+ProcessorUsage DACusage           ((char*)"DAC   ");
+ProcessorUsage MACHusage          ((char*)"MACH  ");
+ProcessorUsage LEDSusage          ((char*)"LEDS  ");
+ProcessorUsage ESP32usage         ((char*)"ESP32 ");
 const uint8_t numCpuUsageTasks = 17;
-ProcessorUsage *cpuUsageArray[numCpuUsageTasks] = {
-    &BNOusage, &GPS1usage, &GPS2usage, &PGNusage, &ASusage, &NTRIPusage,
-    &RS232usage, &LOOPusage, &IMU_Husage, &NMEA_Pusage, &RTKusage, &UBX_Pusage,
-    &UDP_Susage, &DACusage, &MACHusage, &LEDSusage, &ESP32usage};
+ProcessorUsage* cpuUsageArray[numCpuUsageTasks] = { 
+  &BNOusage, &GPS1usage, &GPS2usage, &PGNusage, &ASusage, &NTRIPusage,
+  &RS232usage, &LOOPusage, &IMU_Husage, &NMEA_Pusage, &RTKusage, &UBX_Pusage,
+  &UDP_Susage, &DACusage, &MACHusage, &LEDSusage, &ESP32usage
+};
 HighLowHzStats gps2Stats;
 HighLowHzStats gps1Stats;
 HighLowHzStats relJitterStats;
@@ -49,28 +50,27 @@ bool printStats = false;
 
 // Autosteer variables
 // Variables for settings - 0 is false
-struct SteerConfigStruct
-{
+struct SteerConfigStruct {
   uint8_t InvertWAS = 0;
-  uint8_t IsRelayActiveHigh = 0; // if zero, active low (default)
+  uint8_t IsRelayActiveHigh = 0;  // if zero, active low (default)
   uint8_t MotorDriveDirection = 0;
   uint8_t SingleInputWAS = 1;
   uint8_t CytronDriver = 1;
-  uint8_t SteerSwitch = 0; // 1 if switch selected
-  uint8_t SteerButton = 0; // 1 if button selected
+  uint8_t SteerSwitch = 0;  // 1 if switch selected
+  uint8_t SteerButton = 0;  // 1 if button selected
   uint8_t ShaftEncoder = 0;
   uint8_t PressureSensor = 0;
   uint8_t CurrentSensor = 0;
   uint8_t PulseCountMax = 3;
   uint8_t IsDanfoss = 0;
-  uint8_t IsUseY_Axis = 0; // Set to 0 to use X Axis, 1 to use Y avis
+  uint8_t IsUseY_Axis = 0;  // Set to 0 to use X Axis, 1 to use Y avis
   uint8_t MinSpeed = 0;
 };
-SteerConfigStruct const defaultSteerConfig; // 9 bytes
+SteerConfigStruct const defaultSteerConfig;  // 9 bytes
 struct SteerConfigStruct steerConfig = defaultSteerConfig;
 
-uint8_t steerReading, prevSteerReading = 1; // currentState = 0
-int16_t pulseCount = 0;                     // Steering Wheel Encoder
+uint8_t steerReading, prevSteerReading = 1;  // currentState = 0
+int16_t pulseCount = 0;                      // Steering Wheel Encoder
 int16_t lastEnc = -999;
 
 // Switches/Sensors
@@ -92,9 +92,9 @@ UBX_Parser ubxParser;
 #include "FUSEImu.h"
 FUSE_Imu fuseImu;
 
-bool USB1DTR = false; // to track bridge mode state
+bool USB1DTR = false;               // to track bridge mode state
 bool USB2DTR = false;
-uint32_t GPS1BAUD; // to track baud changes for bridge mode
+uint32_t GPS1BAUD;                  // to track baud changes for bridge mode
 uint32_t GPS2BAUD;
 #define PANDA_SINGLE 1
 #define PAOGI_DUAL 0
@@ -106,7 +106,7 @@ bool ggaTimeout, relposnedTimeout;
 uint32_t dualTime;
 uint16_t ggaMissed;
 
-bool udpPassthrough = false; // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
+bool udpPassthrough = false;  // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
 bool gotCR = false;
 bool gotLF = false;
 bool gotDollar = false;
