@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "mongoose.h"
 #include "mongoose_glue.h"
 #include "udpHandlers.h"
@@ -6,8 +7,8 @@ void ipaddrSetup()
 {
   struct mg_tcpip_if *ifp = MG_TCPIP_IFACE(&g_mgr);
   ifp->enable_dhcp_client = 0;
-  ifp->ip = MG_IPV4(192, 168, 5, 126);
-  ifp->gw = MG_IPV4(192, 168, 5, 1);
+  ifp->ip = MG_IPV4(defaultIP[0], defaultIP[1], defaultIP[2], defaultIP[3]);
+  ifp->gw = MG_IPV4(defaultIP[0], defaultIP[1], defaultIP[2], 1);
   ifp->mask = MG_IPV4(255, 255, 255, 0);
 }
 
@@ -15,11 +16,30 @@ void udpSetup()
 {
   static const char *steerListen = "udp://0.0.0.0:8888";
   static const char *rtcmListen = "udp://0.0.0.0:2233";
-  // static const char *agioSend = "udp://0.0.0.0:9999";
-
-  mg_listen(&g_mgr, steerListen, steerHandler, NULL);
-  mg_listen(&g_mgr, rtcmListen, rtcmHandler, NULL);
-  // mg_listen(&g_mgr, agioSend, agioHandler, NULL);
+  bool listenSteer = false;
+  bool listenRtcm = false;
+    
+  if ( mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL )
+  {
+    listenSteer = true;
+    Serial.println("Listening for AgIO on UDP 8888");
+  }
+  else
+  {
+    Serial.println("AgIO on UDP 8888 did not open");
+  }
+  
+  if ( mg_listen(&g_mgr, rtcmListen, rtcmHandler, NULL) != NULL )
+  {
+    listenRtcm = true;
+    Serial.println("Listening for RTCM on UDP 2233");
+  }
+  else
+  {
+    Serial.println("RTCM on UDP 2233 did not open");
+  }
+  //mg_connect(&g_mgr, agioSend, NULL, NULL);
+  
 }
 
 extern "C" {

@@ -7,6 +7,11 @@
 #include "pcb.h"
 #include "misc.h"
 
+// Networkign variables
+static const uint8_t defaultIP[5] = {192, 168, 5, 126};
+uint8_t currentIP[5] = {192, 168, 5, 126};
+uint8_t broadcastIP[5] = {defaultIP[0], defaultIP[1], defaultIP[2], 255};
+
 // Led indicators. 1000ms RGB update, 255/64/127 RGB brightness balance levels for v5.0a
 #include "LEDS.h"
 LEDS LEDs = LEDS(1000, 255, 64, 127);
@@ -129,4 +134,9 @@ BNO_RVC BNO;
 FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_256> Keya_Bus;
 int8_t KeyaCurrentSensorReading = 0;
 bool keyaDetected = false;
+// End
+
+// USB Port tracking variables
+//bool USB1DTR = false;               // to track bridge mode state
+//bool USB2DTR = false;
 // End

@@ -1,5 +1,5 @@
-#ifndef zFUSEImu_h
-#define zFUSEImu_h
+#ifndef FUSEImu_h
+#define FUSEImu_h
 
 class FUSE_Imu
 {
