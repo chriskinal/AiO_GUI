@@ -22,7 +22,6 @@ const uint16_t WATCHDOG_THRESHOLD = 100;
 const uint16_t WATCHDOG_FORCE_VALUE = WATCHDOG_THRESHOLD + 2;  // Should be greater than WATCHDOG_THRESHOLD
 uint8_t watchdogTimer = WATCHDOG_FORCE_VALUE;
 uint8_t aog2Count = 0;
-bool autoSteerEnabled = false;
 float gpsSpeed;
 
 // Relays
@@ -39,8 +38,7 @@ uint8_t guidanceStatus = 0, prevGuidanceStatus = 0;
 bool guidanceStatusChanged = false;
 
 // steering variables
-float steerAngleActual = 0, steerAngleSetPoint = 0, steerAngleError = 0;
-int16_t steeringPosition = 0;  // from steering sensor (WAS)
+float steerAngleSetPoint = 0, steerAngleError = 0;
 
 // pwm variables
 int16_t pwmDrive = 0, pwmDisplay = 0;

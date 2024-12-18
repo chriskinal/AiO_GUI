@@ -51,20 +51,8 @@ typedef enum {
 
 class LEDS {
 private:
-  #ifdef AIOv4x
-    /*#define PWR_ETH_RED_LED   5  // LED 1 - Red
-    #define PWR_ETH_GRN_LED     6  // LED 1 - Green
-    #define GPS_RED_LED         9  // LED 2 - Red
-    #define GPS_GRN_LED        10  // LED 2 - Green
-    #define AUTOSTEER_RED_LED  11  // LED 3 - Red
-    #define AUTOSTEER_GRN_LED  12  // LED 3 - Green*/
-    const uint8_t v4redLEDio[3] = { 5, 9, 11 };
-    const uint8_t v4grnLEDio[3] = { 6, 10, 12 };
-    const uint8_t NUM_LEDS = 3;
-  #else 
-    const uint8_t NUM_LEDS = 4;
-  #endif
-
+  
+  const uint8_t NUM_LEDS = 4;
   const uint8_t WS2811_PIN = 33;    // unused IO on v4
   Adafruit_NeoPixel WS2811 = Adafruit_NeoPixel(NUM_LEDS, WS2811_PIN, NEO_BGR + NEO_KHZ800);
   #define GGA_LED    13  // Teensy built-in LED

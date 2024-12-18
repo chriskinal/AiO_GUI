@@ -10,7 +10,8 @@
 // Networkign variables
 static const uint8_t defaultIP[5] = {192, 168, 5, 126};
 uint8_t currentIP[5] = {192, 168, 5, 126};
-uint8_t broadcastIP[5] = {defaultIP[0], defaultIP[1], defaultIP[2], 255};
+uint8_t broadcastIP[5] = {currentIP[0], currentIP[1], currentIP[2], 255};
+bool udpRunning = false;
 
 // Led indicators. 1000ms RGB update, 255/64/127 RGB brightness balance levels for v5.0a
 #include "LEDS.h"
@@ -77,6 +78,10 @@ struct SteerConfigStruct steerConfig = defaultSteerConfig;
 uint8_t steerReading, prevSteerReading = 1;  // currentState = 0
 int16_t pulseCount = 0;                      // Steering Wheel Encoder
 int16_t lastEnc = -999;
+bool autoSteerEnabled = false;
+float steerAngleActual = 0;
+int16_t steeringPosition = 0;  // from steering sensor (WAS)
+// End
 
 // Switches/Sensors
 uint8_t kickoutInput = 0, workInput = 0, steerState = 0, switchByte = 0;

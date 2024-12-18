@@ -7,8 +7,8 @@ void ipaddrSetup()
 {
   struct mg_tcpip_if *ifp = MG_TCPIP_IFACE(&g_mgr);
   ifp->enable_dhcp_client = 0;
-  ifp->ip = MG_IPV4(defaultIP[0], defaultIP[1], defaultIP[2], defaultIP[3]);
-  ifp->gw = MG_IPV4(defaultIP[0], defaultIP[1], defaultIP[2], 1);
+  ifp->ip = MG_IPV4(currentIP[0], currentIP[1], currentIP[2], currentIP[3]);
+  ifp->gw = MG_IPV4(currentIP[0], currentIP[1], currentIP[2], 1);
   ifp->mask = MG_IPV4(255, 255, 255, 0);
 }
 
@@ -38,7 +38,8 @@ void udpSetup()
   {
     Serial.println("RTCM on UDP 2233 did not open");
   }
-  //mg_connect(&g_mgr, agioSend, NULL, NULL);
+  
+  if ( listenRtcm && listenSteer) udpRunning = true;
   
 }
 
