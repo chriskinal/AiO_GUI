@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "mongoose.h"
 
 // Process data to be sent to AgIO
@@ -65,6 +66,28 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       }
     }
     
+    // Subnet Change
+    if (steer->recv.buf[3] == 201 && steer->recv.len == 11)
+    {
+      Serial.println("Subnet Change");
+
+      if (steer->recv.buf[4] == 5 && steer->recv.buf[5] == 201 && steer->recv.buf[6] == 201)  //save in EEPROM and restart
+      {
+        //Serial << "\r\n- IP changed from " << currentIP;
+        currentIP[0] = steer->recv.buf[7];
+        currentIP[1] = steer->recv.buf[8];
+        currentIP[2] = steer->recv.buf[9];
+
+        //Serial << " to " << currentIP;
+        Serial << "\r\n- Saving to EEPROM and restarting Teensy";
+
+        SaveCurModuleIP();  //save in EEPROM and restart
+        delay(10);
+        SCB_AIRCR = 0x05FA0004;  //Teensy Reset
+      }
+      return;                    // no other processing needed
+    }
+
     // reply as IMU if equipped
     if (BNO.isActive) {
       uint8_t helloFromIMU[] = { 128, 129, 121, 121, 5, 0, 0, 0, 0, 0, 71 };
