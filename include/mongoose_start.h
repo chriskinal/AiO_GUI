@@ -18,11 +18,18 @@ void Eth_EEPROM() {
       EEPROM.get(64, currentIP[2]);
       }
 
+    gatewayIP[0] = currentIP[0];
+    gatewayIP[1] = currentIP[1];
+    gatewayIP[2] = currentIP[2];
+    gatewayIP[3] = 1;
+
     broadcastIP[0] = currentIP[0];
     broadcastIP[1] = currentIP[1];
     broadcastIP[2] = currentIP[2];
     broadcastIP[3] = 255;                // same subnet as module's IP but use broadcast
+
     Serial.println(String("Module IP: ") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".126"));
+    Serial.println(String("Gateway IP: ") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".1"));
     Serial.println(String("Broadcast IP: ") + String(broadcastIP[0]) + String(".") + String(broadcastIP[1]) + String(".") + String(broadcastIP[2]) + String(".255"));
     Serial.println();
   }
@@ -31,8 +38,9 @@ void ipaddrSetup()
 {
   struct mg_tcpip_if *ifp = MG_TCPIP_IFACE(&g_mgr);
   ifp->enable_dhcp_client = 0;
-  ifp->ip = MG_IPV4(currentIP[0], currentIP[1], currentIP[2], currentIP[3]);
-  ifp->gw = MG_IPV4(currentIP[0], currentIP[1], currentIP[2], 1);
+  // 
+  ifp->ip = ipv4ary(currentIP);
+  ifp->gw = ipv4ary(gatewayIP);
   ifp->mask = MG_IPV4(255, 255, 255, 0);
 }
 

@@ -7,10 +7,12 @@
 #include "IPAddress.h"
 #include "pcb.h"
 #include "misc.h"
+#include "mongoose.h"
 
 // Networking variables
 static const uint8_t defaultIP[5] = {192, 168, 5, 126};
 uint8_t currentIP[5] = {192, 168, 5, 126};
+uint8_t gatewayIP[5] = {192, 168, 5, 1};
 uint8_t broadcastIP[5] = {192, 168, 5, 255};
 bool udpRunning = false;
 const int EE_ver = 2402;               // if value in eeprom does not match, overwrite with defaults
@@ -171,4 +173,18 @@ void SaveCurModuleIP(void) {
     EEPROM.put(62, defaultIP[0]);
     EEPROM.put(63, defaultIP[1]);
     EEPROM.put(64, defaultIP[2]);
+  }
+
+static uint32_t ipv4str(const char *str) {
+    struct mg_addr a = {};
+    mg_aton(mg_str(str), &a);
+    return *(uint32_t *) &a.ip;
+  }
+
+static uint32_t ipv4ary(const uint8_t input[]) {
+    char buf[16];
+    mg_snprintf(buf, sizeof(buf), "%d.%d.%d.%d", input[0], input[1], input[2], input[3]);
+    struct mg_addr a = {};
+    mg_aton(mg_str(buf), &a);
+    return *(uint32_t *) &a.ip;
   }
