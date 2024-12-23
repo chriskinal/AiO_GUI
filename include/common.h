@@ -79,6 +79,19 @@ struct SteerConfigStruct {
 SteerConfigStruct const defaultSteerConfig;  // 9 bytes
 struct SteerConfigStruct steerConfig = defaultSteerConfig;
 
+// Variables for settings
+struct SteerSettingsStruct {
+  uint8_t Kp = 40;      // proportional gain
+  uint8_t lowPWM = 10;  // band of no action
+  int16_t wasOffset = 0;
+  uint8_t minPWM = 9;
+  uint8_t highPWM = 150;  // max PWM value
+  float steerSensorCounts = 120;
+  float AckermanFix = 1;  // sent as percent
+};
+SteerSettingsStruct defaultSteerSettings;                         // 11 bytes
+struct SteerSettingsStruct steerSettings = defaultSteerSettings;  // don't need 'struct' in front?
+
 uint8_t steerReading, prevSteerReading = 1;  // currentState = 0
 int16_t pulseCount = 0;                      // Steering Wheel Encoder
 int16_t lastEnc = -999;

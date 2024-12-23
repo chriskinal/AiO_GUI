@@ -161,7 +161,8 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       return;
     }
 
-    if (steer->recv.buf[3] == 0xFB && steer->recv.len == 14)  // 0xFB (251) - SteerConfig
+    // 0xFB (251) - SteerConfig
+    if (steer->recv.buf[3] == 0xFB && steer->recv.len == 14)
     {
       uint8_t sett = steer->recv.buf[5]; //setting0
       if (bitRead(sett, 0)) steerConfig.InvertWAS = 1; else steerConfig.InvertWAS = 0;
@@ -198,9 +199,54 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       Serial.print("\r\nMinSpeed "); Serial.print(steerConfig.MinSpeed);
       Serial.println();
 
-      EEPROM.put(40, steerConfig);            
+      EEPROM.put(40, steerConfig);
+      delay(10);
+      SCB_AIRCR = 0x05FA0004;  //Teensy Reset            
       return;             // no other processing needed
     }  // 0xFB (251) - SteerConfig
+
+    // 0xFC (252) - Steer Settings
+    if (steer->recv.buf[3] == 0xFC && steer->recv.len == 14)         
+      {
+        //PID values
+        steerSettings.Kp = ((float)steer->recv.buf[5]);    // read Kp from AgOpenGPS
+        steerSettings.highPWM = steer->recv.buf[6];        // read high pwm
+        steerSettings.lowPWM = (float)steer->recv.buf[7];  // read lowPWM from AgOpenGPS
+        steerSettings.minPWM = steer->recv.buf[8];         // read the minimum amount of PWM for instant on
+
+        float temp = (float)steerSettings.minPWM * 1.2;
+        steerSettings.lowPWM = (byte)temp;
+
+        steerSettings.steerSensorCounts = steer->recv.buf[9];   // sent as setting displayed in AOG
+        
+        //steerSettings.wasOffset = (udpData[10]);        // read was zero offset Lo
+        //steerSettings.wasOffset |= (udpData[11] << 8);  // read was zero offset Hi
+        int16_t newWasOffset = (steer->recv.buf[10]);        // read was zero offset Lo
+        newWasOffset        |= (steer->recv.buf[11] << 8);   // read was zero offset Hi
+
+        #ifdef JD_DAC_H
+          jdDac.setMaxPWM(steerSettings.highPWM);
+          if (newWasOffset != steerSettings.wasOffset) {
+            jdDac.centerDac();
+          }
+        #endif
+
+        steerSettings.wasOffset = newWasOffset;
+        steerSettings.AckermanFix = (float)steer->recv.buf[12] * 0.01;
+
+        Serial.print("\r\n Kp "); Serial.print(steerSettings.Kp);
+        Serial.print("\r\n highPWM "); Serial.print(steerSettings.highPWM);
+        Serial.print("\r\n lowPWM "); Serial.print(steerSettings.lowPWM);
+        Serial.print("\r\n minPWM "); Serial.print(steerSettings.minPWM);
+        Serial.print("\r\n steerSensorCounts "); Serial.print(steerSettings.steerSensorCounts);
+        Serial.print("\r\n wasOffset "); Serial.print(steerSettings.wasOffset);
+        Serial.print("\r\n AckermanFix "); Serial.print(steerSettings.AckermanFix);
+
+        EEPROM.put(10, steerSettings);
+        delay(10);
+        SCB_AIRCR = 0x05FA0004;  //Teensy Reset  
+        return;               // no other processing needed
+      }  // 0xFC (252) - Steer Settings
 
     mg_iobuf_del(&steer->recv, 0, steer->recv.len);
   }
