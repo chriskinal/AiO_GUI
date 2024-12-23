@@ -1,3 +1,6 @@
+#ifndef COMMON_H_
+#define COMMON_H_
+
 #include "Arduino.h"
 #include "HardwareSerial.h"
 #include "elapsedMillis.h"
@@ -201,3 +204,5 @@ static uint32_t ipv4ary(const uint8_t input[]) {
     mg_aton(mg_str(buf), &a);
     return *(uint32_t *) &a.ip;
   }
+
+  #endif // COMMON_H_

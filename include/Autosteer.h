@@ -1,3 +1,5 @@
+#ifndef AUTOSTEER_H_
+#define AUTOSTEER_H_
 /*
    UDP Autosteer code for Teensy 4.1
    For AgOpenGPS
@@ -453,3 +455,4 @@ void autoSteerUpdate() {
     - 485uS to retrieve ADS1115 value via I2C
 */
 
+#endif /* AUTOSTEER_H_ */

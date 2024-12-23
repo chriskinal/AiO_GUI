@@ -1,3 +1,5 @@
+#ifndef PCB_H_
+#define PCB_H_
 #define AIOv50a
 const char inoVersion[] = "AiO v5.0a OGX - " __DATE__;
 
@@ -64,3 +66,5 @@ uint8_t RS232txbuffer[256];   // large enough to hold a few NMEA sentences as ex
 //uint8_t RS232rxbuffer[256]; // not needed unless custom rs232 rx code is added
 uint8_t ESP32rxbuffer[256];   // don't know what size is needed
 uint8_t ESP32txbuffer[256];   // don't know what size is needed
+
+#endif // PCB_H_

@@ -1,3 +1,5 @@
+#ifndef UDPHANDLERS_H_
+#define UDPHANDLERS_H_
 #include "Arduino.h"
 #include "mongoose.h"
 
@@ -275,3 +277,4 @@ void rtcmHandler(struct mg_connection *rtcm, int ev, void *ev_data, void *fn_dat
     }
 }
 
+#endif // UDPHANDLERS_H_

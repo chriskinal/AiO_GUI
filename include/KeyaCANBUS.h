@@ -1,3 +1,5 @@
+#ifndef KEYACANBUS_H_
+#define KEYACANBUS_H_
 // KeyaCANBUS
 /*
 "Barrowed" Keya code from Matt Elias @ https://github.com/m-elias/AgOpenGPS_Boards/tree/575R-Keya/TeensyModules/V4.1"
@@ -397,3 +399,5 @@ void KeyaBus_Receive()
     }
   }
 }
+
+#endif // KEYACANBUS_H_

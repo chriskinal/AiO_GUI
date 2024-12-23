@@ -1,3 +1,5 @@
+#ifndef SETUP_H_
+#define SETUP_H_
 void setCpuFrequency(uint32_t _freq)
 {
   set_arm_clock(_freq);
@@ -58,3 +60,5 @@ void resetStartingTimersBuffers()
   imuPandaSyncTimer = 0;
   startup = true;
 }
+
+#endif // SETUP_H_

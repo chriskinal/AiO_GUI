@@ -1,3 +1,5 @@
+#ifndef MONGOOSE_START_H_
+#define MONGOOSR_START_H_
 #include "Arduino.h"
 #include "mongoose.h"
 #include "mongoose_glue.h"
@@ -181,3 +183,5 @@ void ethernet_init(void) {
   attachInterruptVector(IRQ_ENET, ENET_IRQHandler);
   NVIC_ENABLE_IRQ(IRQ_ENET);
 }
+
+#endif // MONGOSSE_START_H_

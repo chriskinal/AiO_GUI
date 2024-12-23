@@ -1,3 +1,5 @@
+#ifndef GNSS_HANDLERS_H_
+#define GNSS_HANDLERS_H_
 // Conversion to Hexidecimal
 const char* asciiHex = "0123456789ABCDEF";
 
@@ -376,4 +378,4 @@ void HPR_Handler()
   NMEA_Pusage.timeOut();
 }
 
-
+#endif // GNSSHANDLERS_H_

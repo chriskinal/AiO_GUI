@@ -1,4 +1,7 @@
 
+#ifndef AUTOSTEERPID_H_
+#define AUTOSTEERPID_H_
+
 void calcSteeringPID(void)
 {
   #ifdef JD_DAC_H
@@ -103,3 +106,5 @@ void motorDrive(void)
     pwmDisplay = pwmDrive;
   }
 }
+
+#endif /* AUTOSTEERPID_H_ */
