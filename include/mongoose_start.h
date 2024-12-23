@@ -28,10 +28,10 @@ void Eth_EEPROM() {
     broadcastIP[2] = currentIP[2];
     broadcastIP[3] = 255;                // same subnet as module's IP but use broadcast
 
-    Serial.println(String("Module IP: ") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".126"));
-    Serial.println(String("Gateway IP: ") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".1"));
-    Serial.println(String("Broadcast IP: ") + String(broadcastIP[0]) + String(".") + String(broadcastIP[1]) + String(".") + String(broadcastIP[2]) + String(".255"));
-    Serial.println();
+    // Serial.println(String("Module IP: ") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".126"));
+    // Serial.println(String("Gateway IP: ") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".1"));
+    // Serial.println(String("Broadcast IP: ") + String(broadcastIP[0]) + String(".") + String(broadcastIP[1]) + String(".") + String(broadcastIP[2]) + String(".255"));
+    // Serial.println();
   }
 
 void ipaddrSetup()
