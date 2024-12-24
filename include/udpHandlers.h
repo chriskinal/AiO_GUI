@@ -156,7 +156,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     }
 
     // 0xFB (251) - SteerConfig
-    if (steer->recv.buf[3] == 0xFB && steer->recv.len == 14)
+    if (steer->recv.buf[3] == 0x251 && steer->recv.len == 14)
     {
       uint8_t sett = steer->recv.buf[5]; //setting0
       if (bitRead(sett, 0)) steerConfig.InvertWAS = 1; else steerConfig.InvertWAS = 0;
@@ -200,7 +200,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     }  // 0xFB (251) - SteerConfig
 
     // 0xFC (252) - Steer Settings
-    if (steer->recv.buf[3] == 0xFC && steer->recv.len == 14)         
+    if (steer->recv.buf[3] == 0x252 && steer->recv.len == 14)         
       {
         //PID values
         steerSettings.Kp = ((float)steer->recv.buf[5]);    // read Kp from AgOpenGPS
@@ -241,6 +241,134 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         SCB_AIRCR = 0x05FA0004;  //Teensy Reset  
         return;               // no other processing needed
       }  // 0xFC (252) - Steer Settings
+
+    // 0xFE (254) - Steer Data (sent at GPS freq, ie 10hz (100ms))
+    if (steer->recv.buf[3] == 254 && steer->recv.len == 14)
+      {
+        //printPgnAnnoucement(udpData[3], (char*)"Steer Data", len);
+
+        if (aogGpsToAutoSteerLoopTimerEnabled)
+        {
+          aogGpsToAutoSteerLoopTimerEnabled = false;
+          Serial.print((String)"\r\nGPS out to Steer Data in delay: " + aogGpsToAutoSteerLoopTimer);
+        }
+        //Serial.printf(" %6i", micros() - pgn254Time);
+        //pgn254Time = micros();
+        //uint32_t pgn254Delay = pgn254Time - nmeaPgnSendTime;
+        //if (pgn254Delay < pgn254MinDelay) pgn254MinDelay = pgn254Delay;
+        //if (pgn254Delay > pgn254MaxDelay) pgn254MaxDelay = pgn254Delay;
+        //if (pgn254AveDelay == 0) pgn254AveDelay = pgn254Delay;
+        //else pgn254AveDelay = pgn254AveDelay * 0.99 + pgn254Delay * 0.01;
+        //Serial.printf("->PGN254 delay: %4iuS  %4i %4i %4i", pgn254Delay, pgn254MinDelay, pgn254AveDelay, pgn254MaxDelay);
+        gpsSpeed = ((float)(steer->recv.buf[5] | steer->recv.buf[6] << 8)) * 0.1;   // speed data comes in as km/hr x10
+        //Serial << "\r\n speed:" << gpsSpeed << " "; Serial.print(udpData[5], BIN); Serial << " "; Serial.print(udpData[6], BIN);
+        speedPulse.updateSpeed(gpsSpeed);
+
+        prevGuidanceStatus = guidanceStatus;
+        guidanceStatus = steer->recv.buf[7];
+        guidanceStatusChanged = (guidanceStatus != prevGuidanceStatus);
+
+        //Bit 8,9    set point steer angle * 100 is sent
+        steerAngleSetPoint = ((float)(steer->recv.buf[8] | ((int8_t)steer->recv.buf[9]) << 8)) * 0.01;  //high low bytes
+
+        //udpData[10] is XTE (cross track error)
+        //udpData[11 & 12] is section 1-16
+
+        if ((bitRead(guidanceStatus, 0) == 0) || (steerState == 0)) { // || (gpsSpeed < 0.1)) {
+          watchdogTimer = WATCHDOG_FORCE_VALUE;  //turn off steering motor
+          //Serial.print(" OFF");
+        } else {                                 //valid conditions to turn on autosteer
+          watchdogTimer = 0;                     //reset watchdog
+          //Serial.print(" ON");
+        }
+
+        //Bit 10 XTE
+        xte = steer->recv.buf[10];
+        //Serial.print("\r\nXTE:"); Serial.print(xte-127);
+
+        //Bit 11
+        //relay = udpData[11];
+
+        //Bit 12
+        //relayHi = udpData[12];
+
+        //----------------------------------------------------------------------------
+        // Reply to send to AgIO
+        // fromAutoSteerData FD 253 - ActualSteerAngle*100 -56, SwitchByte-7, pwmDisplay-8
+        uint8_t PGN_253[] = { 0x80, 0x81, 126, 0xFD, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0xCC };
+
+        int16_t sa = (int16_t)(steerAngleActual * 100);
+        PGN_253[5] = (uint8_t)sa;
+        PGN_253[6] = sa >> 8;
+
+        // heading
+        PGN_253[7] = (uint8_t)9999;
+        PGN_253[8] = 9999 >> 8;
+
+        // roll
+        PGN_253[9] = (uint8_t)8888;
+        PGN_253[10] = 8888 >> 8;
+
+        PGN_253[11] = switchByte;
+        PGN_253[12] = (uint8_t)abs(pwmDisplay);
+
+        //checksum
+        int16_t CK_A = 0;
+        for (uint8_t i = 2; i < sizeof(PGN_253) - 1; i++)
+          CK_A = (CK_A + PGN_253[i]);
+
+        PGN_253[sizeof(PGN_253) - 1] = CK_A;
+
+        //off to AOG
+        sendUDP(PGN_253, sizeof(PGN_253));
+        
+        //Steer Data 2 -------------------------------------------------
+        // if (steerConfig.PressureSensor || steerConfig.CurrentSensor) {
+        //   if (aog2Count++ > 2) {                                // send 1/3 of Steer Data rate (GPS hz / 3)
+        //     // fromAutoSteerData FD 250 - sensor values etc
+        //     uint8_t PGN_250[] = { 0x80, 0x81, 126, 0xFA, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0xCC };
+
+        //     //Send fromAutosteer2
+        //     PGN_250[5] = (byte)sensorReading;
+
+        //     //add the checksum for AOG2
+        //     CK_A = 0;
+
+        //     for (uint8_t i = 2; i < sizeof(PGN_250) - 1; i++) {
+        //       CK_A = (CK_A + PGN_250[i]);
+        //     }
+
+        //     PGN_250[sizeof(PGN_250) - 1] = CK_A;
+
+        //     //off to AOG
+        //     UDP_Susage.timeIn();
+        //     UDP.SendUdpByte(PGN_250, sizeof(PGN_250), UDP.broadcastIP, UDP.portAgIO_9999);
+        //     UDP_Susage.timeOut();
+        //     aog2Count = 0;
+        //   }
+        // }
+
+        if (aog2Count++ > 1) {                                // send 1/2 of Steer Data rate (GPS hz / 2)
+          // fromAutoSteerData FD 250 - sensor values etc
+          uint8_t PGN_250[] = { 0x80, 0x81, 126, 0xFA, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0xCC };
+
+          if (steerConfig.PressureSensor || steerConfig.CurrentSensor) {
+            PGN_250[5] = (byte)sensorReading;
+          } else {
+            PGN_250[5] = (byte)pulseCount;
+          }
+
+          CK_A = 0;
+          for (uint8_t i = 2; i < sizeof(PGN_250) - 1; i++) {
+            CK_A = (CK_A + PGN_250[i]);
+          }
+          PGN_250[sizeof(PGN_250) - 1] = CK_A;
+
+          sendUDP(PGN_250, sizeof(PGN_250));
+          aog2Count = 0;
+        }
+        return;                     // no other processing needed
+      }  // 0xFE (254) - Steer Data
 
     mg_iobuf_del(&steer->recv, 0, steer->recv.len);
   }

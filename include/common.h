@@ -82,6 +82,21 @@ struct SteerConfigStruct {
 };
 SteerConfigStruct const defaultSteerConfig;  // 9 bytes
 struct SteerConfigStruct steerConfig = defaultSteerConfig;
+float gpsSpeed;
+uint8_t guidanceStatus = 0, prevGuidanceStatus = 0;
+bool guidanceStatusChanged = false;
+float steerAngleSetPoint = 0, steerAngleError = 0;
+
+const uint16_t WATCHDOG_THRESHOLD = 100;
+const uint16_t WATCHDOG_FORCE_VALUE = WATCHDOG_THRESHOLD + 2;  // Should be greater than WATCHDOG_THRESHOLD
+uint8_t watchdogTimer = WATCHDOG_FORCE_VALUE;
+uint8_t aog2Count = 0;
+
+uint8_t xte = 0;
+
+// pwm variables
+int16_t pwmDrive = 0, pwmDisplay = 0;
+float highLowPerDeg = 0;
 
 // Variables for settings
 struct SteerSettingsStruct {

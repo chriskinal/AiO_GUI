@@ -20,31 +20,24 @@ const int EE_Ident = 2401;  // if value in eeprom does not match, overwrite with
 
 uint32_t autoSteerLastTime, currentTime;
 elapsedMillis autoSteerUpdateTimer;
-const uint16_t WATCHDOG_THRESHOLD = 100;
-const uint16_t WATCHDOG_FORCE_VALUE = WATCHDOG_THRESHOLD + 2;  // Should be greater than WATCHDOG_THRESHOLD
-uint8_t watchdogTimer = WATCHDOG_FORCE_VALUE;
-uint8_t aog2Count = 0;
-float gpsSpeed;
+
 
 // Relays
 /*bool isRelayActiveHigh = true;
 uint8_t relay = 0, relayHi = 0, uTurn = 0;*/
-uint8_t xte = 0;
+
 
 // // Switches/Sensors
 // uint8_t kickoutInput = 0, workInput = 0, steerState = 0, switchByte = 0;
 // float sensorReading, sensorSample;
 
 // On Off
-uint8_t guidanceStatus = 0, prevGuidanceStatus = 0;
-bool guidanceStatusChanged = false;
+
 
 // steering variables
-float steerAngleSetPoint = 0, steerAngleError = 0;
 
-// pwm variables
-int16_t pwmDrive = 0, pwmDisplay = 0;
-float highLowPerDeg = 0;
+
+
 
 // // Steer switch button  ***********************************************************************************************************
 // uint8_t steerReading, prevSteerReading = 1;  // currentState = 0
