@@ -73,6 +73,18 @@ void udpSetup()
     Serial.println("RTCM on UDP 2233 did not open");
   }
   
+  // Create connection URL
+  String agioURL = String("udp://") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".255:9999");
+  char agioSend[agioURL.length() + 1] ={};
+  strcpy(agioSend, agioURL.c_str());
+
+  // Create UDP connection to broadcast address
+  sendAgio = mg_connect(&g_mgr, agioSend, NULL, NULL);
+  if (sendAgio == NULL) {
+    Serial.println("Failed to connect to AgIO");
+    return;
+  }
+
   if ( listenRtcm && listenSteer) udpRunning = true;
   
 }

@@ -6,25 +6,17 @@
 // Process data to be sent to AgIO
 void sendUDP(char *message, int msgLen)
 {
-  // Create connection URL
-  struct mg_connection *sendAgio;
-  String agioURL = String("udp://") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".255:9999");
-  char agioSend[agioURL.length() + 1] ={};
-  strcpy(agioSend, agioURL.c_str());
-
-  // Create UDP connection to broadcast address
-  sendAgio = mg_connect(&g_mgr, agioSend, NULL, NULL);
-  if (sendAgio == NULL) {
-    Serial.println("Failed to connect to AgIO");
-    return;
-  }
   // Send data
   if (mg_send(sendAgio, message, msgLen) <= 0) {
     Serial.println("Failed to send data\r\n");
   }
-
+  else
+  {
+    Serial.println("Sent to AgIO");
+    mg_iobuf_del(&sendAgio->send, 0, sendAgio->send.len);
+  }
   // Close the UDP connection
-  mg_close_conn(sendAgio);
+  // mg_close_conn(sendAgio);
 }
 
 // Process data received on port 8888
@@ -252,10 +244,10 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 
     mg_iobuf_del(&steer->recv, 0, steer->recv.len);
   }
-    else
-    {
-    mg_iobuf_del(&steer->recv, 0, steer->recv.len);  
-    }
+  else
+  {
+  mg_iobuf_del(&steer->recv, 0, steer->recv.len);  
+  }
 }
 
 // Process data received on port 2233
