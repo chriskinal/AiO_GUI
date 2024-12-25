@@ -52,6 +52,7 @@ void udpSetup()
   static const char *rtcmListen = "udp://0.0.0.0:2233";
   bool listenSteer = false;
   bool listenRtcm = false;
+  bool agioConnect = false;
     
   if ( mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL )
   {
@@ -80,7 +81,12 @@ void udpSetup()
 
   // Create UDP connection to broadcast address
   sendAgio = mg_connect(&g_mgr, agioSend, NULL, NULL);
-  if (sendAgio == NULL) {
+  if (sendAgio == !NULL) {
+    agioConnect = true;
+    Serial.println("Connected to AgIO");
+  }
+  else
+  {
     Serial.println("Failed to connect to AgIO");
     return;
   }

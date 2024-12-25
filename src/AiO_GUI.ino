@@ -6,6 +6,10 @@
 #include "KeyaCANBUS.h"
 #include "Autosteer.h"
 #include "AutosteerPID.h"
+#include "serialRW.h"
+#include "gps1Poll.h"
+#include "gps2Poll.h"
+#include "gpsProc.h"
 
 
 void setup() {
@@ -39,7 +43,24 @@ void setup() {
 }
 
 void loop() {
+  gps1Poll();
+  gps2Poll();
+  gpsProc();
+  KeyaBus_Receive();
+  autoSteerUpdate();
+  serialRW();
   mongoose_poll();
   LEDs.updateLoop();
   machinePTR->watchdogCheck();
+
+  if (BNO.read()) {                         // there should be new data every 10ms (100hz)
+    bnoStats.incHzCount();
+    bnoStats.update(1);                     // 1 dummy value
+  }
+
+  // wait 40 msec (F9P) from prev GGA update, then update imu data for next PANDA sentence
+  if (imuPandaSyncTrigger && imuPandaSyncTimer >= 40) {
+    prepImuPandaData();
+    imuPandaSyncTrigger = false;       // wait for next GGA update before resetting imuDelayTimer again
+  }
 }

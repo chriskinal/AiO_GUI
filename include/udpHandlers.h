@@ -8,11 +8,10 @@ void sendUDP(char *message, int msgLen)
 {
   // Send data
   if (mg_send(sendAgio, message, msgLen) <= 0) {
-    Serial.println("Failed to send data\r\n");
+    Serial.println("UDP Send to AgIO failed.\r\n");
   }
   else
   {
-    Serial.println("Sent to AgIO");
     mg_iobuf_del(&sendAgio->send, 0, sendAgio->send.len);
   }
   // Close the UDP connection
