@@ -48,8 +48,12 @@ void ipaddrSetup()
 
 void udpSetup()
 {
-  static const char *steerListen = "udp://0.0.0.0:8888";
-  static const char *rtcmListen = "udp://0.0.0.0:2233";
+  char steerListen[50];
+  char rtcmListen[50];
+  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", currentIP[0], currentIP[1], currentIP[2]);
+  //Serial.println(steerListen);
+  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", currentIP[0], currentIP[1], currentIP[2]);
+  //Serial.println(rtcmListen);
   bool listenSteer = false;
   bool listenRtcm = false;
   bool agioConnect = false;
