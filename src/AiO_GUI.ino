@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "common.h"
+#include "udpHandlers.h"
 #include "gnss_handlers.h"
 #include "setup.h"
 #include "mongoose_start.h"

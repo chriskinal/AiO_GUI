@@ -18,9 +18,18 @@ void sendUDP(char *message, int msgLen)
   // mg_close_conn(sendAgio);
 }
 
+void sendStuff( char *stuff)
+{
+  Serial.println("Send stuff");
+  mg_printf(sendAgio, stuff);
+}
+
 // Process data received on port 8888
 void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_data)
 {
+  if (ev == MG_EV_ERROR) {
+    Serial.printf("Error: %s", (char *) ev_data);
+  }
   if ( ev == MG_EV_READ && mg_ntohs(steer->rem.port) == 9999 && steer->recv.len >= 5)
   {
     // Serial.println("\r\nSteer UDP received");
@@ -246,11 +255,11 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       {
         //printPgnAnnoucement(udpData[3], (char*)"Steer Data", len);
 
-        if (aogGpsToAutoSteerLoopTimerEnabled)
-        {
-          aogGpsToAutoSteerLoopTimerEnabled = false;
-          Serial.print((String)"\r\nGPS out to Steer Data in delay: " + aogGpsToAutoSteerLoopTimer);
-        }
+        // if (aogGpsToAutoSteerLoopTimerEnabled)
+        // {
+        //   aogGpsToAutoSteerLoopTimerEnabled = false;
+        //   Serial.print((String)"\r\nGPS out to Steer Data in delay: " + aogGpsToAutoSteerLoopTimer);
+        // }
         //Serial.printf(" %6i", micros() - pgn254Time);
         //pgn254Time = micros();
         //uint32_t pgn254Delay = pgn254Time - nmeaPgnSendTime;

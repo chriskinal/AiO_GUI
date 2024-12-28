@@ -4,7 +4,8 @@
 const char* asciiHex = "0123456789ABCDEF";
 
 // the new PANDA sentence buffer
-char nmea[100];
+//char nmea[100];
+char *nmea = "\0";
 
 struct GGA_DATA {
   char fixTime[12];
@@ -187,17 +188,19 @@ void buildPandaOrPaogi(bool _panda)  // only called by GGA_Handler (above)
     extraCRLF = false;
   }
 
-  // if (UDP.isRunning)  //If ethernet running send the GPS there
-  // {
-  //   //send char stream
-  //   UDP_Susage.timeIn();
-  //   UDP.SendUdpChar(nmea, strlen(nmea), UDP.broadcastIP, UDP.portAgIO_9999);
-  //   UDP_Susage.timeOut();
-  // }
-  // else if (!nmeaDebug)
-  // {
-  //   //Serial.write(nmea);  // if Eth is !connected, send USB GPS data
-  // }
+  udpRunning = true;
+  if (udpRunning)  //If ethernet running send the GPS there
+  {
+    //send char stream
+    Serial.print("Sentence: ");
+    Serial.write(nmea);
+    sendStuff(nmea);
+    //sendUDP(nmea, sizeof(nmea));
+  }
+  else if (!nmeaDebug)
+  {
+    //Serial.write(nmea);  // if Eth is !connected, send USB GPS data
+  }
 }
 
 void GGA_GNS_PostProcess()  // called by either GGA or GNS handler
