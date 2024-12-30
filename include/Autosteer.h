@@ -82,6 +82,8 @@ void motorDrive(void);
 
 void adcSetup() {
   Serial.print("\r\n- ADC check:");
+  analogReadResolution(12);
+  analogReadAveraging(16);
   // detect input on Teensy WAS_SENSOR_PIN
   pinMode(WAS_SENSOR_PIN, INPUT_PULLDOWN);
   // delay(5);     // with ide/teensyduino update these delays cause Serial.print to fail in the rest of adsSetup()
