@@ -192,10 +192,9 @@ void buildPandaOrPaogi(bool _panda)  // only called by GGA_Handler (above)
   if (udpRunning)  //If ethernet running send the GPS there
   {
     //send char stream
-    Serial.print("Sentence: ");
-    Serial.write(nmea);
-    sendStuff(nmea);
-    //sendUDP(nmea, sizeof(nmea));
+    // Serial.print("Sentence: ");
+    // Serial.write(nmea);
+    sendUDPchars(nmea);
   }
   else if (!nmeaDebug)
   {

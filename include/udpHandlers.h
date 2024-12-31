@@ -3,9 +3,10 @@
 #include "Arduino.h"
 #include "mongoose.h"
 
-// Process data to be sent to AgIO
-void sendUDP(char *message, int msgLen)
+// Send byte arrays to AgIO
+void sendUDPbytes(char *message, int msgLen)
 {
+  if ( ifp->state != 4 ) return; // Check if IP stack is up.
   // Send data
   if (mg_send(sendAgio, message, msgLen) <= 0) {
     Serial.println("UDP Send to AgIO failed.\r\n");
@@ -18,15 +19,17 @@ void sendUDP(char *message, int msgLen)
   // mg_close_conn(sendAgio);
 }
 
-void sendStuff( char *stuff)
+// Send char arrays to AgIO
+void sendUDPchars( char *stuff)
 {
-  Serial.println("Send stuff");
+  if ( ifp->state != 4 ) return; // Check if IP stack is up.
   mg_printf(sendAgio, stuff);
 }
 
 // Process data received on port 8888
 void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_data)
 {
+  if ( ifp->state != 4 ) return; // Check if IP stack is up.
   if (ev == MG_EV_ERROR) {
     Serial.printf("Error: %s", (char *) ev_data);
   }
@@ -64,7 +67,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       helloFromAutoSteer[8] = helloSteerPosition >> 8;
       helloFromAutoSteer[9] = switchByte;
 
-      sendUDP(helloFromAutoSteer, sizeof(helloFromAutoSteer));
+      sendUDPbytes(helloFromAutoSteer, sizeof(helloFromAutoSteer));
       }
     }
     
@@ -93,7 +96,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     // reply as IMU if equipped
     if (BNO.isActive) {
       uint8_t helloFromIMU[] = { 128, 129, 121, 121, 5, 0, 0, 0, 0, 0, 71 };
-      sendUDP(helloFromIMU, sizeof(helloFromIMU));
+      sendUDPbytes(helloFromIMU, sizeof(helloFromIMU));
     }
 
     // 0xCA (202) - Scan Request
@@ -109,7 +112,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
           CK_A = (CK_A + scanReplySteer[i]);
         }
         scanReplySteer[sizeof(scanReplySteer) - 1] = CK_A;
-        sendUDP(scanReplySteer, sizeof(scanReplySteer));
+        sendUDPbytes(scanReplySteer, sizeof(scanReplySteer));
 
         if (BNO.isActive) {
           uint8_t scanReplyIMU[] = { 128, 129, 121, 203, 7,
@@ -120,7 +123,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
             CK_A = (CK_A + scanReplyIMU[i]);
           }
           scanReplyIMU[sizeof(scanReplyIMU) - 1] = CK_A;
-          sendUDP(scanReplyIMU, sizeof(scanReplyIMU));
+          sendUDPbytes(scanReplyIMU, sizeof(scanReplyIMU));
         }
 
         if (gpsActive) {
@@ -132,7 +135,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
             CK_A = (CK_A + scanReplyGPS[i]);
           }
           scanReplyGPS[sizeof(scanReplyGPS) - 1] = CK_A;
-          sendUDP(scanReplyGPS, sizeof(scanReplyGPS));
+          sendUDPbytes(scanReplyGPS, sizeof(scanReplyGPS));
         }
 
         #ifdef MACHINE_H
@@ -145,7 +148,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
             CK_A = (CK_A + scanReplyMachine[i]);
           }
           scanReplyMachine[sizeof(scanReplyMachine) - 1] = CK_A;
-          sendUDP(scanReplyMachine, sizeof(scanReplyMachine));
+          sendUDPbytes(scanReplyMachine, sizeof(scanReplyMachine));
         }
         #endif
 
@@ -328,7 +331,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         PGN_253[sizeof(PGN_253) - 1] = CK_A;
 
         //off to AOG
-        sendUDP(PGN_253, sizeof(PGN_253));
+        sendUDPbytes(PGN_253, sizeof(PGN_253));
         
         //Steer Data 2 -------------------------------------------------
         // if (steerConfig.PressureSensor || steerConfig.CurrentSensor) {
@@ -372,7 +375,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
           }
           PGN_250[sizeof(PGN_250) - 1] = CK_A;
 
-          sendUDP(PGN_250, sizeof(PGN_250));
+          sendUDPbytes(PGN_250, sizeof(PGN_250));
           aog2Count = 0;
         }
         return;                     // no other processing needed
@@ -389,6 +392,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 // Process data received on port 2233
 void rtcmHandler(struct mg_connection *rtcm, int ev, void *ev_data, void *fn_data)
 {
+    if ( ifp->state != 4 ) return; // Check if IP stack is up.
     if ( ev == MG_EV_READ && mg_ntohs(rtcm->rem.port) == 9999 && rtcm->recv.len >= 5 )
     {
         for ( int i = 0; i <= rtcm->recv.len; i++ )

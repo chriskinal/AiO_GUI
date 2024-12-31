@@ -285,7 +285,7 @@ public:
     PGN_237[sizeof(PGN_237) - 1] = CK_A;*/
 
     //off to AOG
-    //sendUdp(PGN_237, sizeof(PGN_237), _dIP, _dPort, _udp);
+    //sendUdpbytes(PGN_237, sizeof(PGN_237), _dIP, _dPort, _udp);
     //_udp->beginPacket(_dIP, _dPort);
     //_udp->write(PGN_237, sizeof(PGN_237));
     //_udp->endPacket();

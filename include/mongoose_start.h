@@ -2,7 +2,6 @@
 #define MONGOOSR_START_H_
 #include "Arduino.h"
 #include "mongoose.h"
-#include "mongoose_glue.h"
 #include "udpHandlers.h"
 
 void Eth_EEPROM() {                        
@@ -38,7 +37,7 @@ void Eth_EEPROM() {
 
 void ipaddrSetup()
 {
-  struct mg_tcpip_if *ifp = MG_TCPIP_IFACE(&g_mgr);
+  ifp = MG_TCPIP_IFACE(&g_mgr);
   ifp->enable_dhcp_client = 0;
   // 
   ifp->ip = ipv4ary(currentIP);

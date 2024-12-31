@@ -11,6 +11,7 @@
 #include "pcb.h"
 #include "misc.h"
 #include "mongoose.h"
+#include "mongoose_glue.h"
 
 // Networking variables
 static const uint8_t defaultIP[5] = {192, 168, 5, 126};
@@ -220,5 +221,15 @@ static uint32_t ipv4ary(const uint8_t input[]) {
     mg_aton(mg_str(buf), &a);
     return *(uint32_t *) &a.ip;
   }
+struct mg_tcpip_if *ifp;
+// void ipaddrSetup()
+// {
+//   ifp = MG_TCPIP_IFACE(&g_mgr);
+//   ifp->enable_dhcp_client = 0;
+//   // 
+//   ifp->ip = ipv4ary(currentIP);
+//   ifp->gw = ipv4ary(gatewayIP);
+//   ifp->mask = MG_IPV4(255, 255, 255, 0);
+// }
 
   #endif // COMMON_H_

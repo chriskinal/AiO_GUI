@@ -62,7 +62,7 @@ void gps1Poll()
             // } // Send USB GPS data if enabled in user settings
             if ( udpRunning )
             {
-                sendUDP(msgBuf, msgBufLen);
+                sendUDPchars(msgBuf);
             }
             gotCR = false;
             gotLF = false;
