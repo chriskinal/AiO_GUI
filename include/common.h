@@ -19,6 +19,7 @@ uint8_t currentIP[5] = {192, 168, 5, 126};
 uint8_t gatewayIP[5] = {192, 168, 5, 1};
 uint8_t broadcastIP[5] = {192, 168, 5, 255};
 struct mg_connection *sendAgio;
+struct mg_tcpip_if *ifp;
 bool udpRunning = false;
 const int EE_ver = 2402;               // if value in eeprom does not match, overwrite with defaults
 
@@ -221,15 +222,5 @@ static uint32_t ipv4ary(const uint8_t input[]) {
     mg_aton(mg_str(buf), &a);
     return *(uint32_t *) &a.ip;
   }
-struct mg_tcpip_if *ifp;
-// void ipaddrSetup()
-// {
-//   ifp = MG_TCPIP_IFACE(&g_mgr);
-//   ifp->enable_dhcp_client = 0;
-//   // 
-//   ifp->ip = ipv4ary(currentIP);
-//   ifp->gw = ipv4ary(gatewayIP);
-//   ifp->mask = MG_IPV4(255, 255, 255, 0);
-// }
 
   #endif // COMMON_H_
