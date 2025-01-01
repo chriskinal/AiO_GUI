@@ -977,7 +977,8 @@ struct packed_file {
 #if MG_ENABLE_PACKED_FS
 #else
 const char *mg_unpack(const char *path, size_t *size, time_t *mtime) {
-  *size = 0, *mtime = 0;
+  if (size != NULL) *size = 0;
+  if (mtime != NULL) *mtime = 0;
   (void) path;
   return NULL;
 }
@@ -1621,6 +1622,7 @@ int mg_http_parse(const char *s, size_t len, struct mg_http_message *hm) {
   const char *end = s == NULL ? NULL : s + req_len, *qs;  // Cannot add to NULL
   const struct mg_str *cl;
   size_t n;
+  bool version_prefix_valid;
 
   memset(hm, 0, sizeof(*hm));
   if (req_len <= 0) return req_len;
@@ -1637,7 +1639,19 @@ int mg_http_parse(const char *s, size_t len, struct mg_http_message *hm) {
   hm->uri.buf = (char *) s;
   while (s < end && (n = clen(s, end)) > 0) s += n, hm->uri.len += n;
   while (s < end && s[0] == ' ') s++;  // Skip spaces
+  is_response = hm->method.len > 5 &&
+                (mg_ncasecmp(hm->method.buf, "HTTP/", 5) == 0);
   if ((s = skiptorn(s, end, &hm->proto)) == NULL) return false;
+  // If we're given a version, check that it is HTTP/x.x
+  version_prefix_valid = hm->proto.len > 5 &&
+                         (mg_ncasecmp(hm->proto.buf, "HTTP/", 5) == 0);
+  if (!is_response && hm->proto.len > 0 &&
+    (!version_prefix_valid || hm->proto.len != 8 ||
+    (hm->proto.buf[5] < '0' || hm->proto.buf[5] > '9') ||
+    (hm->proto.buf[6] != '.') ||
+    (hm->proto.buf[7] < '0' || hm->proto.buf[7] > '9'))) {
+    return -1;
+  }
 
   // If URI contains '?' character, setup query string
   if ((qs = (const char *) memchr(hm->uri.buf, '?', hm->uri.len)) != NULL) {
@@ -1670,7 +1684,6 @@ int mg_http_parse(const char *s, size_t len, struct mg_http_message *hm) {
   //
   // So, if it is HTTP request, and Content-Length is not set,
   // and method is not (PUT or POST) then reset body length to zero.
-  is_response = mg_ncasecmp(hm->method.buf, "HTTP/", 5) == 0;
   if (hm->body.len == (size_t) ~0 && !is_response &&
       mg_strcasecmp(hm->method, mg_str("PUT")) != 0 &&
       mg_strcasecmp(hm->method, mg_str("POST")) != 0) {
@@ -4231,7 +4244,7 @@ static uint16_t ipcsum(const void *buf, size_t len) {
 }
 
 static void settmout(struct mg_connection *c, uint8_t type) {
-  struct mg_tcpip_if *ifp = (struct mg_tcpip_if *) c->mgr->priv;
+  struct mg_tcpip_if *ifp = c->mgr->ifp;
   struct connstate *s = (struct connstate *) (c + 1);
   unsigned n = type == MIP_TTYPE_ACK   ? MIP_TCP_ACK_MS
                : type == MIP_TTYPE_ARP ? MIP_ARP_RESP_MS
@@ -4656,7 +4669,7 @@ static struct mg_connection *accept_conn(struct mg_connection *lsn,
 }
 
 static size_t trim_len(struct mg_connection *c, size_t len) {
-  struct mg_tcpip_if *ifp = (struct mg_tcpip_if *) c->mgr->priv;
+  struct mg_tcpip_if *ifp = c->mgr->ifp;
   size_t eth_h_len = 14, ip_max_h_len = 24, tcp_max_h_len = 60, udp_h_len = 8;
   size_t max_headers_len =
       eth_h_len + ip_max_h_len + (c->is_udp ? udp_h_len : tcp_max_h_len);
@@ -4683,7 +4696,7 @@ static size_t trim_len(struct mg_connection *c, size_t len) {
 }
 
 long mg_io_send(struct mg_connection *c, const void *buf, size_t len) {
-  struct mg_tcpip_if *ifp = (struct mg_tcpip_if *) c->mgr->priv;
+  struct mg_tcpip_if *ifp = c->mgr->ifp;
   struct connstate *s = (struct connstate *) (c + 1);
   uint32_t dst_ip = *(uint32_t *) c->rem.ip;
   len = trim_len(c, len);
@@ -4705,14 +4718,22 @@ long mg_io_send(struct mg_connection *c, const void *buf, size_t len) {
   return (long) len;
 }
 
-static void handle_tls_recv(struct mg_connection *c, struct mg_iobuf *io) {
-  long n = mg_tls_recv(c, &io->buf[io->len], io->size - io->len);
-  if (n == MG_IO_ERR) {
-    mg_error(c, "TLS recv error");
-  } else if (n > 0) {
-    // Decrypted successfully - trigger MG_EV_READ
-    io->len += (size_t) n;
-    mg_call(c, MG_EV_READ, &n);
+static void handle_tls_recv(struct mg_connection *c) {
+  size_t avail = mg_tls_pending(c); 
+  size_t min = avail > MG_MAX_RECV_SIZE ? MG_MAX_RECV_SIZE : avail;
+  struct mg_iobuf *io = &c->recv;
+  if (io->size - io->len < min && !mg_iobuf_resize(io, io->len + min)) {
+    mg_error(c, "oom");
+  } else {
+    // Decrypt data directly into c->recv
+    long n = mg_tls_recv(c, &io->buf[io->len], io->size - io->len);
+    if (n == MG_IO_ERR) {
+      mg_error(c, "TLS recv error");
+    } else if (n > 0) {
+      // Decrypted successfully - trigger MG_EV_READ
+      io->len += (size_t) n;
+      mg_call(c, MG_EV_READ, &n);
+    } // else n < 0: outstanding data to be moved to c->recv
   }
 }
 
@@ -4739,8 +4760,8 @@ static void read_conn(struct mg_connection *c, struct pkt *pkt) {
       c->is_draining = 1;
       settmout(c, MIP_TTYPE_FIN);
     }
-    tx_tcp((struct mg_tcpip_if *) c->mgr->priv, s->mac, rem_ip, flags,
-           c->loc.port, c->rem.port, mg_htonl(s->seq), mg_htonl(s->ack), "", 0);
+    tx_tcp(c->mgr->ifp, s->mac, rem_ip, flags, c->loc.port, c->rem.port,
+           mg_htonl(s->seq), mg_htonl(s->ack), "", 0);
   } else if (pkt->pay.len == 0) {
     // TODO(cpq): handle this peer's ACK
   } else if (seq != s->ack) {
@@ -4749,9 +4770,8 @@ static void read_conn(struct mg_connection *c, struct pkt *pkt) {
       MG_VERBOSE(("ignoring duplicate pkt"));
     } else {
       MG_VERBOSE(("SEQ != ACK: %x %x %x", seq, s->ack, ack));
-      tx_tcp((struct mg_tcpip_if *) c->mgr->priv, s->mac, rem_ip, TH_ACK,
-             c->loc.port, c->rem.port, mg_htonl(s->seq), mg_htonl(s->ack), "",
-             0);
+      tx_tcp(c->mgr->ifp, s->mac, rem_ip, TH_ACK, c->loc.port, c->rem.port,
+             mg_htonl(s->seq), mg_htonl(s->ack), "", 0);
     }
   } else if (io->size - io->len < pkt->pay.len &&
              !mg_iobuf_resize(io, io->len + pkt->pay.len)) {
@@ -4773,9 +4793,8 @@ static void read_conn(struct mg_connection *c, struct pkt *pkt) {
     if (s->unacked > MIP_TCP_WIN / 2 && s->acked != s->ack) {
       // Send ACK immediately
       MG_VERBOSE(("%lu imm ACK %lu", c->id, s->acked));
-      tx_tcp((struct mg_tcpip_if *) c->mgr->priv, s->mac, rem_ip, TH_ACK,
-             c->loc.port, c->rem.port, mg_htonl(s->seq), mg_htonl(s->ack), NULL,
-             0);
+      tx_tcp(c->mgr->ifp, s->mac, rem_ip, TH_ACK, c->loc.port, c->rem.port,
+             mg_htonl(s->seq), mg_htonl(s->ack), NULL, 0);
       s->unacked = 0;
       s->acked = s->ack;
       if (s->ttype != MIP_TTYPE_KEEPALIVE) settmout(c, MIP_TTYPE_KEEPALIVE);
@@ -4787,18 +4806,9 @@ static void read_conn(struct mg_connection *c, struct pkt *pkt) {
     if (c->is_tls && c->is_tls_hs) {
       mg_tls_handshake(c);
     } else if (c->is_tls) {
-      // TLS connection. Make room for decrypted data in c->recv
-      io = &c->recv;
-      if (io->size - io->len < pkt->pay.len &&
-          !mg_iobuf_resize(io, io->len + pkt->pay.len)) {
-        mg_error(c, "oom");
-      } else {
-        // Decrypt data directly into c->recv
-        handle_tls_recv(c, io);
-      }
+      handle_tls_recv(c);
     } else {
-      // Plain text connection, data is already in c->recv, trigger
-      // MG_EV_READ
+      // Plain text connection, data is already in c->recv, trigger MG_EV_READ
       mg_call(c, MG_EV_READ, &pkt->pay.len);
     }
   }
@@ -5101,7 +5111,7 @@ void mg_tcpip_init(struct mg_mgr *mgr, struct mg_tcpip_if *ifp) {
       ifp->recv_queue.size = ifp->driver->rx ? framesize : 8192;
     ifp->recv_queue.buf = (char *) calloc(1, ifp->recv_queue.size);
     ifp->timer_1000ms = mg_millis();
-    mgr->priv = ifp;
+    mgr->ifp = ifp;
     ifp->mgr = mgr;
     ifp->mtu = MG_TCPIP_MTU_DEFAULT;
     mgr->extraconnsize = sizeof(struct connstate);
@@ -5122,11 +5132,10 @@ void mg_tcpip_free(struct mg_tcpip_if *ifp) {
 static void send_syn(struct mg_connection *c) {
   struct connstate *s = (struct connstate *) (c + 1);
   uint32_t isn = mg_htonl((uint32_t) mg_ntohs(c->loc.port));
-  struct mg_tcpip_if *ifp = (struct mg_tcpip_if *) c->mgr->priv;
   uint32_t rem_ip;
   memcpy(&rem_ip, c->rem.ip, sizeof(uint32_t));
-  tx_tcp(ifp, s->mac, rem_ip, TH_SYN, c->loc.port, c->rem.port, isn, 0, NULL,
-         0);
+  tx_tcp(c->mgr->ifp, s->mac, rem_ip, TH_SYN, c->loc.port, c->rem.port, isn, 0,
+         NULL, 0);
 }
 
 static void mac_resolved(struct mg_connection *c) {
@@ -5140,7 +5149,7 @@ static void mac_resolved(struct mg_connection *c) {
 }
 
 void mg_connect_resolved(struct mg_connection *c) {
-  struct mg_tcpip_if *ifp = (struct mg_tcpip_if *) c->mgr->priv;
+  struct mg_tcpip_if *ifp = c->mgr->ifp;
   uint32_t rem_ip;
   memcpy(&rem_ip, c->rem.ip, sizeof(uint32_t));
   c->is_resolving = 0;
@@ -5196,12 +5205,10 @@ static void init_closure(struct mg_connection *c) {
   struct connstate *s = (struct connstate *) (c + 1);
   if (c->is_udp == false && c->is_listening == false &&
       c->is_connecting == false) {  // For TCP conns,
-    struct mg_tcpip_if *ifp =
-        (struct mg_tcpip_if *) c->mgr->priv;  // send TCP FIN
     uint32_t rem_ip;
     memcpy(&rem_ip, c->rem.ip, sizeof(uint32_t));
-    tx_tcp(ifp, s->mac, rem_ip, TH_FIN | TH_ACK, c->loc.port, c->rem.port,
-           mg_htonl(s->seq), mg_htonl(s->ack), NULL, 0);
+    tx_tcp(c->mgr->ifp, s->mac, rem_ip, TH_FIN | TH_ACK, c->loc.port,
+           c->rem.port, mg_htonl(s->seq), mg_htonl(s->ack), NULL, 0);
     settmout(c, MIP_TTYPE_FIN);
   }
 }
@@ -5218,12 +5225,11 @@ static bool can_write(struct mg_connection *c) {
 }
 
 void mg_mgr_poll(struct mg_mgr *mgr, int ms) {
-  struct mg_tcpip_if *ifp = (struct mg_tcpip_if *) mgr->priv;
   struct mg_connection *c, *tmp;
   uint64_t now = mg_millis();
   mg_timer_poll(&mgr->timers, now);
-  if (ifp == NULL || ifp->driver == NULL) return;
-  mg_tcpip_poll(ifp, now);
+  if (mgr->ifp == NULL || mgr->ifp->driver == NULL) return;
+  mg_tcpip_poll(mgr->ifp, now);
   for (c = mgr->conns; c != NULL; c = tmp) {
     tmp = c->next;
     struct connstate *s = (struct connstate *) (c + 1);
@@ -5231,8 +5237,7 @@ void mg_mgr_poll(struct mg_mgr *mgr, int ms) {
     MG_VERBOSE(("%lu .. %c%c%c%c%c", c->id, c->is_tls ? 'T' : 't',
                 c->is_connecting ? 'C' : 'c', c->is_tls_hs ? 'H' : 'h',
                 c->is_resolving ? 'R' : 'r', c->is_closing ? 'C' : 'c'));
-    if (c->is_tls && mg_tls_pending(c) > 0)
-      handle_tls_recv(c, (struct mg_iobuf *) &c->rtls);
+    if (c->is_tls && mg_tls_pending(c) > 0) handle_tls_recv(c);
     if (can_write(c)) write_conn(c);
     if (c->is_draining && c->send.len == 0 && s->ttype != MIP_TTYPE_FIN)
       init_closure(c);
@@ -5242,7 +5247,7 @@ void mg_mgr_poll(struct mg_mgr *mgr, int ms) {
 }
 
 bool mg_send(struct mg_connection *c, const void *buf, size_t len) {
-  struct mg_tcpip_if *ifp = (struct mg_tcpip_if *) c->mgr->priv;
+  struct mg_tcpip_if *ifp = c->mgr->ifp;
   bool res = false;
   uint32_t rem_ip;
   memcpy(&rem_ip, c->rem.ip, sizeof(uint32_t));
@@ -6436,9 +6441,7 @@ MG_IRAM static bool mg_stm32f_swap(void) {
 
 static bool s_flash_irq_disabled;
 
-MG_IRAM static bool mg_stm32f_write(void *addr,
-                                                              const void *buf,
-                                                              size_t len) {
+MG_IRAM static bool mg_stm32f_write(void *addr, const void *buf, size_t len) {
   if ((len % s_mg_flash_stm32f.align) != 0) {
     MG_ERROR(("%lu is not aligned to %lu", len, s_mg_flash_stm32f.align));
     return false;
@@ -6469,8 +6472,7 @@ MG_IRAM static bool mg_stm32f_write(void *addr,
 }
 
 // just overwrite instead of swap
-MG_IRAM void single_bank_swap(char *p1, char *p2,
-                                                        size_t size) {
+MG_IRAM void single_bank_swap(char *p1, char *p2, size_t size) {
   // no stdlib calls here
   mg_stm32f_write(p1, p2, size);
   *(volatile unsigned long *) 0xe000ed0c = 0x5fa0004;
@@ -6502,6 +6504,7 @@ bool mg_ota_end(void) {
   return false;
 }
 #endif
+
 #ifdef MG_ENABLE_LINES
 #line 1 "src/ota_stm32h5.c"
 #endif
@@ -10396,17 +10399,19 @@ static int mg_tls_recv_record(struct mg_connection *c) {
     }
   }
 
-#if !CHACHA20
-  mg_gcm_initialize();
-#endif
-
   msgsz = MG_LOAD_BE16(rio->buf + 3);
   msg = rio->buf + 5;
+  if (msgsz < 16) {
+    mg_error(c, "wrong size");
+    return -1;
+  }
+
   memmove(nonce, iv, sizeof(nonce));
   nonce[8] ^= (uint8_t) ((seq >> 24) & 255U);
   nonce[9] ^= (uint8_t) ((seq >> 16) & 255U);
   nonce[10] ^= (uint8_t) ((seq >> 8) & 255U);
   nonce[11] ^= (uint8_t) ((seq) &255U);
+
 #if CHACHA20
   {
     uint8_t *dec = (uint8_t *) calloc(1, msgsz);
@@ -10420,12 +10425,10 @@ static int mg_tls_recv_record(struct mg_connection *c) {
     free(dec);
   }
 #else
-  if (msgsz < 16) {
-    mg_error(c, "wrong size");
-    return -1;
-  }
+  mg_gcm_initialize();
   mg_aes_gcm_decrypt(msg, msg, msgsz - 16, key, 16, nonce, sizeof(nonce));
 #endif
+
   r = msgsz - 16 - 1;
   tls->content_type = msg[msgsz - 16 - 1];
   tls->recv_offset = (size_t) msg - (size_t) rio->buf;
@@ -11333,7 +11336,8 @@ long mg_tls_recv(struct mg_connection *c, void *buf, size_t len) {
 }
 
 size_t mg_tls_pending(struct mg_connection *c) {
-  return mg_tls_got_record(c) ? 1 : 0;
+  struct tls_data *tls = (struct tls_data *) c->tls;
+  return tls != NULL ? tls->recv_len : 0;
 }
 
 void mg_tls_ctx_init(struct mg_mgr *mgr) {
@@ -17790,6 +17794,71 @@ bool mg_phy_up(struct mg_phy *phy, uint8_t phy_addr, bool *full_duplex,
 }
 
 #ifdef MG_ENABLE_LINES
+#line 1 "src/drivers/pico-w.c"
+#endif
+#if MG_ENABLE_TCPIP && MG_ARCH == MG_ARCH_PICOSDK && \
+    defined(MG_ENABLE_DRIVER_PICO_W) && MG_ENABLE_DRIVER_PICO_W
+
+
+
+
+
+static struct mg_tcpip_if *s_ifp;
+
+static bool mg_tcpip_driver_pico_w_init(struct mg_tcpip_if *ifp) {
+  struct mg_tcpip_driver_pico_w_data *d =
+      (struct mg_tcpip_driver_pico_w_data *) ifp->driver_data;
+  s_ifp = ifp;
+  if (cyw43_arch_init() != 0)
+    return false;  // initialize async_context and WiFi chip
+  cyw43_arch_enable_sta_mode();
+  // start connecting to network
+  if (cyw43_arch_wifi_connect_bssid_async(d->ssid, NULL, d->pass,
+                                          CYW43_AUTH_WPA2_AES_PSK) != 0)
+    return false;
+  cyw43_wifi_get_mac(&cyw43_state, CYW43_ITF_STA, ifp->mac);
+  return true;
+}
+
+static size_t mg_tcpip_driver_pico_w_tx(const void *buf, size_t len,
+                                        struct mg_tcpip_if *ifp) {
+  (void) ifp;
+  return cyw43_send_ethernet(&cyw43_state, CYW43_ITF_STA, len, buf, false)
+             ? 0
+             : len;
+}
+
+static bool mg_tcpip_driver_pico_w_up(struct mg_tcpip_if *ifp) {
+  (void) ifp;
+  return (cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA) ==
+          CYW43_LINK_JOIN);
+}
+
+struct mg_tcpip_driver mg_tcpip_driver_pico_w = {
+    mg_tcpip_driver_pico_w_init,
+    mg_tcpip_driver_pico_w_tx,
+    NULL,
+    mg_tcpip_driver_pico_w_up,
+};
+
+// Called once per outstanding frame by async_context
+void cyw43_cb_process_ethernet(void *cb_data, int itf, size_t len,
+                               const uint8_t *buf) {
+  if (itf != CYW43_ITF_STA) return;
+  mg_tcpip_qwrite((void *) buf, len, s_ifp);
+  (void) cb_data;
+}
+
+// Called by async_context
+void cyw43_cb_tcpip_set_link_up(cyw43_t *self, int itf) {}
+void cyw43_cb_tcpip_set_link_down(cyw43_t *self, int itf) {}
+
+// there's life beyond lwIP
+void pbuf_copy_partial(void) {(void) 0;}
+
+#endif
+
+#ifdef MG_ENABLE_LINES
 #line 1 "src/drivers/ppp.c"
 #endif
 
@@ -19552,6 +19621,116 @@ struct mg_tcpip_driver mg_tcpip_driver_tms570 = {mg_tcpip_driver_tms570_init,
                                                mg_tcpip_driver_tms570_up};
 #endif
 
+
+#ifdef MG_ENABLE_LINES
+#line 1 "src/drivers/w5100.c"
+#endif
+
+
+#if MG_ENABLE_TCPIP && defined(MG_ENABLE_DRIVER_W5100) && MG_ENABLE_DRIVER_W5100
+
+static void w5100_txn(struct mg_tcpip_spi *s, uint16_t addr,
+                      bool wr, void *buf, size_t len) {
+  size_t i;
+  uint8_t *p = (uint8_t *) buf;
+  uint8_t control = wr ? 0xF0 : 0x0F;
+  uint8_t cmd[] = {control, (uint8_t) (addr >> 8), (uint8_t) (addr & 255)};
+  s->begin(s->spi);
+  for (i = 0; i < sizeof(cmd); i++) s->txn(s->spi, cmd[i]);
+  for (i = 0; i < len; i++) {
+    uint8_t r = s->txn(s->spi, p[i]);
+    if (!wr) p[i] = r;
+  }
+  s->end(s->spi);
+}
+
+// clang-format off
+static  void w5100_wn(struct mg_tcpip_spi *s, uint16_t addr, void *buf, size_t len) { w5100_txn(s, addr, true, buf, len); }
+static  void w5100_w1(struct mg_tcpip_spi *s, uint16_t addr, uint8_t val) { w5100_wn(s, addr, &val, 1); }
+static  void w5100_w2(struct mg_tcpip_spi *s, uint16_t addr, uint16_t val) { uint8_t buf[2] = {(uint8_t) (val >> 8), (uint8_t) (val & 255)}; w5100_wn(s, addr, buf, sizeof(buf)); }
+static  void w5100_rn(struct mg_tcpip_spi *s, uint16_t addr, void *buf, size_t len) { w5100_txn(s, addr, false, buf, len); }
+static  uint8_t w5100_r1(struct mg_tcpip_spi *s, uint16_t addr) { uint8_t r = 0; w5100_rn(s, addr, &r, 1); return r; }
+static  uint16_t w5100_r2(struct mg_tcpip_spi *s, uint16_t addr) { uint8_t buf[2] = {0, 0}; w5100_rn(s, addr, buf, sizeof(buf)); return (uint16_t) ((buf[0] << 8) | buf[1]); }
+// clang-format on
+
+static size_t w5100_rx(void *buf, size_t buflen, struct mg_tcpip_if *ifp) {
+  struct mg_tcpip_spi *s = (struct mg_tcpip_spi *) ifp->driver_data;
+  uint16_t r = 0, n = 0, len = (uint16_t) buflen, n2;     // Read recv len
+  while ((n2 = w5100_r2(s, 0x426)) > n) n = n2;  // Until it is stable
+  if (n > 0) {
+    uint16_t ptr = w5100_r2(s, 0x428);  // Get read pointer
+    if (n <= len + 2 && n > 1) {
+      r = (uint16_t) (n - 2);
+    }
+    uint16_t rxbuf_size = (1 << (w5100_r1(s, 0x1a) & 3)) * 1024;
+    uint16_t rxbuf_addr = 0x6000;
+    uint16_t ptr_ofs = (ptr + 2) & (rxbuf_size - 1);
+    if (ptr_ofs + r < rxbuf_size) {
+      w5100_rn(s, rxbuf_addr + ptr_ofs, buf, r);
+    } else {
+      uint16_t remaining_len = rxbuf_size - ptr_ofs;
+      w5100_rn(s, rxbuf_addr + ptr_ofs, buf, remaining_len);
+      w5100_rn(s, rxbuf_addr, buf + remaining_len, n - remaining_len);
+    }
+    w5100_w2(s, 0x428, (uint16_t) (ptr + n));
+    w5100_w1(s, 0x401, 0x40);                     // Sock0 CR -> RECV
+  }
+  return r;
+}
+
+static size_t w5100_tx(const void *buf, size_t buflen,
+                       struct mg_tcpip_if *ifp) {
+  struct mg_tcpip_spi *s = (struct mg_tcpip_spi *) ifp->driver_data;
+  uint16_t i, n = 0, ptr = 0, len = (uint16_t) buflen;
+  while (n < len) n = w5100_r2(s, 0x420);      // Wait for space
+  ptr = w5100_r2(s, 0x424);                    // Get write pointer
+  uint16_t txbuf_size = (1 << (w5100_r1(s, 0x1b) & 3)) * 1024;
+  uint16_t ptr_ofs = ptr & (txbuf_size - 1);
+  uint16_t txbuf_addr = 0x4000;
+  if (ptr_ofs + len > txbuf_size) {
+    uint16_t size = txbuf_size - ptr_ofs;
+    w5100_wn(s, txbuf_addr + ptr_ofs, (char*) buf, size);
+    w5100_wn(s, txbuf_addr, (char*) buf + size, len - size);
+  } else {
+    w5100_wn(s, txbuf_addr + ptr_ofs, (char*) buf, len);
+  }
+  w5100_w2(s, 0x424, (uint16_t) (ptr + len));  // Advance write pointer
+  w5100_w1(s, 0x401, 0x20);                       // Sock0 CR -> SEND
+  for (i = 0; i < 40; i++) {
+    uint8_t ir = w5100_r1(s, 0x402);  // Read S0 IR
+    if (ir == 0) continue;
+    // printf("IR %d, len=%d, free=%d, ptr %d\n", ir, (int) len, (int) n, ptr);
+    w5100_w1(s, 0x402, ir);  // Write S0 IR: clear it!
+    if (ir & 8) len = 0;           // Timeout. Report error
+    if (ir & (16 | 8)) break;      // Stop on SEND_OK or timeout
+  }
+  return len;
+}
+
+static bool w5100_init(struct mg_tcpip_if *ifp) {
+  struct mg_tcpip_spi *s = (struct mg_tcpip_spi *) ifp->driver_data;
+  s->end(s->spi);
+  w5100_w1(s, 0, 0x80);     // Reset chip: CR -> 0x80
+  w5100_w1(s, 0x72, 0x53);  // CR PHYLCKR -> unlock PHY
+  w5100_w1(s, 0x46, 0);     // CR PHYCR0 -> autonegotiation
+  w5100_w1(s, 0x47, 0);     // CR PHYCR1 -> reset
+  w5100_w1(s, 0x72, 0x00);  // CR PHYLCKR -> lock PHY
+  w5100_w1(s, 0x1a, 6);          // Sock0 RX buf size - 4KB
+  w5100_w1(s, 0x1b, 6);          // Sock0 TX buf size - 4KB
+  w5100_w1(s, 0x400, 4);              // Sock0 MR -> MACRAW
+  w5100_w1(s, 0x401, 1);              // Sock0 CR -> OPEN
+  return w5100_r1(s, 0x403) == 0x42;  // Sock0 SR == MACRAW
+}
+
+static bool w5100_up(struct mg_tcpip_if *ifp) {
+  struct mg_tcpip_spi *spi = (struct mg_tcpip_spi *) ifp->driver_data;
+  uint8_t physr0 = w5100_r1(spi, 0x3c);
+  return physr0 & 1;  // Bit 0 of PHYSR is LNK (0 - down, 1 - up)
+}
+
+struct mg_tcpip_driver mg_tcpip_driver_w5100 = {w5100_init, w5100_tx, w5100_rx,
+                                                w5100_up};
+#endif
 
 #ifdef MG_ENABLE_LINES
 #line 1 "src/drivers/w5500.c"

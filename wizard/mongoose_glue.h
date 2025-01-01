@@ -16,6 +16,9 @@ extern "C" {
 #define WIZARD_ENABLE_HTTP_UI 1
 #define WIZARD_ENABLE_HTTP_UI_LOGIN 0
 
+#define WIZARD_ENABLE_WEBSOCKET 0
+#define WIZARD_WEBSOCKET_TIMER_MS 50
+
 #define WIZARD_ENABLE_MQTT 0
 #define WIZARD_MQTT_URL ""
 
@@ -87,7 +90,11 @@ struct settings {
   int bd_gw2;
   int bd_gw3;
   int bd_gw4;
-  bool bool_val;
+  bool single_gps;
+  bool single_gps_imu;
+  bool dual_gps;
+  bool um982_gga;
+  bool um982_kxst;
 };
 void glue_get_settings(struct settings *);
 void glue_set_settings(struct settings *);

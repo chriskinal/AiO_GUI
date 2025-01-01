@@ -44,7 +44,11 @@
         "bd_gw2": {"type": "int", "value": 168}, 
         "bd_gw3": {"type": "int", "value": 5}, 
         "bd_gw4": {"type": "int", "value": 1}, 
-        "bool_val": {"type": "bool", "value": true}
+        "single_gps": {"type": "bool", "value": false}, 
+        "single_gps_imu": {"type": "bool", "value": true}, 
+        "dual_gps": {"type": "bool", "value": false}, 
+        "um982_gga": {"type": "bool", "value": false}, 
+        "um982_kxst": {"type": "bool", "value": false}
       }
     }
   }, 
@@ -62,7 +66,7 @@
         "value": "AOG Firmware v5.1"
       }
     }, 
-    "heartbeat": 10, 
+    "heartbeat": 5, 
     "theme": {
       "name": "azure", 
       "shadow": 0, 
@@ -95,6 +99,19 @@
                       {"type": "input", "ref": "settings.bd_gw2"},
                       {"type": "input", "ref": "settings.bd_gw3"},
                       {"type": "input", "ref": "settings.bd_gw4"}
+                    ]},
+                  {"type": "text", "format": "GPS Configuration", "classes": ""},
+                  {"type": "container", "classes": "container-h", "layout": [
+                      {"type": "toggle", "ref": "settings.single_gps"},
+                      {"type": "text", "format": "Single GPS", "classes": ""},
+                      {"type": "toggle", "ref": "settings.single_gps_imu"},
+                      {"type": "text", "format": "Single GPS w/ IMU", "classes": ""},
+                      {"type": "toggle", "ref": "settings.dual_gps"},
+                      {"type": "text", "format": "Dual GPS", "classes": ""},
+                      {"type": "toggle", "ref": "settings.um982_gga"},
+                      {"type": "text", "format": "UM982 - GGA/VTG/HPR", "classes": ""},
+                      {"type": "toggle", "ref": "settings.um982_kxst"},
+                      {"type": "text", "format": "UM982 - KXST", "classes": ""}
                     ]},
                   {"type": "container", "classes": "form-control", "css": "margin-top: 0.25rem;", "layout": [
                       {"type": "savebutton", "ref": "settings"}
