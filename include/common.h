@@ -12,6 +12,17 @@
 #include "misc.h"
 #include "mongoose.h"
 #include "mongoose_glue.h"
+#include "LittleFS.h"
+
+// File system variables
+LittleFS_Program aioFS;
+
+#define NF 10
+//#define VALIDF(x) BTW(x,1,NF) && (files[x])
+
+static File files[NF+1];
+static int fsInit = 0;
+// End
 
 // Networking variables
 static const uint8_t defaultIP[5] = {192, 168, 5, 126};
@@ -200,7 +211,7 @@ void SaveDefModuleIP(void) {
     EEPROM.put(64, defaultIP[2]);
   }
 
-  // Write IP to module
+// Write IP to module
 void SaveCurModuleIP(void) {
     //ID stored in 60
     EEPROM.put(62, defaultIP[0]);
@@ -208,12 +219,14 @@ void SaveCurModuleIP(void) {
     EEPROM.put(64, defaultIP[2]);
   }
 
+// Convert IP address from string to mg_addr
 static uint32_t ipv4str(const char *str) {
     struct mg_addr a = {};
     mg_aton(mg_str(str), &a);
     return *(uint32_t *) &a.ip;
   }
 
+// Convert Ip address from uint array to string
 static uint32_t ipv4ary(const uint8_t input[]) {
     char buf[16];
     mg_snprintf(buf, sizeof(buf), "%d.%d.%d.%d", input[0], input[1], input[2], input[3]);
@@ -222,4 +235,12 @@ static uint32_t ipv4ary(const uint8_t input[]) {
     return *(uint32_t *) &a.ip;
   }
 
-  #endif // COMMON_H_
+void fileInit() {
+    aioFS.begin(1 * 1024 * 1024);
+    Serial.print("\r\nLittleFS: initialized");
+    Serial.printf("\r\nTotal Size: %llu bytes, Used: %llu\r\n", aioFS.totalSize(), aioFS.usedSize());
+    for (int i = 0; i <= NF; i++) { files[i] = 0; }
+    fsInit = 1;
+  }
+
+#endif // COMMON_H_
