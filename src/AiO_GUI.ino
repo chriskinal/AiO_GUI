@@ -12,7 +12,6 @@
 #include "gps2Poll.h"
 #include "gpsProc.h"
 
-
 void setup() {
   delay(3000); //Delay for tesing to allow opening serial terminal to see output
   Serial.begin(115200);

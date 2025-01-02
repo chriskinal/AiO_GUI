@@ -37,12 +37,11 @@ void Eth_EEPROM() {
 
 void ipaddrSetup()
 {
-  ifp = MG_TCPIP_IFACE(&g_mgr);
-  ifp->enable_dhcp_client = 0;
+  g_mgr.ifp->enable_dhcp_client = 0;
   // 
-  ifp->ip = ipv4ary(currentIP);
-  ifp->gw = ipv4ary(gatewayIP);
-  ifp->mask = MG_IPV4(255, 255, 255, 0);
+  g_mgr.ifp->ip = ipv4ary(currentIP);
+  g_mgr.ifp->gw = ipv4ary(gatewayIP);
+  g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
 }
 
 void udpSetup()

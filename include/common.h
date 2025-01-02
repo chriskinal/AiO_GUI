@@ -19,7 +19,6 @@ uint8_t currentIP[5] = {192, 168, 5, 126};
 uint8_t gatewayIP[5] = {192, 168, 5, 1};
 uint8_t broadcastIP[5] = {192, 168, 5, 255};
 struct mg_connection *sendAgio;
-struct mg_tcpip_if *ifp;
 bool udpRunning = false;
 const int EE_ver = 2402;               // if value in eeprom does not match, overwrite with defaults
 

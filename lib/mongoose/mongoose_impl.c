@@ -14,7 +14,7 @@
 #endif
 
 #ifndef offsetof
-#define offsetof(st, m) ((size_t) ( (char *)&((st *)0)->m - (char *)0 ))
+#define offsetof(st, m) ((size_t) ((char *) &((st *) 0)->m - (char *) 0))
 #endif
 
 #define NO_CACHE_HEADERS "Cache-Control: no-cache\r\n"
@@ -93,7 +93,11 @@ struct attribute s_settings_attributes[] = {
   {"bd_gw2", "int", NULL, offsetof(struct settings, bd_gw2), 0, false},
   {"bd_gw3", "int", NULL, offsetof(struct settings, bd_gw3), 0, false},
   {"bd_gw4", "int", NULL, offsetof(struct settings, bd_gw4), 0, false},
-  {"bool_val", "bool", NULL, offsetof(struct settings, bool_val), 0, false},
+  {"single_gps", "bool", NULL, offsetof(struct settings, single_gps), 0, false},
+  {"single_gps_imu", "bool", NULL, offsetof(struct settings, single_gps_imu), 0, false},
+  {"dual_gps", "bool", NULL, offsetof(struct settings, dual_gps), 0, false},
+  {"um982_gga", "bool", NULL, offsetof(struct settings, um982_gga), 0, false},
+  {"um982_kxst", "bool", NULL, offsetof(struct settings, um982_kxst), 0, false},
   {NULL, NULL, NULL, 0, 0, false}
 };
 static struct apihandler s_apihandlers[] = {
@@ -106,7 +110,9 @@ static struct apihandler s_apihandlers[] = {
 static struct apihandler *find_handler(struct mg_http_message *hm) {
   size_t i;
   if (hm->uri.len < 6 || strncmp(hm->uri.buf, "/api/", 5) != 0) return NULL;
-  for (i = 0; i < sizeof(s_apihandlers) / sizeof(s_apihandlers[0]); i++) {
+  size_t num_handlers = sizeof(s_apihandlers) / sizeof(s_apihandlers[0]);
+  if (num_handlers == 0) return NULL;
+  for (i = 0; i < num_handlers; i++) {
     struct apihandler *h = &s_apihandlers[i];
     size_t n = strlen(h->name);
     if (n + 5 > hm->uri.len) continue;
@@ -452,6 +458,8 @@ static void http_ev_handler(struct mg_connection *c, int ev, void *ev_data) {
                         (hm->body.len > 0 && u->level < h->write_level))))) {
       // MG_INFO(("DENY: %d, %d %d", u->level, h->read_level, h->write_level));
       mg_http_reply(c, 403, JSON_HEADERS, "Not Authorised\n");
+    } else if (mg_match(hm->uri, mg_str("/websocket"), NULL) && u == NULL) {
+      mg_http_reply(c, 403, JSON_HEADERS, "Not Authorised\n");
     } else if (mg_match(hm->uri, mg_str("/api/login"), NULL)) {
       handle_login(c, u);
     } else if (mg_match(hm->uri, mg_str("/api/logout"), NULL)) {
@@ -460,6 +468,8 @@ static void http_ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 #endif
         if (mg_match(hm->uri, mg_str("/api/ok"), NULL)) {
       mg_http_reply(c, 200, JSON_HEADERS, "true\n");
+    } else if (mg_match(hm->uri, mg_str("/websocket"), NULL)) {
+      mg_ws_upgrade(c, hm, NULL);
     } else if (mg_match(hm->uri, mg_str("/api/heartbeat"), NULL)) {
       mg_http_reply(c, 200, JSON_HEADERS, "{%m:%lu}\n", MG_ESC("version"),
                     s_device_change_version);
@@ -479,6 +489,10 @@ static void http_ev_handler(struct mg_connection *c, int ev, void *ev_data) {
     MG_DEBUG(("%lu %.*s %.*s %lu -> %.*s", c->id, hm->method.len,
               hm->method.buf, hm->uri.len, hm->uri.buf, hm->body.len,
               c->send.len > 15 ? 3 : 0, &c->send.buf[9]));
+  } else if (ev == MG_EV_WS_MSG) {
+    // Got websocket frame. Received data is wm->data
+    struct mg_ws_message *wm = (struct mg_ws_message *) ev_data;
+    mg_ws_send(c, wm->data.buf, wm->data.len, WEBSOCKET_OP_TEXT);
   } else if (ev == MG_EV_ACCEPT) {
     if (c->fn_data != NULL) {  // TLS listener
       struct mg_tls_opts opts;
@@ -542,6 +556,16 @@ static void mqtt_timer(void *arg) {
   }
 }
 #endif  // WIZARD_ENABLE_MQTT
+
+#if WIZARD_ENABLE_WEBSOCKET
+static void websocket_timer(void *arg) {
+  struct mg_mgr *mgr = (struct mg_mgr *) arg;
+  struct mg_connection *c;
+  for (c = mgr->conns; c != NULL; c = c->next) {
+    if (c->is_websocket) glue_websocket_on_timer(c);
+  }
+}
+#endif
 
 #if WIZARD_ENABLE_MODBUS
 static void handle_modbus_pdu(struct mg_connection *c, uint8_t *buf,
@@ -639,7 +663,7 @@ static const uint8_t answer[] = {
     0,    1,             // 2 bytes - record type, A
     0,    1,             // 2 bytes - address class, INET
     0,    0,    0, 120,  // 4 bytes - TTL
-    0,    4             // 2 bytes - address length
+    0,    4              // 2 bytes - address length
 };
 
 static void dns_fn(struct mg_connection *c, int ev, void *ev_data) {
@@ -664,7 +688,7 @@ static void dns_fn(struct mg_connection *c, int ev, void *ev_data) {
       ip = MG_TCPIP_IP;
 #endif
       memcpy(buf + sizeof(*h) + n + sizeof(answer), &ip, 4);
-      mg_send(c, buf, 12 + n + sizeof(answer) + 4); // And send it!
+      mg_send(c, buf, 12 + n + sizeof(answer) + 4);  // And send it!
     }
     mg_iobuf_del(&c->recv, 0, c->recv.len);
   }
@@ -699,6 +723,12 @@ void mongoose_init(void) {
   mg_timer_add(&g_mgr, 1000, MG_TIMER_REPEAT, mqtt_timer, &g_mgr);
 #endif
 
+#if WIZARD_ENABLE_WEBSOCKET
+  MG_INFO(("Starting websocket timer"));
+  mg_timer_add(&g_mgr, WIZARD_WEBSOCKET_TIMER_MS, MG_TIMER_REPEAT,
+               websocket_timer, &g_mgr);
+#endif
+
 #if WIZARD_ENABLE_MODBUS
   {
     char url[100];
@@ -719,6 +749,6 @@ void mongoose_init(void) {
 
 void mongoose_poll(void) {
   glue_lock();
-  mg_mgr_poll(&g_mgr, 50);
+  mg_mgr_poll(&g_mgr, 10);
   glue_unlock();
 }

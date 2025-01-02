@@ -6,7 +6,7 @@
 // Send byte arrays to AgIO
 void sendUDPbytes(char *message, int msgLen)
 {
-  if ( ifp->state != MG_TCPIP_STATE_READY ) return; // Check if IP stack is up.
+  if ( g_mgr.ifp->state != MG_TCPIP_STATE_READY ) return; // Check if IP stack is up.
   // Send data
   if (mg_send(sendAgio, message, msgLen) <= 0) {
     Serial.println("UDP Send to AgIO failed.\r\n");
@@ -22,14 +22,14 @@ void sendUDPbytes(char *message, int msgLen)
 // Send char arrays to AgIO
 void sendUDPchars( char *stuff)
 {
-  if ( ifp->state != MG_TCPIP_STATE_READY ) return; // Check if IP stack is up.
+  if ( g_mgr.ifp->state != MG_TCPIP_STATE_READY ) return; // Check if IP stack is up.
   mg_printf(sendAgio, stuff);
 }
 
 // Process data received on port 8888
 void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_data)
 {
-  if ( ifp->state != MG_TCPIP_STATE_READY ) return; // Check if IP stack is up.
+  if ( g_mgr.ifp->state != MG_TCPIP_STATE_READY ) return; // Check if IP stack is up.
   if (ev == MG_EV_ERROR) {
     Serial.printf("Error: %s", (char *) ev_data);
   }
@@ -392,7 +392,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 // Process data received on port 2233
 void rtcmHandler(struct mg_connection *rtcm, int ev, void *ev_data, void *fn_data)
 {
-    if ( ifp->state != MG_TCPIP_STATE_READY ) return; // Check if IP stack is up.
+    if ( g_mgr.ifp->state != MG_TCPIP_STATE_READY ) return; // Check if IP stack is up.
     if ( ev == MG_EV_READ && mg_ntohs(rtcm->rem.port) == 9999 && rtcm->recv.len >= 5 )
     {
         for ( int i = 0; i <= rtcm->recv.len; i++ )
