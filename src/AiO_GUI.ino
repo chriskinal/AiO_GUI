@@ -24,6 +24,9 @@ void setup() {
 
   setCpuFrequency(600 * 1000000);           // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
   fileInit();
+  loadConfig(filename, config);
+  saveConfig(filename, config);
+  printFile(filename);
   Eth_EEPROM();
   ethernet_init();
   mongoose_init();
