@@ -76,7 +76,7 @@ bool glue_file_close_file_upload(void *context);
 bool glue_file_write_file_upload(void *context, void *buf, size_t len);
 struct settings {
   char string_val[40];
-  int log_level;
+  int gps_type;
   double double_val;
   int bd_ip1;
   int bd_ip2;

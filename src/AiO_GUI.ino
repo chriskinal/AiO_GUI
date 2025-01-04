@@ -17,9 +17,7 @@ void setup() {
   Serial.begin(115200);
   while (!Serial) delay(50);
   Serial.print("\r\n\n\n*********************\r\nStarting setup...\r\n");
-  Serial.print("Firmware version: ");
-  Serial.print(inoVersion);
-
+  
   LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::PWR_ON);
 
   setCpuFrequency(600 * 1000000);           // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
@@ -27,6 +25,9 @@ void setup() {
   loadConfig(filename, config);
   saveConfig(filename, config);
   printFile(filename);
+  //aioFS.remove(filename);
+  Serial.print("Firmware version: ");
+  Serial.print(config.fversion);
   Eth_EEPROM();
   ethernet_init();
   mongoose_init();

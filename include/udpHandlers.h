@@ -152,7 +152,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         }
         #endif
 
-        Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", inoVersion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
+        Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", config.fversion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
         Serial.printf("\r\nAgIO IP:   ", steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], steer->rem.ip[3] );
         Serial.printf("\r\nModule IP: ", currentIP[0], currentIP[1], currentIP[2], currentIP[3] );
         // Serial.print("\r\nAgIO IP:   "); Serial.print(rem_ip);
