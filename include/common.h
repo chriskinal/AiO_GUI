@@ -265,7 +265,7 @@ void loadConfig(const char* filename, Config& config) {
       Serial.println(F("Failed to read config file, using default configuration"));
 
       strlcpy(config.fversion,                  // <- destination
-              doc["fversion"] | "AiO v5.0a Web GUI",  // <- source
+              doc["fversion"] | "AiO v5.0a Web GUI",  // <- source Note: value after the | is the default if "fversion" is empty in the JSON document.
               sizeof(config.fversion));         // <- destination's capacity
 
       file.close();
