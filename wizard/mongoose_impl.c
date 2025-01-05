@@ -81,6 +81,7 @@ struct attribute s_settings_attributes[] = {
   {"string_val", "string", NULL, offsetof(struct settings, string_val), 40, false},
   {"int_val", "int", NULL, offsetof(struct settings, int_val), 0, false},
   {"bool_val", "bool", NULL, offsetof(struct settings, bool_val), 0, false},
+  {"work_sw", "int", NULL, offsetof(struct settings, work_sw), 0, false},
   {"gps_pass", "bool", NULL, offsetof(struct settings, gps_pass), 0, false},
   {"gps_type", "int", NULL, offsetof(struct settings, gps_type), 0, false},
   {"double_val", "double", "%.5f", offsetof(struct settings, double_val), 0, false},

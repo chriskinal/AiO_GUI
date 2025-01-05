@@ -65,7 +65,7 @@ bool  glue_file_write_file_upload(void *fp, void *buf, size_t len) {
 #endif
 }
 
-static struct settings s_settings = {"edit & save me", 1, false, false, 1, 123.12345, 192, 168, 5, 5.21};
+static struct settings s_settings = {"edit & save me", 1, false, 10, false, 1, 123.12345, 192, 168, 5, 5.21};
 void glue_get_settings(struct settings *data) {
   *data = s_settings;  // Sync with your device
 }
