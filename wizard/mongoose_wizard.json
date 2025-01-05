@@ -31,15 +31,15 @@
       "attributes": {
         "string_val": {"type": "string", "value": "edit & save me", "size": 40}, 
         "int_val": {"type": "int", "value": 1}, 
+        "double_val": {"type": "double", "value": 123.12345, "format": "%.5f"}, 
         "bool_val": {"type": "bool", "value": false}, 
         "work_sw": {"type": "int", "value": 10}, 
         "gps_pass": {"type": "bool", "value": false}, 
         "gps_type": {"type": "int", "value": 1}, 
-        "double_val": {"type": "double", "value": 123.12345, "format": "%.5f"}, 
         "bd_ip1": {"type": "int", "value": 192}, 
         "bd_ip2": {"type": "int", "value": 168}, 
         "bd_ip3": {"type": "int", "value": 5}, 
-        "fversion": {"type": "double", "value": 5.21, "format": "%.2f"}
+        "fversion": {"type": "string", "value": "AiO GUI v5.12", "size": 40}
       }
     }
   }, 

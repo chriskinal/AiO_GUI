@@ -80,15 +80,15 @@ struct apihandler {
 struct attribute s_settings_attributes[] = {
   {"string_val", "string", NULL, offsetof(struct settings, string_val), 40, false},
   {"int_val", "int", NULL, offsetof(struct settings, int_val), 0, false},
+  {"double_val", "double", "%.5f", offsetof(struct settings, double_val), 0, false},
   {"bool_val", "bool", NULL, offsetof(struct settings, bool_val), 0, false},
   {"work_sw", "int", NULL, offsetof(struct settings, work_sw), 0, false},
   {"gps_pass", "bool", NULL, offsetof(struct settings, gps_pass), 0, false},
   {"gps_type", "int", NULL, offsetof(struct settings, gps_type), 0, false},
-  {"double_val", "double", "%.5f", offsetof(struct settings, double_val), 0, false},
   {"bd_ip1", "int", NULL, offsetof(struct settings, bd_ip1), 0, false},
   {"bd_ip2", "int", NULL, offsetof(struct settings, bd_ip2), 0, false},
   {"bd_ip3", "int", NULL, offsetof(struct settings, bd_ip3), 0, false},
-  {"fversion", "double", "%.2f", offsetof(struct settings, fversion), 0, false},
+  {"fversion", "string", NULL, offsetof(struct settings, fversion), 40, false},
   {NULL, NULL, NULL, 0, 0, false}
 };
 static struct apihandler s_apihandlers[] = {
