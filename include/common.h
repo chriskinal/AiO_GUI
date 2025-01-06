@@ -28,7 +28,9 @@ struct Config
   char fversion[25];
 };
 const char* filename = "/config.txt";
-Config config;
+//Config config;
+
+settings s_config;
 // End
 
 // Networking variables
@@ -255,7 +257,7 @@ void fileInit() {
   }
 
 // Load configuration - Should load default config if run for the first time
-void loadConfig(const char* filename, Config& config) {
+void loadConfig(const char* filename, settings& s_config) {
     Serial.println(F("Loading configuration..."));
     File file = aioFS.open(filename);
     JsonDocument doc;
@@ -263,16 +265,16 @@ void loadConfig(const char* filename, Config& config) {
     DeserializationError error = deserializeJson(doc, file);
     if (error)
       Serial.println(F("Failed to read config file, using default configuration"));
-
-      strlcpy(config.fversion,                  // <- destination
+      // Default configuration
+      strlcpy(s_config.fversion,                  // <- destination
               doc["fversion"] | "AiO v5.0a Web GUI",  // <- source Note: value after the | is the default if "fversion" is empty in the JSON document.
-              sizeof(config.fversion));         // <- destination's capacity
-
+              sizeof(s_config.fversion));         // <- destination's capacity
+      // End 
       file.close();
   }
 
 // Saves the configuration to a file
-void saveConfig(const char* filename, const Config& config) {
+void saveConfig(const char* filename, const settings& s_config) {
   Serial.println(F("Saving configuration..."));
   // Delete existing file, otherwise the configuration is appended to the file
   aioFS.remove(filename);
@@ -285,7 +287,7 @@ void saveConfig(const char* filename, const Config& config) {
 
   JsonDocument doc;
 
-  doc["fversion"] = config.fversion;
+  doc["fversion"] = s_config.fversion;
   
   if (serializeJson(doc, file) == 0) {
     Serial.println(F("Failed to write to file"));
