@@ -8,6 +8,12 @@
   "modbus": {"enable": false, "port": 502}, 
   "build": {"board": "teensy41", "ide": "Arduino", "rtos": "baremetal", "cores": []}, 
   "api": {
+    "save": {
+      "type": "action", 
+      "read_level": 3, 
+      "write_level": 7, 
+      "value": false
+    }, 
     "reboot": {
       "type": "action", 
       "read_level": 3, 
@@ -16,11 +22,6 @@
     }, 
     "firmware_update": {
       "type": "ota", 
-      "read_level": 3, 
-      "write_level": 7
-    }, 
-    "file_upload": {
-      "type": "upload", 
       "read_level": 3, 
       "write_level": 7
     }, 
@@ -73,7 +74,7 @@
               {"type": "container", "classes": "panel", "css": "flex: 0 0 22rem;", "layout": [
                   {"type": "text", "classes": "title", "format": "Firmware Maintenance"},
                   {"type": "container", "classes": "form-control", "layout": [
-                      {"type": "text", "classes": "", "format": "Network"},
+                      {"type": "text", "classes": "", "format": "Network&nbsp"},
                       {"type": "input", "ref": "settings.bd_ip1"},
                       {"type": "input", "ref": "settings.bd_ip2"},
                       {"type": "input", "ref": "settings.bd_ip3"}
@@ -87,27 +88,13 @@
                       {"type": "toggle", "ref": "settings.gps_pass"}
                     ]},
                   {"type": "container", "classes": "container-h", "css": "margin-top: 0.25rem;", "layout": [
-                      {"type": "savebutton", "ref": "settings"},
+                      {"type": "action", "title": "save", "icon": "save", "ref": "save"},
                       {"type": "action", "title": "reboot", "icon": "refresh", "ref": "reboot"}
                     ]}
                 ]},
               {"type": "container", "classes": "container-h wrap", "layout": []}
             ]}
         ]},
-      {"type": "page", "title": "Firmware Maintenance", "icon": "import", "classes": "page", "layout": [
-          {"type": "container", "classes": "container-h wrap", "css": "align-items: start;", "layout": [
-              {"type": "container", "classes": "panel", "css": "flex: 0 0 22rem;", "layout": [
-                  {"type": "text", "format": "Firmware Maintenance", "classes": "title"},
-                  {"type": "container", "classes": "container-h", "layout": [
-                      {"type": "text", "format": "Current Version: ${settings.fversion}", "classes": ""}
-                    ]},
-                  {"type": "container", "classes": "container-h", "layout": [
-                      {"type": "text", "classes": "title", "format": "Update Firmware"},
-                      {"type": "ota", "title": "select .bin file", "icon": "ellipsis-horizontal", "ref": "firmware_update"}
-                    ]}
-                ]}
-            ]}
-        ], "level": "3"},
       {"type": "page", "title": "Switches", "icon": "options", "classes": "page", "layout": [
           {"type": "container", "classes": "container-h wrap", "css": "align-items: start;", "layout": [
               {"type": "container", "classes": "panel", "css": "flex: 0 0 22rem;", "layout": [
@@ -120,6 +107,20 @@
                     ], "css": "flex: 0 0 12em;"},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "action", "title": "set value", "icon": "arrow-right", "ref": "settings"}
+                    ]}
+                ]}
+            ]}
+        ], "level": "3"},
+      {"type": "page", "title": "Firmware Maintenance", "icon": "import", "classes": "page", "layout": [
+          {"type": "container", "classes": "container-h wrap", "css": "align-items: start;", "layout": [
+              {"type": "container", "classes": "panel", "css": "flex: 0 0 22rem;", "layout": [
+                  {"type": "text", "format": "Firmware Maintenance", "classes": "title"},
+                  {"type": "container", "classes": "container-h", "layout": [
+                      {"type": "text", "format": "Current Version: ${settings.fversion}", "classes": ""}
+                    ]},
+                  {"type": "container", "classes": "container-h", "layout": [
+                      {"type": "text", "classes": "", "format": "Update Firmware"},
+                      {"type": "ota", "title": "select .bin file", "icon": "ellipsis-horizontal", "ref": "firmware_update"}
                     ]}
                 ]}
             ]}

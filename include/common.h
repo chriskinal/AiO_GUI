@@ -269,6 +269,7 @@ void loadConfig(const char* filename, settings& s_config) {
       strlcpy(s_config.fversion,                  // <- destination
               doc["fversion"] | "AiO v5.0a Web GUI",  // <- source Note: value after the | is the default if "fversion" is empty in the JSON document.
               sizeof(s_config.fversion));         // <- destination's capacity
+      
       // End 
       file.close();
   }

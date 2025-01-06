@@ -11,6 +11,15 @@ void glue_init(void) {
   MG_DEBUG(("Custom init done"));
 }
 
+// save
+static uint64_t s_action_timeout_save;  // Time when save ends
+bool glue_check_save(void) {
+  return s_action_timeout_save > mg_now(); // Return true if save is in progress
+}
+void glue_start_save(void) {
+  s_action_timeout_save = mg_now() + 1000; // Start save, finish after 1 second
+}
+
 // reboot
 static uint64_t s_action_timeout_reboot;  // Time when reboot ends
 bool glue_check_reboot(void) {
@@ -34,35 +43,6 @@ bool  glue_ota_end_firmware_update(void *context) {
 bool  glue_ota_write_firmware_update(void *context, void *buf, size_t len) {
   MG_DEBUG(("ctx: %p %p/%lu", context, buf, len));
   return mg_ota_write(buf, len);
-}
-
-// file_upload
-void  *glue_file_open_file_upload(char *file_name, size_t total_size) {
-  char path[128], *p = NULL;
-  FILE *fp = NULL;
-  if ((p = strrchr(file_name, '/')) == NULL) p = file_name;
-  mg_snprintf(path, sizeof(path), "/tmp/%s", p);
-#if MG_ENABLE_POSIX_FS
-  fp = fopen(path, "w+b");
-#endif
-  MG_DEBUG(("opening [%s] size %lu, fp %p", path, total_size, fp));
-  return fp;
-}
-bool  glue_file_close_file_upload(void *fp) {
-  MG_DEBUG(("closing %p", fp));
-#if MG_ENABLE_POSIX_FS
-  return fclose((FILE *) fp) == 0;
-#else
-  return false;
-#endif
-}
-bool  glue_file_write_file_upload(void *fp, void *buf, size_t len) {
-  MG_DEBUG(("writing fp %p %p %lu bytes", fp, buf, len));
-#if MG_ENABLE_POSIX_FS
-  return fwrite(buf, 1, len, (FILE *) fp) == len;
-#else
-  return false;
-#endif
 }
 
 static struct settings s_settings = {"edit & save me", 1, 123.12345, false, 10, false, 1, 192, 168, 5, "AiO GUI v5.12"};
