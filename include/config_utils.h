@@ -50,14 +50,15 @@ void loadConfig(const char* filename, settings& s_config) {
         s_config.bd_ip3 = doc["bd_ip3"] | 5;
         s_config.gps_type = doc["gps_type"] | 2;
         s_config.gps_pass = doc["gps_pass"] | false;      
-        // End 
+        // End
+        glue_set_settings(&s_config);
         file.close();
   }
 
 // Saves the configuration to a file
 extern "C" void saveConfig(const char* filename, const settings& s_config) {
   Serial.println(F("Saving configuration..."));
-  glue_update_state();
+  //glue_update_state();
   glue_get_settings(&s_config);
   // Delete existing file, otherwise the configuration is appended to the file
   aioFS.remove(filename);
