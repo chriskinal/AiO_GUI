@@ -35,6 +35,7 @@ void fileInit() {
 // Load configuration - Should load default config if run for the first time
 void loadConfig(const char* filename, settings& s_config) {
     Serial.println(F("Loading configuration..."));
+    //Serial.printf("%s,%d,%d,%d,%d,%o\r\n", s_config.fversion,s_config.bd_ip1,s_config.bd_ip2, s_config.bd_ip3, s_config.gps_type,s_config.gps_pass);
     File file = aioFS.open(filename);
     JsonDocument doc;
 
@@ -54,8 +55,10 @@ void loadConfig(const char* filename, settings& s_config) {
   }
 
 // Saves the configuration to a file
-void saveConfig(const char* filename, const settings& s_config) {
+extern "C" void saveConfig(const char* filename, const settings& s_config) {
   Serial.println(F("Saving configuration..."));
+  glue_update_state();
+  glue_get_settings(&s_config);
   // Delete existing file, otherwise the configuration is appended to the file
   aioFS.remove(filename);
 
@@ -79,6 +82,8 @@ void saveConfig(const char* filename, const settings& s_config) {
   }
 
   file.close();
+  Serial.printf("s_config: %s,%d,%d,%d,%d,%o\r\n", s_config.fversion,s_config.bd_ip1,s_config.bd_ip2, s_config.bd_ip3, s_config.gps_type,s_config.gps_pass);
+  Serial.println(F("Saved configuration..."));
   }
 
 // Prints the JSON content of a file to the Serial port
