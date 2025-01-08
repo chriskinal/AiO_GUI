@@ -6,6 +6,7 @@
 // #include "hal.h"
 
 #include "mongoose_glue.h"
+#include "Arduino.h"
 extern char* filename;
 extern struct settings s_config;
 
@@ -35,6 +36,7 @@ bool glue_check_reboot(void) {
 }
 void glue_start_reboot(void) {
   s_action_timeout_reboot = mg_now() + 1000; // Start reboot, finish after 1 second
+  SCB_AIRCR = 0x05FA0004;   // Teensy Reboot
 }
 
 // firmware_update
