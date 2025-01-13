@@ -84,6 +84,7 @@ struct settings {
   int bd_ip1;
   int bd_ip2;
   int bd_ip3;
+  int bd_ip4;
   char fversion[40];
 };
 void glue_get_settings(struct settings *);

@@ -43,8 +43,10 @@ void ipaddrSetup()
 {
   g_mgr.ifp->enable_dhcp_client = 0;
   //
-  g_mgr.ifp->ip = ipv4ary(currentIP);
-  g_mgr.ifp->gw = ipv4ary(gatewayIP);
+  // g_mgr.ifp->ip = ipv4ary(currentIP);
+  // g_mgr.ifp->gw = ipv4ary(gatewayIP);
+  g_mgr.ifp->ip = MG_IPV4(s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4);
+  g_mgr.ifp->gw = MG_IPV4(s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, 1);
   g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
 }
 

@@ -49,6 +49,7 @@ extern "C" void saveConfig(const char *filename, const settings &s_config)
   doc["bd_ip1"] = s_config.bd_ip1;
   doc["bd_ip2"] = s_config.bd_ip2;
   doc["bd_ip3"] = s_config.bd_ip3;
+  doc["bd_ip4"] = s_config.bd_ip4;
   doc["gps_type"] = s_config.gps_type;
   doc["gps_pass"] = s_config.gps_pass;
   doc["ss_Kp"] = steerSettings.Kp;
@@ -80,7 +81,7 @@ extern "C" void saveConfig(const char *filename, const settings &s_config)
   }
 
   file.close();
-  Serial.printf("s_config: %s,%d,%d,%d,%d,%o\r\n", s_config.fversion, s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.gps_type, s_config.gps_pass);
+  Serial.printf("s_config: %s,%d,%d,%d,%d,%o\r\n", s_config.fversion, s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4, s_config.gps_type, s_config.gps_pass);
   Serial.println(F("Saved configuration..."));
 }
 
@@ -101,6 +102,7 @@ void loadConfig(const char *filename, settings &s_config)
   s_config.bd_ip1 = doc["bd_ip1"] | 192;
   s_config.bd_ip2 = doc["bd_ip2"] | 168;
   s_config.bd_ip3 = doc["bd_ip3"] | 5;
+  s_config.bd_ip4 = doc["bd_ip4"] | 126;
   s_config.gps_type = doc["gps_type"] | 2;
   s_config.gps_pass = doc["gps_pass"] | false;
   steerSettings.Kp = doc["ss_Kp"] | 40;

@@ -88,6 +88,7 @@ struct attribute s_settings_attributes[] = {
   {"bd_ip1", "int", NULL, offsetof(struct settings, bd_ip1), 0, false},
   {"bd_ip2", "int", NULL, offsetof(struct settings, bd_ip2), 0, false},
   {"bd_ip3", "int", NULL, offsetof(struct settings, bd_ip3), 0, false},
+  {"bd_ip4", "int", NULL, offsetof(struct settings, bd_ip4), 0, false},
   {"fversion", "string", NULL, offsetof(struct settings, fversion), 40, false},
   {NULL, NULL, NULL, 0, 0, false}
 };
