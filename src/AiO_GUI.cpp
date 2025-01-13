@@ -14,10 +14,10 @@
 
 void setup()
 {
-  delay(3000); // Delay for tesing to allow opening serial terminal to see output
+  //delay(3000); // Delay for tesing to allow opening serial terminal to see output
   Serial.begin(115200);
-  while (!Serial)
-    delay(50);
+  // while (!Serial)
+  //   delay(50);
   Serial.print("\r\n\n\n*********************\r\nStarting setup...\r\n");
 
   LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::PWR_ON);
