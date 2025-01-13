@@ -54,8 +54,8 @@ void udpSetup()
 {
   char steerListen[50];
   char rtcmListen[50];
-  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", currentIP[0], currentIP[1], currentIP[2]);
-  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", currentIP[0], currentIP[1], currentIP[2]);
+  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.%d:8888", s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4);
+  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.%d:2233", s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4);
 
   if (mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL)
   {
@@ -78,12 +78,17 @@ void udpSetup()
   }
 
   // Create connection URL
-  String agioURL = String("udp://") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".255:9999");
-  char agioSend[agioURL.length() + 1] = {};
-  strcpy(agioSend, agioURL.c_str());
-
+  char agioURL[25];
+  strcpy(agioURL, "udp://");
+  itoa(s_config.bd_ip1, agioURL+strlen(agioURL), 10);
+  strcat(agioURL, ".");
+  itoa(s_config.bd_ip2, agioURL+strlen(agioURL), 10);
+  strcat(agioURL, ".");
+  itoa(s_config.bd_ip3, agioURL+strlen(agioURL), 10);
+  strcat(agioURL, ".255:9999");
+  Serial.print("agioURL: "); Serial.println(agioURL);
   // Create UDP connection to broadcast address
-  sendAgio = mg_connect(&g_mgr, agioSend, NULL, NULL);
+  sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);
   if (sendAgio == !NULL)
   {
     agioConnect = true;
