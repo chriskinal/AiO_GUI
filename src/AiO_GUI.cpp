@@ -26,12 +26,8 @@ void setup()
   fileInit();
   loadConfig(filename, s_config);
   printFile(filename);
-  // glue_get_settings(&s_config);
-  // saveConfig(filename, s_config);
-  // aioFS.remove(filename);
   Serial.print("Firmware version: ");
   Serial.println(s_config.fversion);
-  Eth_EEPROM();
   ethernet_init();
   mongoose_init();
   ipaddrSetup();

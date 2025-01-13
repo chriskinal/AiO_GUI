@@ -5,7 +5,6 @@
 #include "HardwareSerial.h"
 #include "elapsedMillis.h"
 
-#include "EEPROM.h"
 #include <stdint.h>
 #include <Streaming.h>
 #include "IPAddress.h"
@@ -13,11 +12,6 @@
 #include "misc.h"
 #include "mongoose.h"
 
-// Networking variables
-static const uint8_t defaultIP[5] = {192, 168, 5, 126};
-uint8_t currentIP[5] = {192, 168, 5, 126};
-uint8_t gatewayIP[5] = {192, 168, 5, 1};
-uint8_t broadcastIP[5] = {192, 168, 5, 255};
 struct mg_connection *sendAgio;
 bool listenSteer = false;
 bool listenRtcm = false;
@@ -197,24 +191,6 @@ MACHINE *machinePTR;
 // MACHINE machine;      // also used for v4 as it suppresses machine PGN debug messages
 // const uint8_t pcaOutputPinNumbers[8] = { 1, 0, 12, 15, 9, 8, 6, 7 };    // all 8 PCA9555 section/machine output pin numbers on v5.0a
 // const uint8_t pcaInputPinNumbers[]  = { 14, 13, 11, 10, 2, 3, 4, 5 };   // all 8 PCA9555 section/machine output "sensing" pin numbers on v5.0a
-
-// Write IP to module
-void SaveDefModuleIP(void)
-{
-  // ID stored in 60
-  EEPROM.put(62, defaultIP[0]);
-  EEPROM.put(63, defaultIP[1]);
-  EEPROM.put(64, defaultIP[2]);
-}
-
-// Write IP to module
-void SaveCurModuleIP(void)
-{
-  // ID stored in 60
-  EEPROM.put(62, defaultIP[0]);
-  EEPROM.put(63, defaultIP[1]);
-  EEPROM.put(64, defaultIP[2]);
-}
 
 // Convert IP address from string to mg_addr
 static uint32_t ipv4str(const char *str)

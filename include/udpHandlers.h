@@ -18,8 +18,6 @@ void sendUDPbytes(char *message, int msgLen)
   {
     mg_iobuf_del(&sendAgio->send, 0, sendAgio->send.len);
   }
-  // Close the UDP connection
-  // mg_close_conn(sendAgio);
 }
 
 // Send char arrays to AgIO
@@ -105,14 +103,15 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       if (steer->recv.buf[4] == 5 && steer->recv.buf[5] == 201 && steer->recv.buf[6] == 201) // save in EEPROM and restart
       {
         // Serial << "\r\n- IP changed from " << currentIP;
-        currentIP[0] = steer->recv.buf[7];
-        currentIP[1] = steer->recv.buf[8];
-        currentIP[2] = steer->recv.buf[9];
+        s_config.bd_ip1 = steer->recv.buf[7];
+        s_config.bd_ip2 = steer->recv.buf[8];
+        s_config.bd_ip3 = steer->recv.buf[9];
 
         // Serial << " to " << currentIP;
         Serial << "\r\n- Saving to EEPROM and restarting Teensy";
 
-        SaveCurModuleIP(); // save in EEPROM and restart
+        //SaveCurModuleIP(); // save in EEPROM and restart
+        saveConfig(filename, s_config); // save in JSON config file
         delay(10);
         SCB_AIRCR = 0x05FA0004; // Teensy Reset
       }
@@ -126,7 +125,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       {
 
         uint8_t scanReplySteer[] = {128, 129, 126, 203, 7,
-                                    currentIP[0], currentIP[1], currentIP[2], currentIP[3],
+                                    s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4,
                                     steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
         int16_t CK_A = 0;
         for (uint8_t i = 2; i < sizeof(scanReplySteer) - 1; i++)
@@ -139,7 +138,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         if (BNO.isActive)
         {
           uint8_t scanReplyIMU[] = {128, 129, 121, 203, 7,
-                                    currentIP[0], currentIP[1], currentIP[2], currentIP[3],
+                                    s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4,
                                     steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
           CK_A = 0;
           for (uint8_t i = 2; i < sizeof(scanReplyIMU) - 1; i++)
@@ -153,7 +152,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         if (gpsActive)
         {
           uint8_t scanReplyGPS[] = {128, 129, 120, 203, 7,
-                                    currentIP[0], currentIP[1], currentIP[2], currentIP[3],
+                                    s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4,
                                     steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
           CK_A = 0;
           for (uint8_t i = 2; i < sizeof(scanReplyGPS) - 1; i++)
@@ -169,7 +168,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         {
           Serial.println("************** Machine Init True");
           uint8_t scanReplyMachine[] = {128, 129, 123, 203, 7,
-                                        currentIP[0], currentIP[1], currentIP[2], currentIP[3],
+                                        s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4,
                                         steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
           CK_A = 0;
           for (uint8_t i = 2; i < sizeof(scanReplyMachine) - 1; i++)
@@ -183,10 +182,8 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 
         Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", s_config.fversion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
         Serial.printf("\r\nAgIO IP:   ", steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], steer->rem.ip[3]);
-        Serial.printf("\r\nModule IP: ", currentIP[0], currentIP[1], currentIP[2], currentIP[3]);
-        // Serial.print("\r\nAgIO IP:   "); Serial.print(rem_ip);
-        // Serial.print("\r\nModule IP: "); Serial.print(UDP.myIP);
-
+        Serial.printf("\r\nModule IP: ", s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4);
+        
         if (BNO.isActive)
           Serial.print("\r\nBNO08x available via Serial/RVC Mode");
         else
