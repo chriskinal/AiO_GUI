@@ -62,7 +62,8 @@
                       {"type": "text", "classes": "", "format": "Network&nbsp"},
                       {"type": "input", "ref": "settings.bd_ip1", "autosave": true},
                       {"type": "input", "ref": "settings.bd_ip2", "autosave": true},
-                      {"type": "input", "ref": "settings.bd_ip3", "autosave": true}
+                      {"type": "input", "ref": "settings.bd_ip3", "autosave": true},
+                      {"format": "126", "classes": ""}
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS Configuration", "classes": ""},
