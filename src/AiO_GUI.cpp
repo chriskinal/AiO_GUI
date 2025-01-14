@@ -14,10 +14,10 @@
 
 void setup()
 {
-  delay(3000); // Delay for tesing to allow opening serial terminal to see output
+  //delay(3000); // Delay for tesing to allow opening serial terminal to see output
   Serial.begin(115200);
-  while (!Serial)
-    delay(50);
+  // while (!Serial)
+  //   delay(50);
   Serial.print("\r\n\n\n*********************\r\nStarting setup...\r\n");
 
   LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::PWR_ON);
@@ -26,12 +26,8 @@ void setup()
   fileInit();
   loadConfig(filename, s_config);
   printFile(filename);
-  // glue_get_settings(&s_config);
-  // saveConfig(filename, s_config);
-  // aioFS.remove(filename);
   Serial.print("Firmware version: ");
   Serial.println(s_config.fversion);
-  Eth_EEPROM();
   ethernet_init();
   mongoose_init();
   ipaddrSetup();
