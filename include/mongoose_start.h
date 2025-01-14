@@ -49,8 +49,13 @@ void udpSetup()
   char steerListen[50];
   char rtcmListen[50];
   mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", currentIP[0], currentIP[1], currentIP[2]);
+  //Serial.println(steerListen);
   mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", currentIP[0], currentIP[1], currentIP[2]);
-     
+  //Serial.println(rtcmListen);
+  bool listenSteer = false;
+  bool listenRtcm = false;
+  bool agioConnect = false;
+    
   if ( mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL )
   {
     listenSteer = true;
@@ -84,11 +89,12 @@ void udpSetup()
   }
   else
   {
-    Serial.println("Trying to connect to AgIO");
+    Serial.println("Failed to connect to AgIO");
     return;
   }
 
   if ( listenRtcm && listenSteer) udpRunning = true;
+  
 }
 
 extern "C" {

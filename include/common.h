@@ -37,9 +37,6 @@ uint8_t currentIP[5] = {192, 168, 5, 126};
 uint8_t gatewayIP[5] = {192, 168, 5, 1};
 uint8_t broadcastIP[5] = {192, 168, 5, 255};
 struct mg_connection *sendAgio;
-bool listenSteer = false;
-bool listenRtcm = false;
-bool agioConnect = false;
 bool udpRunning = false;
 const int EE_ver = 2402;               // if value in eeprom does not match, overwrite with defaults
 
@@ -254,61 +251,76 @@ void fileInit() {
     fsInit = 1;
   }
 
-// Load configuration - Should load default config if run for the first time
 void loadConfig(const char* filename, Config& config) {
-    Serial.println(F("Loading configuration..."));
-    File file = aioFS.open(filename);
-    JsonDocument doc;
+  // Should load default config if run for the first time
+  Serial.println(F("Loading configuration..."));
+  // Open file for reading
+  File file = aioFS.open(filename);
 
-    DeserializationError error = deserializeJson(doc, file);
-    if (error)
-      Serial.println(F("Failed to read config file, using default configuration"));
+  // Allocate a temporary JsonDocument
+  JsonDocument doc;
 
-      strlcpy(config.fversion,                  // <- destination
-              doc["fversion"] | "AiO v5.0a Web GUI",  // <- source
-              sizeof(config.fversion));         // <- destination's capacity
+  // Deserialize the JSON document
+  DeserializationError error = deserializeJson(doc, file);
+  if (error)
+    Serial.println(F("Failed to read file, using default configuration"));
 
-      file.close();
+  // Copy values from the JsonDocument to the Config
+  strlcpy(config.fversion,                  // <- destination
+          doc["fversion"] | "AiO v5.0a Web GUI - 1/2/2025",  // <- source
+          sizeof(config.fversion));         // <- destination's capacity
+
+  // Close the file (Curiously, File's destructor doesn't close the file)
+  file.close();
   }
 
 // Saves the configuration to a file
 void saveConfig(const char* filename, const Config& config) {
+  // Create configuration file
   Serial.println(F("Saving configuration..."));
   // Delete existing file, otherwise the configuration is appended to the file
   aioFS.remove(filename);
 
+  // Open file for writing
   File file = aioFS.open(filename, FILE_WRITE);
   if (!file) {
     Serial.println(F("Failed to create file"));
     return;
   }
 
+  // Allocate a temporary JsonDocument
   JsonDocument doc;
 
+  // Set the values in the document
   doc["fversion"] = config.fversion;
   
+  // Serialize JSON to file
   if (serializeJson(doc, file) == 0) {
     Serial.println(F("Failed to write to file"));
   }
 
+  // Close the file
   file.close();
   }
 
-// Prints the JSON content of a file to the Serial port
+// Prints the content of a file to the Serial
 void printFile(const char* filename) {
   // Dump config file
   Serial.println(F("Print config file..."));
+  // Open file for reading
   File file = aioFS.open(filename);
   if (!file) {
     Serial.println(F("Failed to read file"));
     return;
   }
 
+  // Extract each characters by one by one
   while (file.available()) {
     Serial.print((char)file.read());
   }
   Serial.println();
 
+  // Close the file
   file.close();
   }
 

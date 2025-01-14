@@ -79,7 +79,7 @@ struct apihandler {
 
 struct attribute s_settings_attributes[] = {
   {"string_val", "string", NULL, offsetof(struct settings, string_val), 40, false},
-  {"gps_type", "int", NULL, offsetof(struct settings, gps_type), 0, false},
+  {"log_level", "int", NULL, offsetof(struct settings, log_level), 0, false},
   {"double_val", "double", "%.5f", offsetof(struct settings, double_val), 0, false},
   {"bd_ip1", "int", NULL, offsetof(struct settings, bd_ip1), 0, false},
   {"bd_ip2", "int", NULL, offsetof(struct settings, bd_ip2), 0, false},
