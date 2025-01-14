@@ -75,17 +75,17 @@
                   {"type": "text", "classes": "title", "format": "Firmware Maintenance"},
                   {"type": "container", "classes": "form-control", "layout": [
                       {"type": "text", "classes": "", "format": "Network&nbsp"},
-                      {"type": "input", "ref": "settings.bd_ip1", "autosave": true},
-                      {"type": "input", "ref": "settings.bd_ip2", "autosave": true},
-                      {"type": "input", "ref": "settings.bd_ip3", "autosave": true}
+                      {"type": "input", "ref": "settings.bd_ip1"},
+                      {"type": "input", "ref": "settings.bd_ip2"},
+                      {"type": "input", "ref": "settings.bd_ip3"}
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS Configuration", "classes": ""},
-                      {"type": "dropdown", "ref": "settings.gps_type", "options": "Single_GPS,Single_GPS_IMU,Dual_GPS,UM982_GGA,UM982_KSXT", "css": "min-width: 10em;", "classes": "", "autosave": true}
+                      {"type": "dropdown", "ref": "settings.gps_type", "options": "Single_GPS,Single_GPS_IMU,Dual_GPS,UM982_GGA,UM982_KSXT", "css": "min-width: 10em;", "classes": ""}
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS -> UDP -> AgIO", "classes": ""},
-                      {"type": "toggle", "ref": "settings.gps_pass", "autosave": true}
+                      {"type": "toggle", "ref": "settings.gps_pass"}
                     ]},
                   {"type": "container", "classes": "container-h", "css": "margin-top: 0.25rem;", "layout": [
                       {"type": "action", "title": "save", "icon": "save", "ref": "save"},
