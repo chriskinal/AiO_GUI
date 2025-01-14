@@ -73,36 +73,8 @@ void saveConfig(const char* filename, const settings& s_config) {
   doc["bd_ip3"] = s_config.bd_ip3;
   doc["gps_type"] = s_config.gps_type;
   doc["gps_pass"] = s_config.gps_pass;
-<<<<<<< HEAD
-  doc["ss_Kp"] = steerSettings.Kp;
-  doc["ss_lowPWM"] = steerSettings.lowPWM;
-  doc["ss_wasOffset"] = steerSettings.wasOffset;
-  doc["ss_minPWM"] = steerSettings.minPWM;
-  doc["ss_highPWM"] = steerSettings.highPWM;
-  doc["ss_steerSensorCounts"] = steerSettings.steerSensorCounts;
-  doc["ss_AckermanFix"] = steerSettings.AckermanFix;
-  doc["sc_InvertWAS"] = steerConfig.InvertWAS;
-  doc["sc_IsRelayActiveHigh"] = steerConfig.IsRelayActiveHigh;
-  doc["sc_MotorDriveDirection"] = steerConfig.MotorDriveDirection;
-  doc["sc_SingleInputWAS"] = steerConfig.SingleInputWAS;
-  doc["sc_CytronDriver"] = steerConfig.CytronDriver;
-  doc["sc_SteerSwitch"] = steerConfig.SteerSwitch;
-  doc["sc_SteerButton"] = steerConfig.SteerButton;
-  doc["sc_ShaftEncoder"] = steerConfig.ShaftEncoder;
-  doc["sc_PressureSensor"] = steerConfig.PressureSensor;
-  doc["sc_CurrentSensor"] = steerConfig.CurrentSensor;
-  doc["sc_PulseCountMax"] = steerConfig.PulseCountMax;
-  doc["sc_IsDanfoss"] = steerConfig.IsDanfoss;
-  doc["sc_IsUseY_Axis"] = steerConfig.IsUseY_Axis;
-  doc["sc_MinSpeed"] = steerConfig.MinSpeed;
-
-
-  if (serializeJson(doc, file) == 0)
-  {
-=======
   
   if (serializeJson(doc, file) == 0) {
->>>>>>> parent of a0c7947 (Interin pretty up code.)
     Serial.println(F("Failed to write to file"));
   }
 
