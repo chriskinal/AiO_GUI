@@ -66,13 +66,14 @@ void glue_update_state(void);
 
 // Firmware Glue
 
-bool glue_check_save(void);
-void glue_start_save(void);
 bool glue_check_reboot(void);
 void glue_start_reboot(void);
 void *glue_ota_begin_firmware_update(char *file_name, size_t total_size);
 bool glue_ota_end_firmware_update(void *context);
 bool glue_ota_write_firmware_update(void *context, void *buf, size_t len);
+void *glue_file_open_file_upload(char *file_name, size_t total_size);
+bool glue_file_close_file_upload(void *context);
+bool glue_file_write_file_upload(void *context, void *buf, size_t len);
 struct settings {
   char string_val[40];
   int int_val;

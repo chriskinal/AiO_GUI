@@ -92,9 +92,9 @@ struct attribute s_settings_attributes[] = {
   {NULL, NULL, NULL, 0, 0, false}
 };
 static struct apihandler s_apihandlers[] = {
-  {"save", "action", false, 3, 7, 0UL, NULL, NULL, NULL, NULL, NULL, NULL, glue_check_save, glue_start_save, NULL, 0},
   {"reboot", "action", false, 3, 7, 0UL, NULL, NULL, NULL, NULL, NULL, NULL, glue_check_reboot, glue_start_reboot, NULL, 0},
   {"firmware_update", "ota", false, 3, 7, 0UL, NULL, NULL, NULL, glue_ota_begin_firmware_update, glue_ota_end_firmware_update, glue_ota_write_firmware_update, NULL, NULL, NULL, 0},
+  {"file_upload", "upload", false, 3, 7, 0UL, NULL, NULL, NULL, glue_file_open_file_upload, glue_file_close_file_upload, glue_file_write_file_upload, NULL, NULL, NULL, 0},
   {"settings", "object", false, 3, 7, 0UL, s_settings_attributes, (void (*)(void *)) glue_get_settings, (void (*)(void *)) glue_set_settings, NULL, NULL, NULL, NULL, NULL, NULL, sizeof(struct settings)}
 };
 
