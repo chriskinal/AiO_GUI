@@ -153,7 +153,6 @@ bool ggaTimeout, relposnedTimeout;
 uint32_t dualTime;
 uint16_t ggaMissed;
 
-bool udpPassthrough = false; // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
 bool gotCR = false;
 bool gotLF = false;
 bool gotDollar = false;
