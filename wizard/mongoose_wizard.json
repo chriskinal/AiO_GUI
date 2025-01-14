@@ -36,8 +36,8 @@
         "bool_val": {"type": "bool", "value": false}, 
         "work_sw": {"type": "int", "value": 10}, 
         "gps_pass": {"type": "bool", "value": false}, 
-        "gps_type": {"type": "int", "value": 1}, 
-        "bd_ip1": {"type": "int", "value": 192}, 
+        "gps_type": {"type": "int", "value": 1, "ui_value": 1}, 
+        "bd_ip1": {"type": "int", "value": 192, "ui_value": 192}, 
         "bd_ip2": {"type": "int", "value": 168}, 
         "bd_ip3": {"type": "int", "value": 5}, 
         "fversion": {"type": "string", "value": "AiO GUI v5.12", "size": 40}
@@ -75,17 +75,17 @@
                   {"type": "text", "classes": "title", "format": "Device Settings"},
                   {"type": "container", "classes": "form-control", "layout": [
                       {"type": "text", "classes": "", "format": "Network&nbsp"},
-                      {"type": "input", "ref": "settings.bd_ip1", "autosave": true},
-                      {"type": "input", "ref": "settings.bd_ip2", "autosave": true},
-                      {"type": "input", "ref": "settings.bd_ip3", "autosave": true}
+                      {"type": "input", "ref": "settings.bd_ip1", "autosave": false},
+                      {"type": "input", "ref": "settings.bd_ip2", "autosave": false},
+                      {"type": "input", "ref": "settings.bd_ip3", "autosave": false}
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS Configuration", "classes": ""},
-                      {"type": "dropdown", "ref": "settings.gps_type", "options": "Single_GPS,Single_GPS_IMU,Dual_GPS,UM982_GGA,UM982_KSXT", "css": "min-width: 10em;", "classes": "", "autosave": true}
+                      {"type": "dropdown", "ref": "settings.gps_type", "options": "Single_GPS,Single_GPS_IMU,Dual_GPS,UM982_GGA,UM982_KSXT", "css": "min-width: 10em;", "classes": "", "autosave": false}
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS -> UDP -> AgIO", "classes": ""},
-                      {"type": "toggle", "ref": "settings.gps_pass", "autosave": true}
+                      {"type": "toggle", "ref": "settings.gps_pass", "autosave": false}
                     ]},
                   {"type": "container", "classes": "container-h", "css": "margin-top: 0.25rem;", "layout": [
                       {"type": "action", "title": "save", "icon": "save", "ref": "save"},
