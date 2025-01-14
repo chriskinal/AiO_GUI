@@ -7,6 +7,7 @@
    Like all Arduino code - copied from somewhere else :)
    So don't claim it as your own
 */
+#include "Arduino.h"
 const uint8_t PWM_Frequency = 2;
 const float LOW_HIGH_DEGREES = 3.0; // How many degrees before decreasing Max PWM
 

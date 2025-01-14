@@ -1,6 +1,7 @@
 
 #ifndef AUTOSTEERPID_H_
 #define AUTOSTEERPID_H_
+#include "Arduino.h"
 
 void calcSteeringPID(void)
 {

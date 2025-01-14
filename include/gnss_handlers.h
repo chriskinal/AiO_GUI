@@ -1,5 +1,6 @@
 #ifndef GNSS_HANDLERS_H_
 #define GNSS_HANDLERS_H_
+#include "Arduino.h"
 // Conversion to Hexidecimal
 const char *asciiHex = "0123456789ABCDEF";
 

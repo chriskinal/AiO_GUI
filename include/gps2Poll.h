@@ -1,5 +1,6 @@
 #ifndef GPS2POLL_H_
 #define GPS2POLL_H_
+#include "Arduino.h"
 #include "common.h"
 
 void gps2Poll()

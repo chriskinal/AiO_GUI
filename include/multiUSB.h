@@ -1,5 +1,6 @@
 #ifndef MULTIUSB_H_
 #define MULTIUSB_H_
+#include "Arduino.h"
 
 #if defined(USB_DUAL_SERIAL) || defined(USB_TRIPLE_SERIAL)
 else

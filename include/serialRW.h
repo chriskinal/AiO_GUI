@@ -1,5 +1,6 @@
 #ifndef SERIALRW_H_
 #define SERIALRW_H_
+#include "Arduino.h"
 
 void serialRW()
 {

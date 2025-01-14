@@ -1,5 +1,6 @@
 #ifndef GPSPROC_H_
 #define GPSPROC_H_
+#include "Arduino.h"
 #include "common.h"
 
 void gpsProc()

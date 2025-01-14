@@ -5,8 +5,9 @@
 // Include your device-specific headers, and edit functions below
 // #include "hal.h"
 
-#include "mongoose_glue.h"
 #include "Arduino.h"
+#include "mongoose_glue.h"
+
 extern char* filename;
 extern struct settings s_config;
 

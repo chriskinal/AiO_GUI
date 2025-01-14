@@ -1,6 +1,7 @@
 #ifndef CONFIG_UTILS_H_
 #define CONFIG_UTILS_H_
 
+#include "Arduino.h"
 #include "mongoose_glue.h"
 #include "LittleFS.h"
 #include "ArduinoJson-v7.3.0.h"

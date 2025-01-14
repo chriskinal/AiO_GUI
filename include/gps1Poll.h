@@ -1,5 +1,6 @@
 #ifndef GPS1POLL_H_
 #define GPS1POLL_H_
+#include "Arduino.h"
 #include "common.h"
 #include "udpHandlers.h"
 

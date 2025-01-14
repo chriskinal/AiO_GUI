@@ -1,5 +1,7 @@
 #ifndef SETUP_H_
 #define SETUP_H_
+#include "Arduino.h"
+
 void setCpuFrequency(uint32_t _freq)
 {
   set_arm_clock(_freq);
