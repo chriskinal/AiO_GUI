@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "HardwareSerial.h"
 #include "elapsedMillis.h"
-
+#include "config_utils.h"
 #include "EEPROM.h"
 #include <stdint.h>
 #include <Streaming.h>
@@ -115,8 +115,6 @@ struct SteerSettingsStruct
 };
 SteerSettingsStruct defaultSteerSettings;                        // 11 bytes
 struct SteerSettingsStruct steerSettings = defaultSteerSettings; // don't need 'struct' in front?
-
-#include "config_utils.h"
 
 uint8_t steerReading, prevSteerReading = 1; // currentState = 0
 int16_t pulseCount = 0;                     // Steering Wheel Encoder
