@@ -32,11 +32,9 @@ void fileInit()
 extern "C" void saveConfig(const char *filename, const settings &s_config)
 {
   Serial.println(F("Saving configuration..."));
-  Serial.println(millis());
   // glue_update_state();
   glue_get_settings(&s_config);
   // Delete existing file, otherwise the configuration is appended to the file
-  Serial.println(millis());
   aioFS.remove(filename);
 
   File file = aioFS.open(filename, FILE_WRITE);
@@ -45,7 +43,7 @@ extern "C" void saveConfig(const char *filename, const settings &s_config)
     Serial.println(F("Failed to create file"));
     return;
   }
-  Serial.println(millis());
+
   JsonDocument doc;
 
   doc["fversion"] = s_config.fversion;
@@ -77,23 +75,21 @@ extern "C" void saveConfig(const char *filename, const settings &s_config)
   doc["sc_IsUseY_Axis"] = steerConfig.IsUseY_Axis;
   doc["sc_MinSpeed"] = steerConfig.MinSpeed;
 
-  Serial.println(millis());
+
   if (serializeJson(doc, file) == 0)
   {
     Serial.println(F("Failed to write to file"));
   }
+
   file.close();
-  Serial.println(millis());
   Serial.printf("s_config: %s,%d,%d,%d,%d,%o\r\n", s_config.fversion, s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4, s_config.gps_type, s_config.gps_pass);
   Serial.println(F("Saved configuration..."));
-  Serial.println(millis());
 }
 
 // Load configuration - Should load default config if run for the first time
 void loadConfig(const char *filename, settings &s_config)
 {
   Serial.println(F("Loading configuration..."));
-  Serial.println(millis());
   // Serial.printf("%s,%d,%d,%d,%d,%o\r\n", s_config.fversion,s_config.bd_ip1,s_config.bd_ip2, s_config.bd_ip3, s_config.gps_type,s_config.gps_pass);
   File file = aioFS.open(filename);
   JsonDocument doc;
@@ -135,8 +131,6 @@ void loadConfig(const char *filename, settings &s_config)
   glue_set_settings(&s_config);
   if ( error ) { saveConfig(filename, s_config); } // save the default config if there was a load error.
   file.close();
-  Serial.println("Loading configuration complete");
-  Serial.println(millis());
 }
 
 // Prints the JSON content of a file to the Serial port

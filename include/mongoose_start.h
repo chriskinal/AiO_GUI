@@ -21,24 +21,20 @@ void udpSetup()
   if (mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL)
   {
     listenSteer = true;
-    MG_DEBUG(("Listening for AgIO on UDP 8888"));
     Serial.println("Listening for AgIO on UDP 8888");
   }
   else
   {
-    MG_DEBUG(("AgIO on UDP 8888 did not open"));
     Serial.println("AgIO on UDP 8888 did not open");
   }
 
   if (mg_listen(&g_mgr, rtcmListen, rtcmHandler, NULL) != NULL)
   {
     listenRtcm = true;
-    MG_DEBUG(("Listening for RTCM on UDP 2233"));
     Serial.println("Listening for RTCM on UDP 2233");
   }
   else
   {
-    MG_DEBUG(("RTCM on UDP 2233 did not open"));
     Serial.println("RTCM on UDP 2233 did not open");
   }
 
@@ -56,12 +52,10 @@ void udpSetup()
   if (sendAgio == !NULL)
   {
     agioConnect = true;
-    MG_DEBUG(("Connected to AgIO"));
     Serial.println("Connected to AgIO");
   }
   else
   {
-    MG_DEBUG(("Trying to connect to AgIO"));
     Serial.println("Trying to connect to AgIO");
     return;
   }
