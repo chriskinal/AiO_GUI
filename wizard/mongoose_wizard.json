@@ -32,7 +32,6 @@
         "string_val": {"type": "string", "value": "edit & save me", "size": 40}, 
         "int_val": {"type": "int", "value": 1}, 
         "bool_val": {"type": "bool", "value": false}, 
-        "work_sw": {"type": "int", "value": 10}, 
         "gps_pass": {"type": "bool", "value": false}, 
         "gps_type": {"type": "int", "value": 1}, 
         "double_val": {"type": "double", "value": 123.12345, "format": "%.5f"}, 
@@ -112,14 +111,11 @@
           {"type": "container", "classes": "container-h wrap", "css": "align-items: start;", "layout": [
               {"type": "container", "classes": "panel", "css": "flex: 0 0 22rem;", "layout": [
                   {"type": "text", "format": "Switches", "classes": "title"},
-                  {"type": "container", "classes": "panel", "layout": [
-                      {"type": "text", "format": "Work Switch", "classes": "title"},
-                      {"type": "container", "classes": "flex", "css": "gap: 1em;", "layout": [
-                          {"type": "gauge", "ref": "settings.work_sw", "min": 0, "max": "200", "color": "rgb(186,230,253)"}
-                        ]}
-                    ], "css": "flex: 0 0 12em;"},
                   {"type": "container", "classes": "container-h", "layout": [
-                      {"type": "action", "title": "set value", "icon": "arrow-right", "ref": "settings"}
+                      {"type": "text", "format": "Work", "classes": ""}
+                    ]},
+                  {"type": "container", "classes": "container-h", "layout": [
+                      {"type": "text", "format": "Steer", "classes": ""}
                     ]}
                 ]}
             ]}

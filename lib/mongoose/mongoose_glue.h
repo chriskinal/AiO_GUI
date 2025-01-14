@@ -78,7 +78,6 @@ struct settings {
   char string_val[40];
   int int_val;
   bool bool_val;
-  int work_sw;
   bool gps_pass;
   int gps_type;
   double double_val;
