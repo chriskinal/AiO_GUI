@@ -2,7 +2,6 @@
 #define UDPHANDLERS_H_
 #include "Arduino.h"
 #include "mongoose.h"
-#include "machine.h"
 
 // Send byte arrays to AgIO
 void sendUDPbytes(char *message, int msgLen)
@@ -70,22 +69,6 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 
       sendUDPbytes(helloFromAutoSteer, sizeof(helloFromAutoSteer));
       }
-
-      // reply as IMU if equipped
-      if (BNO.isActive) {
-        uint8_t helloFromIMU[] = { 128, 129, 121, 121, 5, 0, 0, 0, 0, 0, 71 };
-        sendUDPbytes(helloFromIMU, sizeof(helloFromIMU));
-      }
-
-      #ifdef MACHINE_H
-      if (machinePTR->isInit) {
-        uint8_t helloFromMachine[] = { 0x80, 0x81, 123, 123, 5, 0, 0, 0, 0, 0, 71 };
-        helloFromMachine[5] = B10101010;  // should be changed to read actual machine output states
-        helloFromMachine[6] = B01010101;
-        sendUDPbytes(helloFromMachine, sizeof(helloFromMachine));
-      }
-    #endif
-
     }
     
     // Subnet Change
@@ -108,6 +91,12 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         SCB_AIRCR = 0x05FA0004;  //Teensy Reset
       }
       return;                    // no other processing needed
+    }
+
+    // reply as IMU if equipped
+    if (BNO.isActive) {
+      uint8_t helloFromIMU[] = { 128, 129, 121, 121, 5, 0, 0, 0, 0, 0, 71 };
+      sendUDPbytes(helloFromIMU, sizeof(helloFromIMU));
     }
 
     // 0xCA (202) - Scan Request
@@ -151,7 +140,6 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 
         #ifdef MACHINE_H
         if (machinePTR->isInit) {
-          Serial.println("************** Machine Init True");
           uint8_t scanReplyMachine[] = { 128, 129, 123, 203, 7,
                                   currentIP[0], currentIP[1], currentIP[2], currentIP[3],
                                   steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23 };
@@ -164,7 +152,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         }
         #endif
 
-        Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", s_config.fversion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
+        Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", config.fversion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
         Serial.printf("\r\nAgIO IP:   ", steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], steer->rem.ip[3] );
         Serial.printf("\r\nModule IP: ", currentIP[0], currentIP[1], currentIP[2], currentIP[3] );
         // Serial.print("\r\nAgIO IP:   "); Serial.print(rem_ip);

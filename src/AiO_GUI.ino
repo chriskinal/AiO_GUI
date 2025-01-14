@@ -22,13 +22,12 @@ void setup() {
 
   setCpuFrequency(600 * 1000000);           // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
   fileInit();
-  loadConfig(filename, s_config);
+  loadConfig(filename, config);
+  saveConfig(filename, config);
   printFile(filename);
-  glue_get_settings(&s_config);
-  saveConfig(filename, s_config);
   //aioFS.remove(filename);
   Serial.print("Firmware version: ");
-  Serial.println(s_config.fversion);
+  Serial.print(config.fversion);
   Eth_EEPROM();
   ethernet_init();
   mongoose_init();
@@ -39,20 +38,13 @@ void setup() {
   BNO.begin(SerialIMU);                     // BNO_RVC.cpp
   autosteerSetup();                         // Autosteer.h
   CAN_Setup();                              //Start CAN3 for Keya
-  machinePTR = new MACHINE;
-  const uint8_t pcaOutputPinNumbers[8] = { 1, 0, 12, 15, 9, 8, 6, 7 };    // all 8 PCA9555 section/machine output pin numbers on v5.0a
-  const uint8_t pcaInputPinNumbers[]  = { 14, 13, 11, 10, 2, 3, 4, 5 };   // all 8 PCA9555 section/machine output "sensing" pin numbers on v5.0a
-  if ( outputs.begin() )
-  {
-    Serial.print("\r\nSection outputs (PCA9555) detected (8 channels, low side switching)");
-    machinePTR->init(&outputs, pcaOutputPinNumbers, pcaInputPinNumbers, 100); // mach.h
-  }
 
   Serial.println("\r\n\nEnd of setup, waiting for GPS...\r\n"); 
   delay(1);
   resetStartingTimersBuffers();             // setup.ino
-  
-  
+  machinePTR = new MACHINE;
+  const uint8_t pcaOutputPinNumbers[8] = { 1, 0, 12, 15, 9, 8, 6, 7 };    // all 8 PCA9555 section/machine output pin numbers on v5.0a
+  const uint8_t pcaInputPinNumbers[]  = { 14, 13, 11, 10, 2, 3, 4, 5 };   // all 8 PCA9555 section/machine output "sensing" pin numbers on v5.0a
 }
 
 void loop() {
