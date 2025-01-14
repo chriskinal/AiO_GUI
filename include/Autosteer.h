@@ -16,8 +16,8 @@ bool adcDebug = false;
 bool useInternalADC = false;
 bool useExternalADS = false;
 
-#include <EEPROM.h>
-const int EE_Ident = 2401; // if value in eeprom does not match, overwrite with defaults
+// #include <EEPROM.h>
+// const int EE_Ident = 2401; // if value in eeprom does not match, overwrite with defaults
 
 uint32_t autoSteerLastTime, currentTime;
 elapsedMillis autoSteerUpdateTimer;
@@ -167,22 +167,22 @@ void autosteerSetup()
   // pinMode(KICKOUT_A_PIN, INPUT_PULLUP);   // set in steerConfigInit() according to function
   // pinMode(KICKOUT_A_PIN, INPUT_DISABLE);
 
-  uint16_t as_ee_read = EE_Ident;
-  EEPROM.get(1, as_ee_read);
+  // uint16_t as_ee_read = EE_Ident;
+  // EEPROM.get(1, as_ee_read);
 
-  if (as_ee_read != EE_Ident)
-  { // if value in eeprom does not match, overwrite with defaults
-    EEPROM.put(1, EE_Ident);
-    EEPROM.put(10, steerSettings);
-    EEPROM.put(40, steerConfig);
-    Serial.print("\r\n- ** EEPROM reset to defaults! **");
-  }
-  else
-  {
-    EEPROM.get(10, steerSettings); // read the Settings
-    EEPROM.get(40, steerConfig);
-    Serial.print("\r\n- loaded settings/config from EEPROM");
-  }
+  // if (as_ee_read != EE_Ident)
+  // { // if value in eeprom does not match, overwrite with defaults
+  //   EEPROM.put(1, EE_Ident);
+  //   EEPROM.put(10, steerSettings);
+  //   EEPROM.put(40, steerConfig);
+  //   Serial.print("\r\n- ** EEPROM reset to defaults! **");
+  // }
+  // else
+  // {
+  //   EEPROM.get(10, steerSettings); // read the Settings
+  //   EEPROM.get(40, steerConfig);
+  //   Serial.print("\r\n- loaded settings/config from EEPROM");
+  // }
 
   steerSettingsInit();
   steerConfigInit();
