@@ -13,22 +13,15 @@
 #include "mongoose.h"
 #include "mongoose_glue.h"
 #include "LittleFS.h"
-#include "ArduinoJson-v7.3.0.h"
 
 // File system variables
 LittleFS_Program aioFS;
+
 #define NF 10
+//#define VALIDF(x) BTW(x,1,NF) && (files[x])
+
 static File files[NF+1];
 static int fsInit = 0;
-// End
-
-// Configuration system variables
-struct Config
-{
-  char fversion[25];
-};
-const char* filename = "/config.txt";
-Config config;
 // End
 
 // Networking variables
@@ -117,7 +110,7 @@ uint8_t xte = 0;
 int16_t pwmDrive = 0, pwmDisplay = 0;
 float highLowPerDeg = 0;
 
-// Variables for steer settings
+// Variables for settings
 struct SteerSettingsStruct {
   uint8_t Kp = 40;      // proportional gain
   uint8_t lowPWM = 10;  // band of no action
@@ -242,86 +235,12 @@ static uint32_t ipv4ary(const uint8_t input[]) {
     return *(uint32_t *) &a.ip;
   }
 
-// Initialize LittleFS disk
 void fileInit() {
     aioFS.begin(1 * 1024 * 1024);
     Serial.print("\r\nLittleFS: initialized");
     Serial.printf("\r\nTotal Size: %llu bytes, Used: %llu\r\n", aioFS.totalSize(), aioFS.usedSize());
     for (int i = 0; i <= NF; i++) { files[i] = 0; }
     fsInit = 1;
-  }
-
-void loadConfig(const char* filename, Config& config) {
-  // Should load default config if run for the first time
-  Serial.println(F("Loading configuration..."));
-  // Open file for reading
-  File file = aioFS.open(filename);
-
-  // Allocate a temporary JsonDocument
-  JsonDocument doc;
-
-  // Deserialize the JSON document
-  DeserializationError error = deserializeJson(doc, file);
-  if (error)
-    Serial.println(F("Failed to read file, using default configuration"));
-
-  // Copy values from the JsonDocument to the Config
-  strlcpy(config.fversion,                  // <- destination
-          doc["fversion"] | "AiO v5.0a Web GUI - 1/2/2025",  // <- source
-          sizeof(config.fversion));         // <- destination's capacity
-
-  // Close the file (Curiously, File's destructor doesn't close the file)
-  file.close();
-  }
-
-// Saves the configuration to a file
-void saveConfig(const char* filename, const Config& config) {
-  // Create configuration file
-  Serial.println(F("Saving configuration..."));
-  // Delete existing file, otherwise the configuration is appended to the file
-  aioFS.remove(filename);
-
-  // Open file for writing
-  File file = aioFS.open(filename, FILE_WRITE);
-  if (!file) {
-    Serial.println(F("Failed to create file"));
-    return;
-  }
-
-  // Allocate a temporary JsonDocument
-  JsonDocument doc;
-
-  // Set the values in the document
-  doc["fversion"] = config.fversion;
-  
-  // Serialize JSON to file
-  if (serializeJson(doc, file) == 0) {
-    Serial.println(F("Failed to write to file"));
-  }
-
-  // Close the file
-  file.close();
-  }
-
-// Prints the content of a file to the Serial
-void printFile(const char* filename) {
-  // Dump config file
-  Serial.println(F("Print config file..."));
-  // Open file for reading
-  File file = aioFS.open(filename);
-  if (!file) {
-    Serial.println(F("Failed to read file"));
-    return;
-  }
-
-  // Extract each characters by one by one
-  while (file.available()) {
-    Serial.print((char)file.read());
-  }
-  Serial.println();
-
-  // Close the file
-  file.close();
   }
 
 #endif // COMMON_H_
