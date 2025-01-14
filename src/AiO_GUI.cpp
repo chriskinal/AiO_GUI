@@ -30,7 +30,6 @@ void setup()
   Serial.println(s_config.fversion);
   ethernet_init();
   mongoose_init();
-  ipaddrSetup();
   udpSetup();
   serialSetup();        // setup.h
   parserSetup();        // setup.h

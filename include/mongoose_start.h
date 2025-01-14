@@ -4,16 +4,15 @@
 #include "mongoose.h"
 #include "udpHandlers.h"
 
-void ipaddrSetup()
+void udpSetup()
 {
+  // Setup the TCPIP stack
   g_mgr.ifp->enable_dhcp_client = 0;
   g_mgr.ifp->ip = MG_IPV4(s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4);
   g_mgr.ifp->gw = MG_IPV4(s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, 1);
   g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
-}
 
-void udpSetup()
-{
+  // Setup the UDP listeners
   char steerListen[50];
   char rtcmListen[50];
   mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.%d:8888", s_config.bd_ip1, s_config.bd_ip2, s_config.bd_ip3, s_config.bd_ip4);
@@ -39,7 +38,7 @@ void udpSetup()
     Serial.println("RTCM on UDP 2233 did not open");
   }
 
-  // Create connection URL
+  // Create UDP connection to broadcast address
   char agioURL[25];
   strcpy(agioURL, "udp://");
   itoa(s_config.bd_ip1, agioURL+strlen(agioURL), 10);
@@ -49,7 +48,6 @@ void udpSetup()
   itoa(s_config.bd_ip3, agioURL+strlen(agioURL), 10);
   strcat(agioURL, ".255:9999");
 
-  // Create UDP connection to broadcast address
   sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);
   if (sendAgio == !NULL)
   {
@@ -68,7 +66,6 @@ void udpSetup()
 
 extern "C"
 {
-// #include "mongoose_glue.h"
 #define TRNG_ENT_COUNT 16
   void ENET_IRQHandler(void);
   uint64_t mg_millis(void)
