@@ -77,15 +77,15 @@ bool glue_file_write_file_upload(void *context, void *buf, size_t len);
 struct settings {
   char string_val[40];
   int int_val;
-  double double_val;
   bool bool_val;
   int work_sw;
   bool gps_pass;
   int gps_type;
+  double double_val;
   int bd_ip1;
   int bd_ip2;
   int bd_ip3;
-  char fversion[40];
+  double fversion;
 };
 void glue_get_settings(struct settings *);
 void glue_set_settings(struct settings *);
