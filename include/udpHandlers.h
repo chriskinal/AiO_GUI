@@ -1,7 +1,9 @@
 #ifndef UDPHANDLERS_H_
 #define UDPHANDLERS_H_
 #include "Arduino.h"
-#include "mongoose.h"
+#include "mongoose_glue.h"
+#include "machine.h"
+#include "Autosteer.h"
 
 // Send byte arrays to AgIO
 void sendUDPbytes(char *message, int msgLen)
@@ -99,6 +101,16 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       sendUDPbytes(helloFromIMU, sizeof(helloFromIMU));
     }
 
+#ifdef MACHINE_H
+      if (machinePTR->isInit)
+      {
+        uint8_t helloFromMachine[] = {0x80, 0x81, 123, 123, 5, 0, 0, 0, 0, 0, 71};
+        helloFromMachine[5] = B10101010; // should be changed to read actual machine output states
+        helloFromMachine[6] = B01010101;
+        sendUDPbytes(helloFromMachine, sizeof(helloFromMachine));
+      }
+#endif
+
     // 0xCA (202) - Scan Request
     if (steer->recv.buf[3] == 202 && steer->recv.len == 9)
     {
@@ -167,7 +179,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     }
 
     // 0xFB (251) - SteerConfig
-    if (steer->recv.buf[3] == 0x251 && steer->recv.len == 14)
+    if (steer->recv.buf[3] == 251 && steer->recv.len == 14)
     {
       uint8_t sett = steer->recv.buf[5]; //setting0
       if (bitRead(sett, 0)) steerConfig.InvertWAS = 1; else steerConfig.InvertWAS = 0;
@@ -205,13 +217,15 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       Serial.println();
 
       EEPROM.put(40, steerConfig);
-      delay(10);
-      SCB_AIRCR = 0x05FA0004;  //Teensy Reset            
+      steerConfigInit();
+      
+      // delay(10);
+      // SCB_AIRCR = 0x05FA0004;  //Teensy Reset            
       return;             // no other processing needed
     }  // 0xFB (251) - SteerConfig
 
     // 0xFC (252) - Steer Settings
-    if (steer->recv.buf[3] == 0x252 && steer->recv.len == 14)         
+    if (steer->recv.buf[3] == 252 && steer->recv.len == 14)         
       {
         //PID values
         steerSettings.Kp = ((float)steer->recv.buf[5]);    // read Kp from AgOpenGPS
@@ -248,8 +262,9 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         Serial.print("\r\n AckermanFix "); Serial.print(steerSettings.AckermanFix);
 
         EEPROM.put(10, steerSettings);
-        delay(10);
-        SCB_AIRCR = 0x05FA0004;  //Teensy Reset  
+        steerSettingsInit();
+        // delay(10);
+        // SCB_AIRCR = 0x05FA0004;  //Teensy Reset  
         return;               // no other processing needed
       }  // 0xFC (252) - Steer Settings
 
