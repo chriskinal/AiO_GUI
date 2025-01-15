@@ -26,7 +26,6 @@ void setup() {
   Eth_EEPROM();
   ethernet_init();
   mongoose_init();
-  ipaddrSetup();
   udpSetup();
   serialSetup();                            // setup.h
   parserSetup();                            // setup.h
