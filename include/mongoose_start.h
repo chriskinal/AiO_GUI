@@ -35,17 +35,13 @@ void Eth_EEPROM() {
     // Serial.println();
   }
 
-void ipaddrSetup()
+void udpSetup()
 {
   g_mgr.ifp->enable_dhcp_client = 0;
-  // 
   g_mgr.ifp->ip = ipv4ary(currentIP);
   g_mgr.ifp->gw = ipv4ary(gatewayIP);
   g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
-}
-
-void udpSetup()
-{
+  
   char steerListen[50];
   char rtcmListen[50];
   mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", currentIP[0], currentIP[1], currentIP[2]);
@@ -76,24 +72,49 @@ void udpSetup()
     Serial.println("RTCM on UDP 2233 did not open");
   }
   
-  // Create connection URL
-  String agioURL = String("udp://") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".255:9999");
-  char agioSend[agioURL.length() + 1] ={};
-  strcpy(agioSend, agioURL.c_str());
-
   // Create UDP connection to broadcast address
-  sendAgio = mg_connect(&g_mgr, agioSend, NULL, NULL);
-  if (sendAgio == !NULL) {
+  char agioURL[25];
+  strcpy(agioURL, "udp://");
+  itoa(currentIP[0], agioURL+strlen(agioURL), 10);
+  strcat(agioURL, ".");
+  itoa(currentIP[1], agioURL+strlen(agioURL), 10);
+  strcat(agioURL, ".");
+  itoa(currentIP[2], agioURL+strlen(agioURL), 10);
+  strcat(agioURL, ".255:9999");
+
+  sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);
+  if (sendAgio == !NULL)
+  {
     agioConnect = true;
+    MG_DEBUG(("Connected to AgIO"));
     Serial.println("Connected to AgIO");
   }
   else
   {
-    Serial.println("Failed to connect to AgIO");
+    MG_DEBUG(("Trying to connect to AgIO"));
+    Serial.println("Trying to connect to AgIO");
     return;
   }
 
-  if ( listenRtcm && listenSteer) udpRunning = true;
+
+  // // Create connection URL
+  // String agioURL = String("udp://") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".255:9999");
+  // char agioSend[agioURL.length() + 1] ={};
+  // strcpy(agioSend, agioURL.c_str());
+
+  // // Create UDP connection to broadcast address
+  // sendAgio = mg_connect(&g_mgr, agioSend, NULL, NULL);
+  // if (sendAgio == !NULL) {
+  //   agioConnect = true;
+  //   Serial.println("Connected to AgIO");
+  // }
+  // else
+  // {
+  //   Serial.println("Failed to connect to AgIO");
+  //   return;
+  // }
+
+  // if ( listenRtcm && listenSteer) udpRunning = true;
   
 }
 
