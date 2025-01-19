@@ -152,12 +152,6 @@ void KeyaBus_Receive()
         keyaDetected = true;
         keyaCommand(keyaVersionQuery);
       }
-      // 0-1 - Cumulative value of angle (360 def / circle)
-      // 2-3 - Motor speed, signed int eg -500 or 500
-      // 4-5 - Motor current, with "symbol" ? Signed I think that means, but it does appear to be a crap int. 1, 2 for 1, 2 amps etc
-      //		is that accurate enough for us?
-      // 6-7 - Control_Close (error code)
-      // TODO Yeah, if we ever see something here, fire off a disable, refuse to engage autosteer or..?
       if (debugKeya)
       {
         uint32_t time = millis();
@@ -194,14 +188,11 @@ void KeyaBus_Receive()
         {
           Serial.print("-");
           Serial.print(255 - KeyaBusReceiveData.buf[5]);
-          // KeyaCurrentSensorReading = (255 - KeyaBusReceiveData.buf[5]) * 20;  // use other motor current query data
         }
         else
         {
           Serial.print(KeyaBusReceiveData.buf[5]);
-          // KeyaCurrentSensorReading = KeyaBusReceiveData.buf[5] * 20;
         }
-        // keyaCurrentUpdateTimer = 0;
         Serial.print(" ");
 
         // print error status
@@ -294,9 +285,6 @@ void KeyaBus_Receive()
           Serial.println("\r\nMotor stalled");
         }
       }
-      // keyaCommand(keyaTemperatureQuery);
-      // keyaCommand(keyaVoltageQuery);
-      // keyaCommand(keyaFaultQuery);
     }
 
     // parse query/command 00:05:08:00:00:00:00:[ID] responses
