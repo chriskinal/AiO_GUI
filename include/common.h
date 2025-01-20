@@ -23,7 +23,8 @@ bool udpRunning = false;
 const int EE_ver = 2402; // if value in eeprom does not match, overwrite with defaults
 
 // Led indicators. 1000ms RGB update, 255/64/127 RGB brightness balance levels for v5.0a
-#include "LEDS.h"
+// #include "LEDS.h"
+#include "LEDS_old.h"
 LEDS LEDs = LEDS(1000, 255, 64, 127);
 // End
 
