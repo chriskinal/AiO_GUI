@@ -1,16 +1,13 @@
 #include "Arduino.h"
 #include "common.h"
 #include "udpHandlers.h"
-#include "gnss_handlers.h"
+#include "gnssHandlers.h"
 #include "setup.h"
-#include "mongoose_start.h"
+#include "mongooseStart.h"
 #include "KeyaCANBUS.h"
 #include "Autosteer.h"
 #include "AutosteerPID.h"
-#include "serialRW.h"
-#include "gps1Poll.h"
-#include "gps2Poll.h"
-#include "gpsProc.h"
+#include "serialComm.h"
 
 void setup()
 {
@@ -48,12 +45,11 @@ void setup()
 
 void loop()
 {
-  gps1Poll();
-  gps2Poll();
+  gpsPoll();
   gpsProc();
   KeyaBus_Receive();
   autoSteerUpdate();
-  serialRW();
+  serialRTCM();
   mongoose_poll();
   LEDs.updateLoop();
   machinePTR->watchdogCheck();
