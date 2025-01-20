@@ -1,10 +1,13 @@
-#ifndef GPS1POLL_H_
-#define GPS1POLL_H_
+#ifndef SERIALCOMM_H_
+#define SERIALCOMM_H_
+
 #include "common.h"
 #include "udpHandlers.h"
 
-void gps1Poll()
+// Poll GPS
+void gpsPoll()
 {
+    // GPS1
     if (!USB1DTR) // carry on like normal
     {
         uint16_t gps1Available = SerialGPS1.available();
@@ -77,6 +80,45 @@ void gps1Poll()
             SerialRS232.write(gps1Read);
         }
     }
+
+    // GPS2
+    if (!USB2DTR) // carry on like normal
+    {
+        uint16_t gps2Available = SerialGPS2.available();
+        if (gps2Available)
+        {
+            if (gps2Available > sizeof(GPS2rxbuffer) - 10)
+            { // this should not trigger except maybe at boot up
+                SerialGPS2.clear();
+                Serial.print((String) "\r\n" + millis() + " *** SerialGPS2 buffer cleared! ***");
+                return;
+            }
+            gps2Stats.update(gps2Available);
+
+            uint8_t gps2Read = SerialGPS2.read();
+            if (nmeaDebug2)
+                Serial << "(" << byte(gps2Read) << ")";
+            ubxParser.parse(gps2Read);
+        }
+    }
 }
 
+// Serial RTCM
+void serialRTCM()
+{
+    if (SerialRTK.available())
+    { // Check for RTK Radio RTCM data
+        uint8_t rtcmByte = SerialRTK.read();
+        if (!USB1DTR)
+            SerialGPS1.write(rtcmByte); // send to GPS1
+        if (!USB2DTR)
+            SerialGPS2.write(rtcmByte); // send to GPS2
+        LEDs.queueBlueFlash(LED_ID::GPS);
+    }
+
+    if (SerialRS232.available())
+    {                                     // Check for RS232 data
+        Serial.write(SerialRS232.read()); // just print to USB for testing
+    }
+}
 #endif

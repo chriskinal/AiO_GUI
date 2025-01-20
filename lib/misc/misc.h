@@ -1,6 +1,3 @@
-//#include "core_pins.h"
-//#include <stdint.h>
-
 #ifndef MISC_H
 #define MISC_H
 
@@ -95,9 +92,6 @@ private:
 
 };
 
-
-
-
 /*
   This is a class written for the Teensy 4.1 microcontroller
     written by Matt Elias Mar 2024
@@ -157,13 +151,6 @@ private:
   bool isActive;
   char* name;
 };
-
-
-
-
-
-
-
 
 /*
   Written by Matt Elias 2023
