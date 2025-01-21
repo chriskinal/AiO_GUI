@@ -4,10 +4,12 @@
 #include "mongoose_glue.h"
 #include "machine.h"
 #include "Autosteer.h"
+#include "common.h"
 
 // Send byte arrays to AgIO
 void sendUDPbytes(char *message, int msgLen)
 {
+  UDP_Susage.timeIn();
   if (g_mgr.ifp->state != MG_TCPIP_STATE_READY)
     return; // Check if IP stack is up.
   // Send data
@@ -19,14 +21,17 @@ void sendUDPbytes(char *message, int msgLen)
   {
     mg_iobuf_del(&sendAgio->send, 0, sendAgio->send.len);
   }
+  UDP_Susage.timeOut();
 }
 
 // Send char arrays to AgIO
 void sendUDPchars(char *stuff)
 {
+  UDP_Susage.timeIn();
   if (g_mgr.ifp->state != MG_TCPIP_STATE_READY)
     return; // Check if IP stack is up.
   mg_printf(sendAgio, stuff);
+  UDP_Susage.timeOut();
 }
 
 // Process data received on port 8888
@@ -41,6 +46,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
   if (ev == MG_EV_READ && mg_ntohs(steer->rem.port) == 9999 && steer->recv.len >= 5)
   {
     // Verify first 3 PGN header bytes
+    PGNusage.timeIn();
     if (steer->recv.buf[0] != 128 || steer->recv.buf[1] != 129 || steer->recv.buf[2] != 127)
       return;
 
@@ -421,6 +427,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     } // 0xFE (254) - Steer Data
 
     mg_iobuf_del(&steer->recv, 0, steer->recv.len);
+    PGNusage.timeOut();
   }
   else
   {
@@ -431,6 +438,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 // Process data received on port 2233
 void rtcmHandler(struct mg_connection *rtcm, int ev, void *ev_data, void *fn_data)
 {
+  NTRIPusage.timeIn();
   if (g_mgr.ifp->state != MG_TCPIP_STATE_READY)
     return; // Check if IP stack is up.
   if (ev == MG_EV_READ && mg_ntohs(rtcm->rem.port) == 9999 && rtcm->recv.len >= 5)
@@ -449,6 +457,7 @@ void rtcmHandler(struct mg_connection *rtcm, int ev, void *ev_data, void *fn_dat
   {
     mg_iobuf_del(&rtcm->recv, 0, rtcm->recv.len);
   }
+  NTRIPusage.timeOut();
 }
 
 #endif // UDPHANDLERS_H_

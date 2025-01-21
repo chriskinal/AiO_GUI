@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "common.h"
+#include "debug.h"
 #include "udpHandlers.h"
 #include "gnssHandlers.h"
 #include "setup.h"
@@ -51,14 +52,22 @@ void loop()
   autoSteerUpdate();
   serialRTCM();
   mongoose_poll();
-  LEDs.updateLoop();
-  machinePTR->watchdogCheck();
 
+  LEDSusage.timeIn();
+  LEDs.updateLoop();
+  LEDSusage.timeOut();
+
+  MACHusage.timeIn();
+  machinePTR->watchdogCheck();
+  MACHusage.timeOut();
+
+  BNOusage.timeIn();
   if (BNO.read())
   { // there should be new data every 10ms (100hz)
     bnoStats.incHzCount();
     bnoStats.update(1); // 1 dummy value
   }
+  BNOusage.timeOut();
 
   // wait 40 msec (F9P) from prev GGA update, then update imu data for next PANDA sentence
   if (imuPandaSyncTrigger && imuPandaSyncTimer >= 40)
@@ -66,4 +75,15 @@ void loop()
     prepImuPandaData();
     imuPandaSyncTrigger = false; // wait for next GGA update before resetting imuDelayTimer again
   }
+  
+  // Check for debug input
+  checkUSBSerial();
+
+  // Print telemetry
+  if (bufferStatsTimer > 5000) printTelem();
+
+  // to count loop hz & get baseline cpu "idle" time
+  LOOPusage.timeIn();
+  testCounter++;
+  LOOPusage.timeOut();
 }
