@@ -107,6 +107,48 @@ void gpsPoll()
     GPS2usage.timeOut();
 }
 
+// Forward PGN's from ESP32 to AgIO
+void serialESP32()
+{
+    ESP32usage.timeIn();
+    if (SerialESP32.available())
+    {
+        static uint8_t incomingBytes[50];
+        static uint8_t incomingIndex;
+        incomingBytes[incomingIndex] = SerialESP32.read();
+        incomingIndex++;
+        // Serial.print("\r\nindex: "); Serial.print(incomingIndex);
+        // Serial.print(" ");
+        // for (byte i = 0; i < incomingIndex; i++) {
+        // Serial.print(incomingBytes[i]);
+        // Serial.print(" ");
+        //}
+        if (incomingBytes[incomingIndex - 2] == 13 && incomingBytes[incomingIndex - 1] == 10)
+        {
+            if (incomingBytes[0] == 128 && incomingBytes[1] == 129)
+            {
+
+                // Modules--Wifi:9999-->ESP32--serial-->Teensy--ethernet:9999-->AgIO
+                sendUDPbytes(incomingBytes, incomingIndex - 2);
+
+                // pass data to USB for debug
+                // Serial.print("\r\nE32-s->T41-e:9999->AgIO ");
+                // for (byte i = 0; i < incomingIndex - 2; i++) {
+                // Serial.print(incomingBytes[i]);
+                // Serial.print(" ");
+                //}
+                // Serial.print((String)" (" + SerialESP32->available() + ")");
+            }
+            else
+            {
+                Serial.print("\r\n\nCR/LF detected but [0]/[1] bytes != 128/129\r\n");
+            }
+            incomingIndex = 0;
+        }
+    }
+    ESP32usage.timeOut();
+}
+
 // Serial RTCM
 void serialRTCM()
 {
