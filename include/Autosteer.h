@@ -1,5 +1,6 @@
 #ifndef AUTOSTEER_H_
 #define AUTOSTEER_H_
+#include "common.h"
 /*
    UDP Autosteer code for Teensy 4.1
    For AgOpenGPS

@@ -8,6 +8,7 @@
 void gpsPoll()
 {
     // GPS1
+    GPS1usage.timeIn();
     if (!USB1DTR) // carry on like normal
     {
         uint16_t gps1Available = SerialGPS1.available();
@@ -80,8 +81,10 @@ void gpsPoll()
             SerialRS232.write(gps1Read);
         }
     }
+    GPS1usage.timeOut();
 
     // GPS2
+    GPS2usage.timeIn();
     if (!USB2DTR) // carry on like normal
     {
         uint16_t gps2Available = SerialGPS2.available();
@@ -101,11 +104,13 @@ void gpsPoll()
             ubxParser.parse(gps2Read);
         }
     }
+    GPS2usage.timeOut();
 }
 
 // Serial RTCM
 void serialRTCM()
 {
+    RS232usage.timeIn();
     if (SerialRTK.available())
     { // Check for RTK Radio RTCM data
         uint8_t rtcmByte = SerialRTK.read();
@@ -120,5 +125,7 @@ void serialRTCM()
     {                                     // Check for RS232 data
         Serial.write(SerialRS232.read()); // just print to USB for testing
     }
+    RS232usage.timeOut();
 }
+
 #endif
