@@ -48,6 +48,7 @@ void loop()
 {
   gpsPoll();
   gpsProc();
+  serialESP32();
   KeyaBus_Receive();
   autoSteerUpdate();
   serialRTCM();
