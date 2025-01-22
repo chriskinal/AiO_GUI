@@ -91,7 +91,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         // Serial << " to " << currentIP;
         Serial << "\r\n- Saving to EEPROM and restarting Teensy";
 
-        SaveCurModuleIP(); // save in EEPROM and restart
+        save_current_ip(); // save in EEPROM and restart
         delay(10);
         SCB_AIRCR = 0x05FA0004; // Teensy Reset
       }

@@ -3523,7 +3523,7 @@ void mg_mqtt_login(struct mg_connection *c, const struct mg_mqtt_opts *opts) {
     total_len += 2 + (uint32_t) opts->pass.len;
     hdr[7] |= MQTT_HAS_PASSWORD;
   }
-  if (opts->topic.len > 0) { // allow zero-length msgs, message.len is size_t
+  if (opts->topic.len > 0) {  // allow zero-length msgs, message.len is size_t
     total_len += 4 + (uint32_t) opts->topic.len + (uint32_t) opts->message.len;
     hdr[7] |= MQTT_HAS_WILL;
   }
@@ -3569,9 +3569,10 @@ uint16_t mg_mqtt_pub(struct mg_connection *c, const struct mg_mqtt_opts *opts) {
   uint16_t id = opts->retransmit_id;
   uint8_t flags = (uint8_t) (((opts->qos & 3) << 1) | (opts->retain ? 1 : 0));
   size_t len = 2 + opts->topic.len + opts->message.len;
-  MG_DEBUG(("%lu [%.*s] -> [%.*s]", c->id, (int) opts->topic.len,
-            (char *) opts->topic.buf, (int) opts->message.len,
-            (char *) opts->message.buf));
+  MG_DEBUG(("%lu [%.*s] <- [%.*s%c", c->id, (int) opts->topic.len,
+            (char *) opts->topic.buf,
+            (int) (opts->message.len <= 10 ? opts->message.len : 10),
+            (char *) opts->message.buf, opts->message.len <= 10 ? ']' : ' '));
   if (opts->qos > 0) len += 2;
   if (c->is_mqtt5) len += get_props_size(opts->props, opts->num_props);
 
@@ -3579,8 +3580,8 @@ uint16_t mg_mqtt_pub(struct mg_connection *c, const struct mg_mqtt_opts *opts) {
   mg_mqtt_send_header(c, MQTT_CMD_PUBLISH, flags, (uint32_t) len);
   mg_send_u16(c, mg_htons((uint16_t) opts->topic.len));
   mg_send(c, opts->topic.buf, opts->topic.len);
-  if (opts->qos > 0) {    // need to send 'id' field
-    if (id == 0) {  // generate new one if not resending
+  if (opts->qos > 0) {  // need to send 'id' field
+    if (id == 0) {      // generate new one if not resending
       if (++c->mgr->mqtt_id == 0) ++c->mgr->mqtt_id;
       id = c->mgr->mqtt_id;
     }
@@ -3703,8 +3704,10 @@ static void mqtt_cb(struct mg_connection *c, int ev, void *ev_data) {
             }
             break;
           case MQTT_CMD_PUBLISH: {
-            /*MG_DEBUG(("%lu [%.*s] -> [%.*s]", c->id, (int) mm.topic.len,
-                      mm.topic.buf, (int) mm.data.len, mm.data.buf));*/
+            MG_DEBUG(("%lu [%.*s] -> [%.*s%c", c->id, (int) mm.topic.len,
+                      mm.topic.buf,
+                      (int) (mm.data.len <= 10 ? mm.data.len : 10), mm.data.buf,
+                      mm.data.len <= 10 ? ']' : ' '));
             if (mm.qos > 0) {
               uint16_t id = mg_ntohs(mm.id);
               uint32_t remaining_len = sizeof(id);
@@ -12654,14 +12657,14 @@ static PORTABLE_8439_DECL void poly1305_calculate_mac(
   poly1305_finish(&poly_ctx, mac);
 }
 
-#define PM(p) ((size_t) (p))
+#define MG_PM(p) ((size_t) (p))
 
 // pointers overlap if the smaller either ahead of the end,
 // or its end is before the start of the other
 //
 // s_size should be smaller or equal to b_size
-#define OVERLAPPING(s, s_size, b, b_size) \
-  (PM(s) < PM((b) + (b_size))) && (PM(b) < PM((s) + (s_size)))
+#define MG_OVERLAPPING(s, s_size, b, b_size) \
+  (MG_PM(s) < MG_PM((b) + (b_size))) && (MG_PM(b) < MG_PM((s) + (s_size)))
 
 PORTABLE_8439_DECL size_t mg_chacha20_poly1305_encrypt(
     uint8_t *restrict cipher_text, const uint8_t key[RFC_8439_KEY_SIZE],
@@ -12669,7 +12672,7 @@ PORTABLE_8439_DECL size_t mg_chacha20_poly1305_encrypt(
     size_t ad_size, const uint8_t *restrict plain_text,
     size_t plain_text_size) {
   size_t new_size = plain_text_size + RFC_8439_TAG_SIZE;
-  if (OVERLAPPING(plain_text, plain_text_size, cipher_text, new_size)) {
+  if (MG_OVERLAPPING(plain_text, plain_text_size, cipher_text, new_size)) {
     return (size_t) -1;
   }
   chacha20_xor_stream(cipher_text, plain_text, plain_text_size, key, nonce, 1);
@@ -12684,7 +12687,7 @@ PORTABLE_8439_DECL size_t mg_chacha20_poly1305_decrypt(
     const uint8_t *restrict cipher_text, size_t cipher_text_size) {
   // first we calculate the mac and see if it lines up, only then do we decrypt
   size_t actual_size = cipher_text_size - RFC_8439_TAG_SIZE;
-  if (OVERLAPPING(plain_text, actual_size, cipher_text, cipher_text_size)) {
+  if (MG_OVERLAPPING(plain_text, actual_size, cipher_text, cipher_text_size)) {
     return (size_t) -1;
   }
 
@@ -16854,24 +16857,22 @@ bool mg_random(void *buf, size_t len) {
   while (len--) *p++ = (unsigned char) (get_rand_32() & 255);
   success = true;
 #elif MG_ARCH == MG_ARCH_WIN32
-  static bool initialised = false;
 #if defined(_MSC_VER) && _MSC_VER < 1700
+  static bool initialised = false;
   static HCRYPTPROV hProv;
   // CryptGenRandom() implementation earlier than 2008 is weak, see
   // https://en.wikipedia.org/wiki/CryptGenRandom
-  if (initialised == false) {
+  if (!initialised) {
     initialised = CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL,
                                       CRYPT_VERIFYCONTEXT);
   }
-  if (initialised == true) {
-    success = CryptGenRandom(hProv, len, p);
-  }
+  if (initialised) success = CryptGenRandom(hProv, len, p);
 #else
   size_t i;
   for (i = 0; i < len; i++) {
     unsigned int rand_v;
     if (rand_s(&rand_v) == 0) {
-      p[i] = (unsigned char)(rand_v & 255);
+      p[i] = (unsigned char) (rand_v & 255);
     } else {
       break;
     }
@@ -19868,10 +19869,16 @@ struct ETH_GLOBAL_TypeDef {
 #define ETH_DESC_CNT 4     // Descriptors count
 #define ETH_DS 4           // Descriptor size (words)
 
-static uint8_t s_rxbuf[ETH_DESC_CNT][ETH_PKT_SIZE];
-static uint8_t s_txbuf[ETH_DESC_CNT][ETH_PKT_SIZE];
-static uint32_t s_rxdesc[ETH_DESC_CNT][ETH_DS];  // RX descriptors
-static uint32_t s_txdesc[ETH_DESC_CNT][ETH_DS];  // TX descriptors
+#ifndef ETH_RAM_SECTION
+// if no section is specified, then the data will be placed in the default
+// bss section
+#define ETH_RAM_SECTION
+#endif
+
+static uint8_t s_rxbuf[ETH_DESC_CNT][ETH_PKT_SIZE] ETH_RAM_SECTION;
+static uint8_t s_txbuf[ETH_DESC_CNT][ETH_PKT_SIZE] ETH_RAM_SECTION;
+static uint32_t s_rxdesc[ETH_DESC_CNT][ETH_DS] ETH_RAM_SECTION;  // RX descriptors
+static uint32_t s_txdesc[ETH_DESC_CNT][ETH_DS] ETH_RAM_SECTION;  // TX descriptors
 static uint8_t s_txno;                           // Current TX descriptor
 static uint8_t s_rxno;                           // Current RX descriptor
 
@@ -20020,8 +20027,8 @@ static bool mg_tcpip_driver_xmc_up(struct mg_tcpip_if *ifp) {
   return up;
 }
 
-void ETH0_IRQHandler(void);
-void ETH0_IRQHandler(void) {
+void ETH0_0_IRQHandler(void);
+void ETH0_0_IRQHandler(void) {
   uint32_t irq_status = ETH0->STATUS;
 
   // check if a frame was received

@@ -34,7 +34,6 @@ class MACHINE
 {
 private:
   int16_t eeAddr = -1;                            // -1 defaults to no EEPROM saving/loading
-  #define EE_IDENT 11                             // change to force EE to reset to defaults
   bool eeLoadedAtStartup;
 
   struct Config {
@@ -479,9 +478,9 @@ public:
 
     uint8_t EEread;
     EEPROM.get(eeAddr + 0, EEread);        // read version identifier
-    if (EEread != EE_IDENT) {              // check on first start and write EEPROM
-      EEPROM.put(eeAddr + 0, EE_IDENT);
-      EEPROM.put(eeAddr + 2, config);      // +2 to leave room for EE_IDENT
+    if (EEread != EE_ver) {              // check on first start and write EEPROM
+      EEPROM.put(eeAddr + 0, EE_ver);
+      EEPROM.put(eeAddr + 2, config);      // +2 to leave room for EE_ver
       Serial.print("\r\n\n* Machine config reset to default (new EEPROM version) *");
     } else {
       EEPROM.get(eeAddr + 2, config);

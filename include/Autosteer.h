@@ -17,7 +17,6 @@ bool useInternalADC = false;
 bool useExternalADS = false;
 
 #include <EEPROM.h>
-const int EE_Ident = 2401; // if value in eeprom does not match, overwrite with defaults
 
 uint32_t autoSteerLastTime, currentTime;
 elapsedMillis autoSteerUpdateTimer;
@@ -113,12 +112,12 @@ void autosteerSetup()
   pinMode(WORK_PIN, INPUT_DISABLE);
   pinMode(CURRENT_PIN, INPUT_DISABLE);
 
-  uint16_t as_ee_read = EE_Ident;
+  uint16_t as_ee_read = EE_ver;
   EEPROM.get(1, as_ee_read);
 
-  if (as_ee_read != EE_Ident)
+  if (as_ee_read != EE_ver)
   { // if value in eeprom does not match, overwrite with defaults
-    EEPROM.put(1, EE_Ident);
+    EEPROM.put(1, EE_ver);
     EEPROM.put(10, steerSettings);
     EEPROM.put(40, steerConfig);
     Serial.print("\r\n- ** EEPROM reset to defaults! **");

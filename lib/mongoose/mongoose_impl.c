@@ -79,50 +79,45 @@ struct apihandler {
 
 struct attribute s_settings_attributes[] = {
   {"string_val", "string", NULL, offsetof(struct settings, string_val), 40, false},
-  {"log_level", "int", NULL, offsetof(struct settings, log_level), 0, false},
+  {"int_val", "int", NULL, offsetof(struct settings, int_val), 0, false},
   {"double_val", "double", "%.5f", offsetof(struct settings, double_val), 0, false},
+  {"bool_val", "bool", NULL, offsetof(struct settings, bool_val), 0, false},
+  {"work_sw", "int", NULL, offsetof(struct settings, work_sw), 0, false},
+  {"gps_pass", "bool", NULL, offsetof(struct settings, gps_pass), 0, false},
+  {"gps_type", "int", NULL, offsetof(struct settings, gps_type), 0, false},
   {"bd_ip1", "int", NULL, offsetof(struct settings, bd_ip1), 0, false},
   {"bd_ip2", "int", NULL, offsetof(struct settings, bd_ip2), 0, false},
   {"bd_ip3", "int", NULL, offsetof(struct settings, bd_ip3), 0, false},
   {"bd_ip4", "int", NULL, offsetof(struct settings, bd_ip4), 0, false},
-  {"bd_su1", "int", NULL, offsetof(struct settings, bd_su1), 0, false},
-  {"bd_su2", "int", NULL, offsetof(struct settings, bd_su2), 0, false},
-  {"bd_su3", "int", NULL, offsetof(struct settings, bd_su3), 0, false},
-  {"bd_su4", "int", NULL, offsetof(struct settings, bd_su4), 0, false},
-  {"bd_gw1", "int", NULL, offsetof(struct settings, bd_gw1), 0, false},
-  {"bd_gw2", "int", NULL, offsetof(struct settings, bd_gw2), 0, false},
-  {"bd_gw3", "int", NULL, offsetof(struct settings, bd_gw3), 0, false},
-  {"bd_gw4", "int", NULL, offsetof(struct settings, bd_gw4), 0, false},
-  {"single_gps", "bool", NULL, offsetof(struct settings, single_gps), 0, false},
-  {"single_gps_imu", "bool", NULL, offsetof(struct settings, single_gps_imu), 0, false},
-  {"dual_gps", "bool", NULL, offsetof(struct settings, dual_gps), 0, false},
-  {"um982_gga", "bool", NULL, offsetof(struct settings, um982_gga), 0, false},
-  {"um982_kxst", "bool", NULL, offsetof(struct settings, um982_kxst), 0, false},
+  {"fversion", "string", NULL, offsetof(struct settings, fversion), 40, false},
   {NULL, NULL, NULL, 0, 0, false}
 };
 static struct apihandler s_apihandlers[] = {
+  {"save", "action", false, 3, 7, 0UL, NULL, NULL, NULL, NULL, NULL, NULL, glue_check_save, glue_start_save, NULL, 0},
   {"reboot", "action", false, 3, 7, 0UL, NULL, NULL, NULL, NULL, NULL, NULL, glue_check_reboot, glue_start_reboot, NULL, 0},
   {"firmware_update", "ota", false, 3, 7, 0UL, NULL, NULL, NULL, glue_ota_begin_firmware_update, glue_ota_end_firmware_update, glue_ota_write_firmware_update, NULL, NULL, NULL, 0},
-  {"file_upload", "upload", false, 3, 7, 0UL, NULL, NULL, NULL, glue_file_open_file_upload, glue_file_close_file_upload, glue_file_write_file_upload, NULL, NULL, NULL, 0},
-  {"settings", "object", false, 3, 7, 0UL, s_settings_attributes, (void (*)(void *)) glue_get_settings, (void (*)(void *)) glue_set_settings, NULL, NULL, NULL, NULL, NULL, NULL, sizeof(struct settings)}
+  {"settings", "data", false, 3, 7, 0UL, s_settings_attributes, (void (*)(void *)) glue_get_settings, (void (*)(void *)) glue_set_settings, NULL, NULL, NULL, NULL, NULL, NULL, sizeof(struct settings)}
 };
 
-static struct apihandler *find_handler(struct mg_http_message *hm) {
-  size_t i;
-  if (hm->uri.len < 6 || strncmp(hm->uri.buf, "/api/", 5) != 0) return NULL;
+static struct apihandler *get_api_handler(struct mg_str name) {
   size_t num_handlers = sizeof(s_apihandlers) / sizeof(s_apihandlers[0]);
+  size_t i;
+  if (name.len == 0) return NULL;
   if (num_handlers == 0) return NULL;
   for (i = 0; i < num_handlers; i++) {
     struct apihandler *h = &s_apihandlers[i];
     size_t n = strlen(h->name);
-    if (n + 5 > hm->uri.len) continue;
-    if (strncmp(hm->uri.buf + 5, h->name, n) != 0) continue;
-    MG_INFO(("%.*s %s %lu %lu", hm->uri.len, hm->uri.buf, h->name, n + 5,
-             hm->uri.len));
-    if (n + 5 < hm->uri.len && hm->uri.buf[n + 5] != '/') continue;
+    if (n > name.len) continue;
+    if (strncmp(name.buf, h->name, n) != 0) continue;
+    if (name.len > n && name.buf[n] != '/') continue;
     return h;
   }
   return NULL;
+}
+
+static struct apihandler *find_handler(struct mg_http_message *hm) {
+  if (hm->uri.len < 6 || strncmp(hm->uri.buf, "/api/", 5) != 0) return NULL;
+  return get_api_handler(mg_str_n(hm->uri.buf + 5, hm->uri.len - 5));
 }
 
 void mg_json_get_str2(struct mg_str json, const char *path, char *buf,
@@ -417,7 +412,7 @@ static void handle_graph(struct mg_connection *c, struct mg_http_message *hm,
 
 static void handle_api_call(struct mg_connection *c, struct mg_http_message *hm,
                             struct apihandler *h) {
-  if (strcmp(h->type, "object") == 0) {
+  if (strcmp(h->type, "object") == 0 || strcmp(h->type, "data") == 0) {
     handle_object(c, hm, h);
   } else if (strcmp(h->type, "action") == 0) {
     handle_action(c, hm, h->checker, h->starter);

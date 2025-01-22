@@ -66,35 +66,26 @@ void glue_update_state(void);
 
 // Firmware Glue
 
+bool glue_check_save(void);
+void glue_start_save(void);
 bool glue_check_reboot(void);
 void glue_start_reboot(void);
 void *glue_ota_begin_firmware_update(char *file_name, size_t total_size);
 bool glue_ota_end_firmware_update(void *context);
 bool glue_ota_write_firmware_update(void *context, void *buf, size_t len);
-void *glue_file_open_file_upload(char *file_name, size_t total_size);
-bool glue_file_close_file_upload(void *context);
-bool glue_file_write_file_upload(void *context, void *buf, size_t len);
 struct settings {
   char string_val[40];
-  int log_level;
+  int int_val;
   double double_val;
+  bool bool_val;
+  int work_sw;
+  bool gps_pass;
+  int gps_type;
   int bd_ip1;
   int bd_ip2;
   int bd_ip3;
   int bd_ip4;
-  int bd_su1;
-  int bd_su2;
-  int bd_su3;
-  int bd_su4;
-  int bd_gw1;
-  int bd_gw2;
-  int bd_gw3;
-  int bd_gw4;
-  bool single_gps;
-  bool single_gps_imu;
-  bool dual_gps;
-  bool um982_gga;
-  bool um982_kxst;
+  char fversion[40];
 };
 void glue_get_settings(struct settings *);
 void glue_set_settings(struct settings *);
