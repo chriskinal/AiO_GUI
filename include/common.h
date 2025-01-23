@@ -22,10 +22,6 @@ struct mg_connection *sendAgio;
 bool udpRunning = false;
 const uint16_t EE_ver = 2402; // if value in eeprom does not match, overwrite with defaults
 
-// GUI variables
-settings aio_settings;
-#include "configfuncs.h"
-
 // Led indicators. 1000ms RGB update, 255/64/127 RGB brightness balance levels for v5.0a
 // #include "LEDS.h"
 #include "LEDS_old.h"
@@ -159,13 +155,18 @@ bool ggaTimeout, relposnedTimeout;
 uint32_t dualTime;
 uint16_t ggaMissed;
 
-bool udpPassthrough = false; // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
+uint8_t gpsType = 1;
+bool gpsPass = false; // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
 bool gotCR = false;
 bool gotLF = false;
 bool gotDollar = false;
 char msgBuf[254];
 int msgBufLen = 0;
 // End
+
+// GUI variables
+settings aio_settings;
+#include "configfuncs.h"
 
 // Autosteer encoder class instance read single or double input values in Autosteer.ino
 #include "Encoder.h"

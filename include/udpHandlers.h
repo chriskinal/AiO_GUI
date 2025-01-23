@@ -278,7 +278,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       Serial.print(steerConfig.MinSpeed);
       Serial.println();
 
-      EEPROM.put(40, steerConfig);
+      EEPROM.put(200, steerConfig);
       steerConfigInit();
       return; // no other processing needed
     } // 0xFB (251) - SteerConfig
@@ -326,7 +326,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       Serial.print("\r\n AckermanFix ");
       Serial.print(steerSettings.AckermanFix);
 
-      EEPROM.put(10, steerSettings);
+      EEPROM.put(100, steerSettings);
       steerSettingsInit();
       return; // no other processing needed
     } // 0xFC (252) - Steer Settings

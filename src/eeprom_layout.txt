@@ -4,7 +4,7 @@ Address             Purpose
 200 - 299           Steer configuration
 300 - 399           IP address
 400 - 499           GPS options
-500 - 599           Machine
+500 - 599           Machine settings
 600 - 699
 700 - 799
 800 - 899
