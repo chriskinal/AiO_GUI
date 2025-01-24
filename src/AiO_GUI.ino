@@ -21,22 +21,25 @@ void setup()
   LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::PWR_ON);
 
   setCpuFrequency(600 * 1000000); // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
-  Eth_EEPROM();
-  ethernet_init();
-  mongoose_init();
-  udpSetup();
-  serialSetup();        // setup.h
-  parserSetup();        // setup.h
-  BNO.begin(SerialIMU); // BNO_RVC.cpp
-  autosteerSetup();     // Autosteer.h
-  CAN_Setup();          // Start CAN3 for Keya
+  ipSetup();                      // Load the IP address from EEPROM and setup the gateway and broadcast addresses
+  load_gps();                     // Load the GPS settings from EEPROM
+  load_config();                  // Sync the firmware EEPROM valuse to the GUI
+  ethernet_init();                // Bring up the ethernet hardware
+  mongoose_init();                // Bring the mongoose services
+  udpSetup();                     // Bring up the UDP connections to/from AgIO
+  serialSetup();                  // Configure the Serial comms
+  parserSetup();                  // Load the NMEA parser callbacks
+  BNO.begin(SerialIMU);           // Start the IMU
+  autosteerSetup();               // Initialize autosteer
+  CAN_Setup();                    // Start CAN3 for Keya
+
   machinePTR = new MACHINE;
   const uint8_t pcaOutputPinNumbers[8] = {1, 0, 12, 15, 9, 8, 6, 7}; // all 8 PCA9555 section/machine output pin numbers on v5.0a
   const uint8_t pcaInputPinNumbers[] = {14, 13, 11, 10, 2, 3, 4, 5}; // all 8 PCA9555 section/machine output "sensing" pin numbers on v5.0a
   if (outputs.begin())
   {
     Serial.print("\r\nSection outputs (PCA9555) detected (8 channels, low side switching)");
-    machinePTR->init(&outputs, pcaOutputPinNumbers, pcaInputPinNumbers, 100); // mach.h
+    machinePTR->init(&outputs, pcaOutputPinNumbers, pcaInputPinNumbers, 500); // mach.h
   }
 
   Serial.println("\r\n\nEnd of setup, waiting for GPS...\r\n");
@@ -76,12 +79,13 @@ void loop()
     prepImuPandaData();
     imuPandaSyncTrigger = false; // wait for next GGA update before resetting imuDelayTimer again
   }
-  
+
   // Check for debug input
   checkUSBSerial();
 
   // Print telemetry
-  if (bufferStatsTimer > 5000) printTelem();
+  if (bufferStatsTimer > 5000)
+    printTelem();
 
   // to count loop hz & get baseline cpu "idle" time
   LOOPusage.timeIn();

@@ -26,13 +26,12 @@ void gpsPoll()
             if (nmeaDebug)
                 Serial.write(gps1Read);
 
-            if (udpPassthrough == false)
+            if (gpsConfig.gpsPass == false)
             {
                 nmeaParser << gps1Read;
             }
             else
             {
-
                 switch (gps1Read)
                 {
                 case '$':
@@ -62,11 +61,8 @@ void gpsPoll()
                 }
                 if (gotCR && gotLF)
                 {
-                    // } // Send USB GPS data if enabled in user settings
-                    if (udpRunning)
-                    {
-                        sendUDPchars(msgBuf);
-                    }
+                    
+                    sendUDPchars(msgBuf);
                     gotCR = false;
                     gotLF = false;
                     gotDollar = false;
@@ -77,7 +73,6 @@ void gpsPoll()
                     LEDs.toggleTeensyLED();
                 }
             }
-
             SerialRS232.write(gps1Read);
         }
     }

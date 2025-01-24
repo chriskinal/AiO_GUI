@@ -84,14 +84,14 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       if (steer->recv.buf[4] == 5 && steer->recv.buf[5] == 201 && steer->recv.buf[6] == 201) // save in EEPROM and restart
       {
         // Serial << "\r\n- IP changed from " << currentIP;
-        currentIP[0] = steer->recv.buf[7];
-        currentIP[1] = steer->recv.buf[8];
-        currentIP[2] = steer->recv.buf[9];
+        netConfig.currentIP[0] = steer->recv.buf[7];
+        netConfig.currentIP[1] = steer->recv.buf[8];
+        netConfig.currentIP[2] = steer->recv.buf[9];
 
         // Serial << " to " << currentIP;
         Serial << "\r\n- Saving to EEPROM and restarting Teensy";
 
-        SaveCurModuleIP(); // save in EEPROM and restart
+        save_current_net(); // save in EEPROM and restart
         delay(10);
         SCB_AIRCR = 0x05FA0004; // Teensy Reset
       }
@@ -122,7 +122,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       {
 
         uint8_t scanReplySteer[] = {128, 129, 126, 203, 7,
-                                    currentIP[0], currentIP[1], currentIP[2], currentIP[3],
+                                    netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3],
                                     steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
         int16_t CK_A = 0;
         for (uint8_t i = 2; i < sizeof(scanReplySteer) - 1; i++)
@@ -135,7 +135,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         if (BNO.isActive)
         {
           uint8_t scanReplyIMU[] = {128, 129, 121, 203, 7,
-                                    currentIP[0], currentIP[1], currentIP[2], currentIP[3],
+                                    netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3],
                                     steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
           CK_A = 0;
           for (uint8_t i = 2; i < sizeof(scanReplyIMU) - 1; i++)
@@ -149,7 +149,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         if (gpsActive)
         {
           uint8_t scanReplyGPS[] = {128, 129, 120, 203, 7,
-                                    currentIP[0], currentIP[1], currentIP[2], currentIP[3],
+                                    netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3],
                                     steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
           CK_A = 0;
           for (uint8_t i = 2; i < sizeof(scanReplyGPS) - 1; i++)
@@ -164,7 +164,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         if (machinePTR->isInit)
         {
           uint8_t scanReplyMachine[] = {128, 129, 123, 203, 7,
-                                        currentIP[0], currentIP[1], currentIP[2], currentIP[3],
+                                        netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3],
                                         steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
           CK_A = 0;
           for (uint8_t i = 2; i < sizeof(scanReplyMachine) - 1; i++)
@@ -178,7 +178,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 
         Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", inoVersion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
         Serial.printf("\r\nAgIO IP:   ", steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], steer->rem.ip[3]);
-        Serial.printf("\r\nModule IP: ", currentIP[0], currentIP[1], currentIP[2], currentIP[3]);
+        Serial.printf("\r\nModule IP: ", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3]);
 
         if (BNO.isActive)
           Serial.print("\r\nBNO08x available via Serial/RVC Mode");
@@ -278,7 +278,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       Serial.print(steerConfig.MinSpeed);
       Serial.println();
 
-      EEPROM.put(40, steerConfig);
+      EEPROM.put(200, steerConfig);
       steerConfigInit();
       return; // no other processing needed
     } // 0xFB (251) - SteerConfig
@@ -326,7 +326,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       Serial.print("\r\n AckermanFix ");
       Serial.print(steerSettings.AckermanFix);
 
-      EEPROM.put(10, steerSettings);
+      EEPROM.put(100, steerSettings);
       steerSettingsInit();
       return; // no other processing needed
     } // 0xFC (252) - Steer Settings

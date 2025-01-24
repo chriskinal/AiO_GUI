@@ -14,13 +14,19 @@
 #include "mongoose_glue.h"
 
 // Networking variables
-static const uint8_t defaultIP[5] = {192, 168, 5, 126};
-uint8_t currentIP[5] = {192, 168, 5, 126};
-uint8_t gatewayIP[5] = {192, 168, 5, 1};
-uint8_t broadcastIP[5] = {192, 168, 5, 255};
+struct NetConfigStruct
+{
+  static const uint8_t defaultIP[5] = {192, 168, 5, 126};
+  uint8_t currentIP[5] = {192, 168, 5, 126};
+  uint8_t gatewayIP[5] = {192, 168, 5, 1};
+  uint8_t broadcastIP[5] = {192, 168, 5, 255};
+};
+NetConfigStruct const defaultNet;
+NetConfigStruct netConfig = defaultNet;
+
+
 struct mg_connection *sendAgio;
-bool udpRunning = false;
-const int EE_ver = 2402; // if value in eeprom does not match, overwrite with defaults
+const uint16_t EE_ver = 2403; // if value in eeprom does not match, overwrite with defaults
 
 // Led indicators. 1000ms RGB update, 255/64/127 RGB brightness balance levels for v5.0a
 // #include "LEDS.h"
@@ -155,13 +161,23 @@ bool ggaTimeout, relposnedTimeout;
 uint32_t dualTime;
 uint16_t ggaMissed;
 
-bool udpPassthrough = false; // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
+struct GPSConfigStruct
+{
+  uint8_t gpsType = 1;
+  bool gpsPass = false; // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
+};
+GPSConfigStruct gpsConfig;
+
 bool gotCR = false;
 bool gotLF = false;
 bool gotDollar = false;
 char msgBuf[254];
 int msgBufLen = 0;
 // End
+
+// GUI variables
+settings aio_settings;
+#include "configfuncs.h"
 
 // Autosteer encoder class instance read single or double input values in Autosteer.ino
 #include "Encoder.h"
@@ -190,40 +206,6 @@ PCA9555 outputs(0x20);  // 0x20 - I2C addr (A0-A2 grounded), interrupt pin cause
 
 #include "machine.h"
 MACHINE *machinePTR;
-
-// Write IP to module
-void SaveDefModuleIP(void)
-{
-  // ID stored in 60
-  EEPROM.put(62, defaultIP[0]);
-  EEPROM.put(63, defaultIP[1]);
-  EEPROM.put(64, defaultIP[2]);
-}
-
-// Write IP to module
-void SaveCurModuleIP(void)
-{
-  // ID stored in 60
-  EEPROM.put(62, defaultIP[0]);
-  EEPROM.put(63, defaultIP[1]);
-  EEPROM.put(64, defaultIP[2]);
-}
-
-static uint32_t ipv4str(const char *str)
-{
-  struct mg_addr a = {};
-  mg_aton(mg_str(str), &a);
-  return *(uint32_t *)&a.ip;
-}
-
-static uint32_t ipv4ary(const uint8_t input[])
-{
-  char buf[16];
-  mg_snprintf(buf, sizeof(buf), "%d.%d.%d.%d", input[0], input[1], input[2], input[3]);
-  struct mg_addr a = {};
-  mg_aton(mg_str(buf), &a);
-  return *(uint32_t *)&a.ip;
-}
 
 // MultiUSB
 #if defined(USB_DUAL_SERIAL) || defined(USB_TRIPLE_SERIAL)

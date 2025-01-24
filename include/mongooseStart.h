@@ -4,53 +4,18 @@
 #include "mongoose.h"
 #include "udpHandlers.h"
 
-void Eth_EEPROM()
-{
-
-  uint16_t eth_ee_read;
-  EEPROM.get(60, eth_ee_read);
-
-  if (eth_ee_read != EE_ver)
-  { // if EE is out of sync, write defaults to EE
-    EEPROM.put(60, EE_ver);
-    SaveDefModuleIP();
-    Serial.print("\r\n\nWriting Eth defaults to EEPROM\r\n");
-  }
-  else
-  {
-    EEPROM.get(62, currentIP[0]);
-    EEPROM.get(63, currentIP[1]);
-    EEPROM.get(64, currentIP[2]);
-  }
-
-  gatewayIP[0] = currentIP[0];
-  gatewayIP[1] = currentIP[1];
-  gatewayIP[2] = currentIP[2];
-  gatewayIP[3] = 1;
-
-  broadcastIP[0] = currentIP[0];
-  broadcastIP[1] = currentIP[1];
-  broadcastIP[2] = currentIP[2];
-  broadcastIP[3] = 255; // same subnet as module's IP but use broadcast
-
-  // Serial.println(String("Module IP: ") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".126"));
-  // Serial.println(String("Gateway IP: ") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".1"));
-  // Serial.println(String("Broadcast IP: ") + String(broadcastIP[0]) + String(".") + String(broadcastIP[1]) + String(".") + String(broadcastIP[2]) + String(".255"));
-  // Serial.println();
-}
-
 void udpSetup()
 {
   g_mgr.ifp->enable_dhcp_client = 0;
-  g_mgr.ifp->ip = ipv4ary(currentIP);
-  g_mgr.ifp->gw = ipv4ary(gatewayIP);
+  g_mgr.ifp->ip = ipv4ary(netConfig.currentIP);
+  g_mgr.ifp->gw = ipv4ary(netConfig.gatewayIP);
   g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
 
   char steerListen[50];
   char rtcmListen[50];
-  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", currentIP[0], currentIP[1], currentIP[2]);
+  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
   // Serial.println(steerListen);
-  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", currentIP[0], currentIP[1], currentIP[2]);
+  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
   // Serial.println(rtcmListen);
   bool listenSteer = false;
   bool listenRtcm = false;
@@ -79,11 +44,11 @@ void udpSetup()
   // Create UDP connection to broadcast address
   char agioURL[25];
   strcpy(agioURL, "udp://");
-  itoa(currentIP[0], agioURL + strlen(agioURL), 10);
+  itoa(netConfig.currentIP[0], agioURL + strlen(agioURL), 10);
   strcat(agioURL, ".");
-  itoa(currentIP[1], agioURL + strlen(agioURL), 10);
+  itoa(netConfig.currentIP[1], agioURL + strlen(agioURL), 10);
   strcat(agioURL, ".");
-  itoa(currentIP[2], agioURL + strlen(agioURL), 10);
+  itoa(netConfig.currentIP[2], agioURL + strlen(agioURL), 10);
   strcat(agioURL, ".255:9999");
 
   sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);
@@ -99,25 +64,6 @@ void udpSetup()
     Serial.println("Trying to connect to AgIO");
     return;
   }
-
-  // // Create connection URL
-  // String agioURL = String("udp://") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".255:9999");
-  // char agioSend[agioURL.length() + 1] ={};
-  // strcpy(agioSend, agioURL.c_str());
-
-  // // Create UDP connection to broadcast address
-  // sendAgio = mg_connect(&g_mgr, agioSend, NULL, NULL);
-  // if (sendAgio == !NULL) {
-  //   agioConnect = true;
-  //   Serial.println("Connected to AgIO");
-  // }
-  // else
-  // {
-  //   Serial.println("Failed to connect to AgIO");
-  //   return;
-  // }
-
-  // if ( listenRtcm && listenSteer) udpRunning = true;
 }
 
 extern "C"
