@@ -26,7 +26,7 @@ void gpsPoll()
             if (nmeaDebug)
                 Serial.write(gps1Read);
 
-            if (gpsPass == false)
+            if (gpsConfig.gpsPass == false)
             {
                 nmeaParser << gps1Read;
             }

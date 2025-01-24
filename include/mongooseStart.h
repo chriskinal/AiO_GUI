@@ -7,15 +7,15 @@
 void udpSetup()
 {
   g_mgr.ifp->enable_dhcp_client = 0;
-  g_mgr.ifp->ip = ipv4ary(currentIP);
-  g_mgr.ifp->gw = ipv4ary(gatewayIP);
+  g_mgr.ifp->ip = ipv4ary(netConfig.currentIP);
+  g_mgr.ifp->gw = ipv4ary(netConfig.gatewayIP);
   g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
 
   char steerListen[50];
   char rtcmListen[50];
-  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", currentIP[0], currentIP[1], currentIP[2]);
+  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
   // Serial.println(steerListen);
-  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", currentIP[0], currentIP[1], currentIP[2]);
+  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
   // Serial.println(rtcmListen);
   bool listenSteer = false;
   bool listenRtcm = false;
@@ -44,11 +44,11 @@ void udpSetup()
   // Create UDP connection to broadcast address
   char agioURL[25];
   strcpy(agioURL, "udp://");
-  itoa(currentIP[0], agioURL + strlen(agioURL), 10);
+  itoa(netConfig.currentIP[0], agioURL + strlen(agioURL), 10);
   strcat(agioURL, ".");
-  itoa(currentIP[1], agioURL + strlen(agioURL), 10);
+  itoa(netConfig.currentIP[1], agioURL + strlen(agioURL), 10);
   strcat(agioURL, ".");
-  itoa(currentIP[2], agioURL + strlen(agioURL), 10);
+  itoa(netConfig.currentIP[2], agioURL + strlen(agioURL), 10);
   strcat(agioURL, ".255:9999");
 
   sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);

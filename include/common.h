@@ -14,12 +14,19 @@
 #include "mongoose_glue.h"
 
 // Networking variables
-static const uint8_t defaultIP[5] = {192, 168, 5, 126};
-uint8_t currentIP[5] = {192, 168, 5, 126};
-uint8_t gatewayIP[5] = {192, 168, 5, 1};
-uint8_t broadcastIP[5] = {192, 168, 5, 255};
+struct NetConfigStruct
+{
+  static const uint8_t defaultIP[5] = {192, 168, 5, 126};
+  uint8_t currentIP[5] = {192, 168, 5, 126};
+  uint8_t gatewayIP[5] = {192, 168, 5, 1};
+  uint8_t broadcastIP[5] = {192, 168, 5, 255};
+};
+NetConfigStruct const defaultNet;
+NetConfigStruct netConfig = defaultNet;
+
+
 struct mg_connection *sendAgio;
-const uint16_t EE_ver = 2402; // if value in eeprom does not match, overwrite with defaults
+const uint16_t EE_ver = 2403; // if value in eeprom does not match, overwrite with defaults
 
 // Led indicators. 1000ms RGB update, 255/64/127 RGB brightness balance levels for v5.0a
 // #include "LEDS.h"
@@ -154,8 +161,13 @@ bool ggaTimeout, relposnedTimeout;
 uint32_t dualTime;
 uint16_t ggaMissed;
 
-uint8_t gpsType = 1;
-bool gpsPass = false; // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
+struct GPSConfigStruct
+{
+  uint8_t gpsType = 1;
+  bool gpsPass = false; // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
+};
+GPSConfigStruct gpsConfig;
+
 bool gotCR = false;
 bool gotLF = false;
 bool gotDollar = false;
