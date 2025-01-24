@@ -192,6 +192,8 @@ void buildPandaOrPaogi(bool _panda) // only called by GGA_Handler (above)
   CalculateChecksum();
   strcat(nmea, "\r\n");
 
+  sendUDPchars(nmea);
+
   if (nmeaDebug)
   {
     // Serial.print("\r\n");
@@ -200,16 +202,6 @@ void buildPandaOrPaogi(bool _panda) // only called by GGA_Handler (above)
     Serial.write(nmea);
     Serial.println();
     extraCRLF = false;
-  }
-
-  udpRunning = true;
-  if (udpRunning) // If ethernet running send the GPS there
-  {
-    sendUDPchars(nmea);
-  }
-  else if (!nmeaDebug)
-  {
-    // Serial.write(nmea);  // if Eth is !connected, send USB GPS data
   }
 }
 

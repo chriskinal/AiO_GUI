@@ -64,25 +64,6 @@ void udpSetup()
     Serial.println("Trying to connect to AgIO");
     return;
   }
-
-  // // Create connection URL
-  // String agioURL = String("udp://") + String(currentIP[0]) + String(".") + String(currentIP[1]) + String(".") + String(currentIP[2]) + String(".255:9999");
-  // char agioSend[agioURL.length() + 1] ={};
-  // strcpy(agioSend, agioURL.c_str());
-
-  // // Create UDP connection to broadcast address
-  // sendAgio = mg_connect(&g_mgr, agioSend, NULL, NULL);
-  // if (sendAgio == !NULL) {
-  //   agioConnect = true;
-  //   Serial.println("Connected to AgIO");
-  // }
-  // else
-  // {
-  //   Serial.println("Failed to connect to AgIO");
-  //   return;
-  // }
-
-  // if ( listenRtcm && listenSteer) udpRunning = true;
 }
 
 extern "C"
