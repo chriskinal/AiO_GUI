@@ -12,6 +12,7 @@
 #include "misc.h"
 #include "mongoose.h"
 #include "mongoose_glue.h"
+#include "RingBuf.h"
 
 // Networking variables
 struct NetConfigStruct
@@ -188,6 +189,8 @@ Encoder encoder(KICKOUT_D_PIN, KICKOUT_A_PIN);
 #include "BNO_RVC.h"
 BNO_RVC BNO;
 // End
+RingBuf<BNO_RVC_DATA, 11> bnoRing;
+BNO_RVC_DATA bnoRingData;
 
 // Keya CANBus steer motor
 #include <FlexCAN_T4.h>

@@ -62,7 +62,7 @@ void prepImuPandaData() // run after GGA update + 40ms (timing for PANDA), for n
   if (BNO.isActive)
   {
     itoa(BNO.rvcData.yawX10, IMU.heading, 10); // format IMU data for Panda Sentence - Heading
-
+    
     if (BNO.isSwapXY)
     {
       itoa(BNO.rvcData.pitchX10, IMU.roll, 10); // the pitch x10

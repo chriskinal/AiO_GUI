@@ -36,7 +36,7 @@
         "bool_val": {"type": "bool", "value": false}, 
         "work_sw": {"type": "int", "value": 10}, 
         "gps_pass": {"type": "bool", "value": false}, 
-        "gps_type": {"type": "int", "value": 1, "ui_value": 1}, 
+        "gps_type": {"type": "int", "value": 1, "ui_value": 6}, 
         "bd_ip1": {"type": "int", "value": 192}, 
         "bd_ip2": {"type": "int", "value": 168}, 
         "bd_ip3": {"type": "int", "value": 5}, 
@@ -68,7 +68,7 @@
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS Configuration", "classes": ""},
-                      {"type": "dropdown", "ref": "settings.gps_type", "options": "Single_GPS,Single_GPS_IMU,Dual_GPS,UM982_GGA,UM982_KSXT", "css": "min-width: 10em;", "classes": "", "autosave": true}
+                      {"type": "dropdown", "ref": "settings.gps_type", "options": "0ms,10ms - UM98x,2oms,30ms,40ms,5oms,60ms - F9P,70ms,80ms,90ms", "css": "min-width: 10em;", "classes": "", "autosave": true}
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS -> UDP -> AgIO", "classes": ""},
