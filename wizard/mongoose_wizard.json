@@ -68,7 +68,7 @@
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS Configuration", "classes": ""},
-                      {"type": "dropdown", "ref": "settings.gps_type", "options": "0ms,10ms - UM98x,2oms,30ms,40ms,5oms,60ms - F9P,70ms,80ms,90ms", "css": "min-width: 10em;", "classes": "", "autosave": true}
+                      {"type": "dropdown", "ref": "settings.gps_type", "options": "0ms,10ms - UM98x,20ms,30ms,40ms,50ms,60ms - F9P,70ms,80ms,90ms", "css": "min-width: 10em;", "classes": "", "autosave": true}
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS -> UDP -> AgIO", "classes": ""},
