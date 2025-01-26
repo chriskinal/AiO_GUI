@@ -25,9 +25,8 @@ struct NetConfigStruct
 NetConfigStruct const defaultNet;
 NetConfigStruct netConfig = defaultNet;
 
-
 struct mg_connection *sendAgio;
-const uint16_t EE_ver = 2403; // if value in eeprom does not match, overwrite with defaults
+const uint16_t EE_ver = 2404; // if value in eeprom does not match, overwrite with defaults
 
 // Led indicators. 1000ms RGB update, 255/64/127 RGB brightness balance levels for v5.0a
 // #include "LEDS.h"
@@ -156,15 +155,14 @@ uint32_t GPS2BAUD;
 #define PAOGI_DUAL 0
 bool startup = false;
 elapsedMillis LEDTimer;
-elapsedMillis imuPandaSyncTimer;
-bool posReady, gpsActive, imuPandaSyncTrigger;
+bool posReady, gpsActive;
 bool ggaTimeout, relposnedTimeout;
 uint32_t dualTime;
 uint16_t ggaMissed;
 
 struct GPSConfigStruct
 {
-  uint8_t gpsType = 1;
+  uint8_t gpsSync = 1;
   bool gpsPass = false; // False = GPS neeeds to send GGA, VTG & HPR messages. True = GPS needs to send KSXT messages only.
 };
 GPSConfigStruct gpsConfig;

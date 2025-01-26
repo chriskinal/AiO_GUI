@@ -59,7 +59,6 @@ void resetStartingTimersBuffers()
   SerialESP32.clear();
 #endif
   // machine.watchdogTimer = 0;
-  imuPandaSyncTimer = 0;
   startup = true;
 }
 

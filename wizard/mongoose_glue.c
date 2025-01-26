@@ -21,7 +21,7 @@ bool glue_check_save(void) {
 }
 void glue_start_save(void) {
   s_action_timeout_save = mg_now() + 1000; // Start save, finish after 1 second
-  MG_DEBUG(("s_setting: %s,%d,%d,%d,%d,%d", s_settings.fversion, s_settings.bd_ip1, s_settings.bd_ip2, s_settings.bd_ip3, s_settings.bd_ip4 ,s_settings.gps_type, s_settings.gps_pass));
+  MG_DEBUG(("s_setting: %s,%d,%d,%d,%d,%d,%d", s_settings.fversion, s_settings.bd_ip1, s_settings.bd_ip2, s_settings.bd_ip3, s_settings.bd_ip4 ,s_settings.gps_sync, s_settings.gps_pass));
   save_config();
 }
 

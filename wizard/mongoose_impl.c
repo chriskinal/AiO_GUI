@@ -84,7 +84,7 @@ struct attribute s_settings_attributes[] = {
   {"bool_val", "bool", NULL, offsetof(struct settings, bool_val), 0, false},
   {"work_sw", "int", NULL, offsetof(struct settings, work_sw), 0, false},
   {"gps_pass", "bool", NULL, offsetof(struct settings, gps_pass), 0, false},
-  {"gps_type", "int", NULL, offsetof(struct settings, gps_type), 0, false},
+  {"gps_sync", "int", NULL, offsetof(struct settings, gps_sync), 0, false},
   {"bd_ip1", "int", NULL, offsetof(struct settings, bd_ip1), 0, false},
   {"bd_ip2", "int", NULL, offsetof(struct settings, bd_ip2), 0, false},
   {"bd_ip3", "int", NULL, offsetof(struct settings, bd_ip3), 0, false},

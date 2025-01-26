@@ -54,50 +54,7 @@ bool aogGpsToAutoSteerLoopTimerEnabled;
 void errorHandler()
 {
   if (startup)
-    Serial.print("\r\n*** Unexpected characters in NMEA parser ***");
-}
-
-void prepImuPandaData() // run after GGA update + 40ms (timing for PANDA), for next GGA
-{
-  if (BNO.isActive)
-  {
-    itoa(BNO.rvcData.yawX10, IMU.heading, 10); // format IMU data for Panda Sentence - Heading
-    
-    if (BNO.isSwapXY)
-    {
-      itoa(BNO.rvcData.pitchX10, IMU.roll, 10); // the pitch x10
-      itoa(BNO.rvcData.rollX10, IMU.pitch, 10); // the roll x10
-    }
-    else
-    {
-      itoa(BNO.rvcData.pitchX10, IMU.pitch, 10); // the pitch x10
-      itoa(BNO.rvcData.rollX10, IMU.roll, 10);   // the roll x10
-    }
-
-    // YawRate
-    double angVel;
-    if (BNO.angCounter > 0)
-    {
-      angVel = ((double)BNO.rvcData.angVel) / (double)BNO.angCounter;
-      angVel *= 10.0;
-      BNO.angCounter = 0;
-      BNO.rvcData.angVel = (int16_t)angVel;
-    }
-    else
-    {
-      BNO.rvcData.angVel = 0;
-    }
-
-    itoa(BNO.rvcData.angVel, IMU.yawRate, 10);
-    BNO.rvcData.angVel = 0;
-  }
-  else // No BNO in RVC mode or its disconnected, set IMU PANDA components to signal AOG that there's no IMU
-  {
-    itoa(65535, IMU.heading, 10);
-    IMU.roll[0] = 0;
-    IMU.pitch[0] = 0;
-    IMU.yawRate[0] = 0;
-  }
+    Serial.print("\r\n*Unexpected characters in NMEA parser - Normal at startup*");
 }
 
 void CalculateChecksum(void)
@@ -132,7 +89,6 @@ void CalculateChecksum(void)
 void buildPandaOrPaogi(bool _panda) // only called by GGA_Handler (above)
 {
   gpsActive = true;
-
   if (_panda)
     strcpy(nmea, "$PANDA,");
   else
@@ -207,19 +163,93 @@ void buildPandaOrPaogi(bool _panda) // only called by GGA_Handler (above)
 
 void GGA_GNS_PostProcess() // called by either GGA or GNS handler
 {
-  posReady = true;       // we have new GGA or GNS sentence
-  imuPandaSyncTimer = 0; // reset imu timer
-  imuPandaSyncTrigger = true;
+  posReady = true; // we have new GGA or GNS sentence
   extraCRLF = true;
   gps1Stats.incHzCount();
   LEDs.setGpsLED(atoi(GGA.fixQuality));
   aogGpsToAutoSteerLoopTimer = 0;
 
   if (!ubxParser.useDual)
-  {                                  // if not using Dual
+  { // if not using Dual
+    if (BNO.isActive)
+    {
+      bnoRing.peek(bnoRingData, gpsConfig.gpsSync); // 10=0ms ago, 9=10ms ago, 8=20ms ago, 7=30ms ago, 6=40ms ago, 5=50ms ago, 4=60ms ago, 3=70ms ago, 2=80ms ago, 1=90ms ago, 0=100ms ago
+      itoa(bnoRingData.yawX10, IMU.heading, 10);    // format IMU data for Panda Sentence - Heading
+
+      if (BNO.isSwapXY)
+      {
+        itoa(bnoRingData.pitchX10, IMU.roll, 10); // the pitch x10
+        itoa(bnoRingData.rollX10, IMU.pitch, 10); // the roll x10
+      }
+      else
+      {
+        itoa(bnoRingData.pitchX10, IMU.pitch, 10); // the pitch x10
+        itoa(bnoRingData.rollX10, IMU.roll, 10);   // the roll x10
+      }
+
+      // YawRate
+      double angVel;
+      if (BNO.angCounter > 0)
+      {
+        angVel = ((double)bnoRingData.angVel) / (double)BNO.angCounter;
+        angVel *= 10.0;
+        BNO.angCounter = 0;
+        bnoRingData.angVel = (int16_t)angVel;
+      }
+      else
+      {
+        bnoRingData.angVel = 0;
+      }
+
+      itoa(BNO.rvcData.angVel, IMU.yawRate, 10);
+      bnoRingData.angVel = 0;
+    }
+    else // No BNO in RVC mode or its disconnected, set IMU PANDA components to signal AOG that there's no IMU
+    {
+      itoa(65535, IMU.heading, 10);
+      IMU.roll[0] = 0;
+      IMU.pitch[0] = 0;
+      IMU.yawRate[0] = 0;
+    }
+
     buildPandaOrPaogi(PANDA_SINGLE); // build the PANDA sentence right away
     posReady = false;
-  } // otherwise wait in main loop() until relposned(f9p) or hpr(um982) arrives
+  }
+  else
+  { // Dual is in use
+    if (ubxParser.relPosNedReady && posReady)
+    {                                   // if both GGA & relposNED are ready
+      buildPandaOrPaogi(PAOGI_DUAL);    // build a PAOGI msg
+      ubxParser.relPosNedReady = false; // reset for next relposned trigger
+      ubxParser.relPosNedRcvd = false;
+      posReady = false;
+    }
+
+    if (ubxParser.relPosTimer > 50 && ubxParser.relPosNedReady && startup)
+    { // to make sure old data isn't sent to AOG
+      ubxParser.relPosNedReady = 0;
+      if (!ubxParser.firstHeadingDetected)
+      {
+        Serial.print("\r\n**Heading data expired**\r\n");
+        ubxParser.firstHeadingDetected = 0;
+      }
+    }
+
+    if (ubxParser.relPosTimer > 150 && ubxParser.useDual && startup)
+    {
+      ubxParser.relPosTimer -= 100;
+      ubxParser.relMissed++;
+      if (nmeaDebug)
+        Serial.println();
+      Serial.print("\r\n");
+      Serial.print(millis());
+      Serial.print(" ");
+      Serial.printf("                   *** relposNED was missed or late! *** (%i)\r\n", ubxParser.relMissed);
+      ubxParser.clearCount();
+      posReady = false;
+      ubxParser.relPosNedReady = false;
+    }
+  }
 }
 
 void GNS_Handler() // Rec'd GNS
@@ -270,7 +300,6 @@ void GNS_Handler() // Rec'd GNS
     // Serial.print("\r\n");
     Serial.print(millis());
     Serial.printf(" GNS update (%i)", ggaMissed);
-    Serial.print(imuPandaSyncTimer);
     Serial.print(" ");
     Serial.println(atoi(&GGA.fixTime[strlen(GGA.fixTime) - 2]));
   }
@@ -296,10 +325,8 @@ void GGA_Handler() // Rec'd GGA
 
   if (nmeaDebug)
   {
-    // Serial.print("\r\n");
     Serial.print(millis());
     Serial.printf(" GGA update (%i)", ggaMissed);
-    Serial.print(imuPandaSyncTimer);
     Serial.print(" ");
     Serial.println(atoi(&GGA.fixTime[strlen(GGA.fixTime) - 2]));
   }
@@ -334,17 +361,20 @@ void HPR_Handler()
   // Keep ubx stuff in main loop happy
   ubxParser.relPosNedReady = true;
   if (!ubxParser.useDual)
+  {
     ubxParser.firstHeadingDetected = 1;
+  }
   ubxParser.useDual = true;
   ubxParser.relPosTimer = 0;
 
   if (fuseImu.fuseData.useFUSEImu)
   { // Three separate if/else cluases for clarity. Can be one.
     // Send data to FUSEImu
+    bnoRing.peek(bnoRingData, gpsConfig.gpsSync); // 10=0ms ago, 9=10ms ago, 8=20ms ago, 7=30ms ago, 6=40ms ago, 5=50ms ago, 4=60ms ago, 3=70ms ago, 2=80ms ago, 1=90ms ago, 0=100ms ago
     fuseImu.fuseData.rollDual = atof(HPR.roll);
     fuseImu.fuseData.heading = atof(HPR.heading);
-    fuseImu.fuseData.correctionHeading = BNO.rvcData.yawX10;
-    fuseImu.fuseData.rollImu = BNO.rvcData.pitchX10;
+    fuseImu.fuseData.correctionHeading = bnoRingData.yawX10;
+    fuseImu.fuseData.rollImu = bnoRingData.pitchX10;
     fuseImu.imuDualDelta();
   }
 
@@ -390,74 +420,6 @@ void HPR_Handler()
   // hprReady = 1;
 
   NMEA_Pusage.timeOut();
-}
-
-// GPS data processing
-void gpsProc()
-{
-  // ******************* For SINGLE/RIGHT *******************
-  if (imuPandaSyncTimer > 50 && startup)
-  { // to make sure old data isn't sent to AOG
-    if (posReady)
-    {
-      posReady = 0;
-      Serial.print("\r\n**Position data expired**\r\n");
-    }
-
-    if (extraCRLF && nmeaDebug)
-    {
-      Serial.print("\r\n");
-      extraCRLF = false;
-    }
-  }
-
-  if (imuPandaSyncTimer > 150 && startup)
-  {
-    imuPandaSyncTimer -= 100;
-    ggaMissed++;
-    if (nmeaDebug)
-      Serial.println();
-    Serial.print("\r\n");
-    Serial.print(millis());
-    Serial.print(" ");
-    Serial.printf("                 *** GGA was missed or late! *** (%i)\r\n", ggaMissed);
-    posReady = false;
-    ubxParser.relPosNedReady = false;
-  }
-
-  // ******************* For DUAL LEFT *******************
-  if (ubxParser.relPosNedReady && posReady)
-  {                                   // if both GGA & relposNED are ready
-    buildPandaOrPaogi(PAOGI_DUAL);    // build a PAOGI msg
-    ubxParser.relPosNedReady = false; // reset for next relposned trigger
-    ubxParser.relPosNedRcvd = false;
-    posReady = false;
-  }
-
-  if (ubxParser.relPosTimer > 50 && ubxParser.relPosNedReady && startup)
-  { // to make sure old data isn't sent to AOG
-    ubxParser.relPosNedReady = 0;
-    if (!ubxParser.firstHeadingDetected)
-    {
-      Serial.print("\r\n**Heading data expired**\r\n");
-      ubxParser.firstHeadingDetected = 0;
-    }
-  }
-
-  if (ubxParser.relPosTimer > 150 && ubxParser.useDual && startup)
-  {
-    ubxParser.relPosTimer -= 100;
-    ubxParser.relMissed++;
-    if (nmeaDebug)
-      Serial.println();
-    Serial.print("\r\n");
-    Serial.print(millis());
-    Serial.print(" ");
-    Serial.printf("                   *** relposNED was missed or late! *** (%i)\r\n", ubxParser.relMissed);
-    ubxParser.clearCount();
-    posReady = false;
-    ubxParser.relPosNedReady = false;
-  }
 }
 
 #endif // GNSSHANDLERS_H_
