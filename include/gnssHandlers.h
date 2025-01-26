@@ -370,7 +370,7 @@ void HPR_Handler()
   if (fuseImu.fuseData.useFUSEImu)
   { // Three separate if/else cluases for clarity. Can be one.
     // Send data to FUSEImu
-    bnoRing.peek(bnoRingData, gpsConfig.gpsSync); // 10=0ms ago, 9=10ms ago, 8=20ms ago, 7=30ms ago, 6=40ms ago, 5=50ms ago, 4=60ms ago, 3=70ms ago, 2=80ms ago, 1=90ms ago, 0=100ms ago
+    bnoRing.peek(bnoRingData, syncLUT[gpsConfig.gpsSync]); // 10=0ms ago, 9=10ms ago, 8=20ms ago, 7=30ms ago, 6=40ms ago, 5=50ms ago, 4=60ms ago, 3=70ms ago, 2=80ms ago, 1=90ms ago, 0=100ms ago
     fuseImu.fuseData.rollDual = atof(HPR.roll);
     fuseImu.fuseData.heading = atof(HPR.heading);
     fuseImu.fuseData.correctionHeading = bnoRingData.yawX10;
@@ -389,7 +389,7 @@ void HPR_Handler()
 
   if (fuseImu.fuseData.useFUSEImu)
   { // Three separate if/else cluases for clarity. Can be one.
-    // if ( HPR.solQuality == 4 ) {
+    // if ( GGA.fixQuality == 4 ) {
     ubxParser.ubxData.baseRelRoll = fuseImu.fuseData.rollDeltaSmooth;
     // } else {
     //   ubxParser.ubxData.baseRelRoll *= 0.9;     // "level off" dual roll
@@ -397,7 +397,7 @@ void HPR_Handler()
   }
   else
   {
-    if (HPR.solQuality == 4)
+    if (GGA.fixQuality == 4)
     {
       ubxParser.ubxData.baseRelRoll = atof(HPR.roll);
     }

@@ -167,6 +167,8 @@ struct GPSConfigStruct
 };
 GPSConfigStruct gpsConfig;
 
+const uint8_t syncLUT[12] = {10,9,8,7,6,5,4,3,2,1,0};
+
 bool gotCR = false;
 bool gotLF = false;
 bool gotDollar = false;
