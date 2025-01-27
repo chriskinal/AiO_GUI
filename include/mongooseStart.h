@@ -4,68 +4,6 @@
 #include "mongoose.h"
 #include "udpHandlers.h"
 
-void udpSetup()
-{
-  g_mgr.ifp->enable_dhcp_client = 0;
-  g_mgr.ifp->ip = ipv4ary(netConfig.currentIP);
-  g_mgr.ifp->gw = ipv4ary(netConfig.gatewayIP);
-  g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
-
-  char steerListen[50];
-  char rtcmListen[50];
-  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
-  // Serial.println(steerListen);
-  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
-  // Serial.println(rtcmListen);
-  bool listenSteer = false;
-  bool listenRtcm = false;
-  bool agioConnect = false;
-
-  if (mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL)
-  {
-    listenSteer = true;
-    Serial.println("Listening for AgIO on UDP 8888");
-  }
-  else
-  {
-    Serial.println("AgIO on UDP 8888 did not open");
-  }
-
-  if (mg_listen(&g_mgr, rtcmListen, rtcmHandler, NULL) != NULL)
-  {
-    listenRtcm = true;
-    Serial.println("Listening for RTCM on UDP 2233");
-  }
-  else
-  {
-    Serial.println("RTCM on UDP 2233 did not open");
-  }
-
-  // Create UDP connection to broadcast address
-  char agioURL[25];
-  strcpy(agioURL, "udp://");
-  itoa(netConfig.currentIP[0], agioURL + strlen(agioURL), 10);
-  strcat(agioURL, ".");
-  itoa(netConfig.currentIP[1], agioURL + strlen(agioURL), 10);
-  strcat(agioURL, ".");
-  itoa(netConfig.currentIP[2], agioURL + strlen(agioURL), 10);
-  strcat(agioURL, ".255:9999");
-
-  sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);
-  if (sendAgio == !NULL)
-  {
-    agioConnect = true;
-    MG_DEBUG(("Connected to AgIO"));
-    Serial.println("Connected to AgIO");
-  }
-  else
-  {
-    MG_DEBUG(("Trying to connect to AgIO"));
-    Serial.println("Trying to connect to AgIO");
-    return;
-  }
-}
-
 extern "C"
 {
 // #include "mongoose_glue.h"
@@ -104,6 +42,52 @@ extern "C"
     }
     return true;
   }
+
+// Custom log
+#if MG_ENABLE_CUSTOM_LOG
+  static void *s_log_func_param = NULL;
+
+  static mg_pfn_t s_log_func = mg_pfn_stdout;
+
+  static void logc(unsigned char c)
+  {
+    s_log_func((char)c, s_log_func_param);
+  }
+
+  static void logs(const char *buf, size_t len)
+  {
+    size_t i;
+    for (i = 0; i < len; i++)
+      logc(((unsigned char *)buf)[i]);
+  }
+
+  void mg_log_prefix(int level, const char *file, int line, const char *fname)
+  {
+    const char *p = strrchr(file, '/');
+    char buf[60];
+    size_t n;
+    if (p == NULL)
+      p = strrchr(file, '\\');
+    n = mg_snprintf(buf, sizeof(buf), "%-6lld %d %s:%d:%s", mg_millis(), level,
+                    p == NULL ? file : p + 1, line, fname);
+    if (n > sizeof(buf) - 2)
+      n = sizeof(buf) - 2;
+    while (n < sizeof(buf))
+      buf[n++] = '-';
+    buf[sizeof(buf) - 2] = '>';
+    logs(buf, n - 1);
+  }
+
+  void mg_log(const char *fmt, ...)
+  {
+    va_list ap;
+    va_start(ap, fmt);
+    mg_vxprintf(s_log_func, s_log_func_param, fmt, &ap);
+    va_end(ap);
+    logs("\r\n", 2);
+  }
+#endif
+  // end custom log
 }
 
 #define CLRSET(reg, clear, set) ((reg) = ((reg) & ~(clear)) | (set))

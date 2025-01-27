@@ -23,9 +23,9 @@ void setup()
   setCpuFrequency(600 * 1000000); // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
   ipSetup();                      // Load the IP address from EEPROM and setup the gateway and broadcast addresses
   load_gps();                     // Load the GPS settings from EEPROM
-  load_config();                  // Sync the firmware EEPROM valuse to the GUI
+  load_config();                  // Sync the firmware EEPROM values to the GUI
   ethernet_init();                // Bring up the ethernet hardware
-  mongoose_init();                // Bring the mongoose services
+  mongoose_init();                // Bring up the mongoose services
   udpSetup();                     // Bring up the UDP connections to/from AgIO
   serialSetup();                  // Configure the Serial comms
   parserSetup();                  // Load the NMEA parser callbacks

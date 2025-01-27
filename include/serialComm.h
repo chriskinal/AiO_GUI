@@ -17,7 +17,8 @@ void gpsPoll()
             if (gps1Available > sizeof(GPS1rxbuffer) - 10)
             { // this should not trigger except maybe at boot up
                 SerialGPS1.clear();
-                Serial.print((String) "\r\n" + millis() + " *** SerialGPS1 buffer cleared! ***");
+                //Serial.print((String) "\r\n" + millis() + " *SerialGPS1 buffer cleared!-Normal at startup*");
+                MG_DEBUG(("*SerialGPS1 buffer cleared!-Normal at startup*"));
                 return;
             }
             gps1Stats.update(gps1Available);
@@ -88,7 +89,7 @@ void gpsPoll()
             if (gps2Available > sizeof(GPS2rxbuffer) - 10)
             { // this should not trigger except maybe at boot up
                 SerialGPS2.clear();
-                Serial.print((String) "\r\n" + millis() + " *** SerialGPS2 buffer cleared! ***");
+                MG_DEBUG(("*SerialGPS2 buffer cleared!-Normal at startup*"));
                 return;
             }
             gps2Stats.update(gps2Available);
@@ -136,7 +137,7 @@ void serialESP32()
             }
             else
             {
-                Serial.print("\r\n\nCR/LF detected but [0]/[1] bytes != 128/129\r\n");
+                MG_DEBUG(("CR/LF detected but [0]/[1] bytes != 128/129"));
             }
             incomingIndex = 0;
         }
