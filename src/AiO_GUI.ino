@@ -50,7 +50,6 @@ void setup()
 void loop()
 {
   gpsPoll();
-  gpsProc();
   serialESP32();
   KeyaBus_Receive();
   autoSteerUpdate();
@@ -68,17 +67,11 @@ void loop()
   BNOusage.timeIn();
   if (BNO.read())
   { // there should be new data every 10ms (100hz)
+    bnoRing.pushOverwrite(BNO.rvcData);
     bnoStats.incHzCount();
     bnoStats.update(1); // 1 dummy value
   }
   BNOusage.timeOut();
-
-  // wait 40 msec (F9P) from prev GGA update, then update imu data for next PANDA sentence
-  if (imuPandaSyncTrigger && imuPandaSyncTimer >= 40)
-  {
-    prepImuPandaData();
-    imuPandaSyncTrigger = false; // wait for next GGA update before resetting imuDelayTimer again
-  }
 
   // Check for debug input
   checkUSBSerial();
