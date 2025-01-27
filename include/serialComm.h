@@ -62,7 +62,7 @@ void gpsPoll()
                 }
                 if (gotCR && gotLF)
                 {
-                    
+
                     sendUDPchars(msgBuf);
                     gotCR = false;
                     gotLF = false;
@@ -70,7 +70,6 @@ void gpsPoll()
                     memset(msgBuf, 0, 254);
                     msgBufLen = 0;
                     ubxParser.relPosTimer = 0;
-                    imuPandaSyncTimer = 0;
                     LEDs.toggleTeensyLED();
                 }
             }

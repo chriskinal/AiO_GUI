@@ -212,7 +212,6 @@ private:
       }
     }
     relRollOld = ubxData.baseRelRoll;
-
   }
 
   void handle_NAV_PVT(unsigned long iTOW,
