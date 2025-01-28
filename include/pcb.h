@@ -20,9 +20,9 @@ SpeedPulse speedPulse(SPEEDPULSE_PIN, SPEEDPULSE10_PIN); // misc.h
 const uint8_t BUZZER = 36;  // electromagnetic buzzer driven by NFET
 
 // Cytron/DRV8701
-#define DIR_PIN 6   // DRV8701-Cytron PWM2 pin (prev Dir pin)
-#define PWM_PIN 5   // DRV8701-Cytron PWM pin
 #define SLEEP_PIN 4 // DRV8701-Cytron Sleep pin, LOCK output
+#define PWM1_PIN  5 // DRV8701-Cytron PWM pin
+#define PWM2_PIN  6 // DRV8701-Cytron PWM2 pin (prev Dir pin)
 
 // Switches/Sensors
 #define STEER_PIN       2 // Switch/btn input for autosteer engage/disengage
@@ -33,11 +33,11 @@ const uint8_t BUZZER = 36;  // electromagnetic buzzer driven by NFET
 
 // ********* Serial Assignments *********
 HardwareSerial *SerialIMU = &Serial4; // IMU BNO-085 in RVC serial mode
-#define SerialRTK Serial3 // RTK radio
-#define SerialGPS1 Serial5
-#define SerialGPS2 Serial8
-#define SerialRS232 Serial7
-#define SerialESP32 Serial2
+#define SerialRTK   Serial3 // RTK radio
+#define SerialGPS1  Serial5 // GPS1 UART (Right F9P, or UM982)
+#define SerialGPS2  Serial8 // GPS2 UART (Left F9P)
+#define SerialRS232 Serial7 // RS232 UART
+#define SerialESP32 Serial2 // ESP32 UART (for ESP32 WiFi Bridge)
 
 // const int32_t baudGPS = 921600;
 const int32_t baudGPS = 460800;
