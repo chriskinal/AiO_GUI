@@ -88,29 +88,30 @@ void autosteerSetup()
   */
   if (PWM_Frequency == 0)
   {
-    analogWriteFrequency(PWM_PIN, 490);
-    analogWriteFrequency(SLEEP_PIN, 490);
+    analogWriteFrequency(PWM1_PIN, 490);
+    analogWriteFrequency(PWM2_PIN, 490);
   }
   else if (PWM_Frequency == 1)
   {
-    analogWriteFrequency(PWM_PIN, 122);
-    analogWriteFrequency(SLEEP_PIN, 122);
+    analogWriteFrequency(PWM1_PIN, 122);
+    analogWriteFrequency(PWM2_PIN, 122);
   }
   else if (PWM_Frequency == 2)
   {
-    analogWriteFrequency(PWM_PIN, 3921);
-    analogWriteFrequency(SLEEP_PIN, 3921);
+    analogWriteFrequency(PWM1_PIN, 3921);
+    analogWriteFrequency(PWM2_PIN, 3921);
   }
 
-  pinMode(DIR_PIN, OUTPUT);
+  pinMode(SLEEP_PIN, OUTPUT);
+  digitalWrite(SLEEP_PIN, LOW); // keep DRV8701 Cytron asleep
 
   // keep pulled high and drag low to activate, noise free safe
   pinMode(STEER_PIN, INPUT_PULLUP);
   pinMode(KICKOUT_D_PIN, INPUT_PULLUP); // also set by Encoder library
 
   // Disable pullup/down resistors for analog input pins
-  pinMode(WORK_PIN, INPUT_DISABLE);
-  pinMode(CURRENT_PIN, INPUT_DISABLE);
+  pinMode(WORK_PIN, INPUT_DISABLE);     // input driven by MCP6002 opamp
+  pinMode(CURRENT_PIN, INPUT_DISABLE);  // input driven by MCP6002 opamp
 
   uint16_t as_ee_read = EE_ver;
   EEPROM.get(1, as_ee_read);
@@ -285,18 +286,18 @@ void autoSteerUpdate()
       }
     }
 
-    uint8_t read = analogRead(WORK_PIN) > ANALOG_TRIG_THRES ? HIGH : LOW; // read work input
+    uint16_t read = analogRead(WORK_PIN) > ANALOG_TRIG_THRES + ANALOG_TRIG_HYST ? LOW : HIGH;  // read work input
 
     if (read != workInput)
     {
-      Serial.printf("\r\nWORK input: %s", (read == 1 ? "OFF" : "ON"));
+      Serial.printf("\r\nWORK input(%i): %s", read, (read == 1 ? "ON" : "OFF"));
       workInput = read;
     }
 
     switchByte = 0;
-    switchByte |= (kickoutInput << 2); // put remote in bit 2
-    switchByte |= (!steerState << 1);  // put steerInput status in bit 1 position
-    switchByte |= workInput;
+    switchByte |= (kickoutInput << 2); // put remote in bit 2, Matt - not exaclty sure what this does
+    switchByte |= (!steerState << 1);  // put inverted steerInput status in bit 1 position
+    switchByte |= !workInput;          // put inverted workInput into bit 0
 
     // ***************************** READ WAS *****************************
     // useExternalADS = true;
@@ -351,20 +352,13 @@ void autoSteerUpdate()
     // Serial.print("\r\nAS wd: "); Serial.print(watchdogTimer);
     if (watchdogTimer < WATCHDOG_THRESHOLD)
     {
-      // Enable H Bridge for IBT2, hyd aux, etc for cytron
-      if (steerConfig.CytronDriver)
-      {
+      // Enable H Bridge for Cytron, or JD DAC (triple analog output)
 #ifdef JD_DAC_H
-        jdDac.steerEnable(true); // select IBT2 for JD DAC control
-                                 // jdDac.ch4Enable(true);
+      jdDac.steerEnable(true); // select IBT2 for JD DAC control
+                               // jdDac.ch4Enable(true);
 #else
-        digitalWrite(SLEEP_PIN, steerConfig.IsRelayActiveHigh ? LOW : HIGH);
+      digitalWrite(SLEEP_PIN, HIGH);
 #endif
-      }
-      else
-      {
-        digitalWrite(DIR_PIN, 1);
-      }
 
       calcSteeringPID(); // do the pid
       motorDrive();      // out to motors the pwm value
@@ -379,19 +373,12 @@ void autoSteerUpdate()
       pulseCount = 0;
       encoder.write(0);
 
-      if (steerConfig.CytronDriver)
-      {
 #ifdef JD_DAC_H
-        jdDac.steerEnable(false);
-        // jdDac.ch4Enable(false);
+      jdDac.steerEnable(false);
+      // jdDac.ch4Enable(false);
 #else
-        digitalWrite(SLEEP_PIN, steerConfig.IsRelayActiveHigh ? bool(!pwmDrive) : bool(pwmDrive));
+      digitalWrite(SLEEP_PIN, LOW);
 #endif
-      }
-      else
-      {
-        digitalWrite(DIR_PIN, 0); // IBT2
-      }
 
       motorDrive(); // out to motors the pwm value
 

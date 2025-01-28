@@ -40,6 +40,7 @@ void calcSteeringPID(void)
   if (steerConfig.MotorDriveDirection)
     pwmDrive *= -1;
 
+  // *** This needs testing, so far it's the only alternative steering output this board should support (Cytron or Danfoss only, or can bus Keya)
   if (steerConfig.IsDanfoss)
   {
     // Danfoss: PWM 25% On = Left Position max  (below Valve=Center)
@@ -62,53 +63,36 @@ void motorDrive(void)
   // Keya can bus output, always send pwmDrive to keya, SteerKeya function will deal with it
   SteerKeya(pwmDrive); // use this for in tractor
 
-  if (steerConfig.CytronDriver)
-  {
 #ifdef JD_DAC_H
-    // For JD_DAC.h, MCP4728 QUAD DAC steering
-    // scale pwmDrive to DAC output
-    // 0 PWM (no WAS change needed) = 2048 centered DAC output (4096 / 2 to get center voltage)
-    DACusage.timeIn();
-    if (gpsSpeed < (float)steerConfig.MinSpeed / 10.0)
-      pwmDrive = 0;
-    pwmDisplay = jdDac.steerOutput(pwmDrive);
-    // jdDac.ch4Output(pwmDrive);  // now used by OGX
-    DACusage.timeOut();
+  // For JD_DAC.h, MCP4728 QUAD DAC steering
+  // scale pwmDrive to DAC output
+  // 0 PWM (no WAS change needed) = 2048 centered DAC output (4096 / 2 to get center voltage)
+  DACusage.timeIn();
+  if (gpsSpeed < (float)steerConfig.MinSpeed / 10.0)
+    pwmDrive = 0;
+  pwmDisplay = jdDac.steerOutput(pwmDrive);
+  // jdDac.ch4Output(pwmDrive);  // now used by OGX
+  DACusage.timeOut();
 #else
-    // Cytron Driver Dir + PWM Signal
-    if (pwmDrive > 0)
-    {
-      digitalWrite(DIR_PIN, HIGH);
-    }
-    else
-    {
-      digitalWrite(DIR_PIN, LOW);
-      pwmDrive = -1 * pwmDrive;
-    }
-
-    analogWrite(PWM_PIN, pwmDrive); // write out the 0 to 255 value
-    pwmDisplay = pwmDrive;
-#endif
+  // Cytron drv8701P Driver PWM1 + PWM2 Signal (like prev IBT2 option)
+  if (pwmDrive > 0)
+  {
+    analogWrite(PWM2_PIN, 0); // Turn off before other one on
+    analogWrite(PWM1_PIN, pwmDrive);
   }
   else
   {
-    // IBT 2 Driver DIR_PIN connected to BOTH enables
-    // PWM_PIN Left + SLEEP_PIN Right Signal
-    // kept in case someone hacked their AIO to use IBT2 style driver
-
-    if (pwmDrive > 0)
-    {
-      analogWrite(SLEEP_PIN, 0); // Turn off before other one on
-      analogWrite(PWM_PIN, pwmDrive);
-    }
-    else
-    {
-      pwmDrive = -1 * pwmDrive;
-      analogWrite(PWM_PIN, 0); // Turn off before other one on
-      analogWrite(SLEEP_PIN, pwmDrive);
-    }
-    pwmDisplay = pwmDrive;
+    pwmDrive = -1 * pwmDrive;
+    analogWrite(PWM1_PIN, 0); // Turn off before other one on
+    analogWrite(PWM2_PIN, pwmDrive);
   }
+
+  pwmDisplay = pwmDrive;
+#endif
+
+
+
+
 }
 
 #endif /* AUTOSTEERPID_H_ */
