@@ -7,7 +7,7 @@
 #include "common.h"
 
 // Send byte arrays to AgIO
-void sendUDPbytes(char *message, int msgLen)
+void sendUDPbytes(uint8_t *message, int msgLen)
 {
   UDP_Susage.timeIn();
   if (g_mgr.ifp->state != MG_TCPIP_STATE_READY)
