@@ -9,10 +9,8 @@ void setCpuFrequency(uint32_t _freq)
 
 void serialSetup()
 {
-  pinMode(PIEZO1, OUTPUT);
-  pinMode(PIEZO2, OUTPUT);
-  digitalWrite(PIEZO1, LOW);
-  digitalWrite(PIEZO2, LOW);
+  pinMode(BUZZER, OUTPUT);
+  digitalWrite(BUZZER, LOW);  // disables the buzzer's FET driver
 
   // setup GPS serial ports here
   SerialGPS1.begin(baudGPS);
