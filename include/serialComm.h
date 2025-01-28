@@ -17,7 +17,7 @@ void gpsPoll()
             if (gps1Available > sizeof(GPS1rxbuffer) - 10)
             { // this should not trigger except maybe at boot up
                 SerialGPS1.clear();
-                Serial.print((String) "\r\n" + millis() + " *** SerialGPS1 buffer cleared! ***");
+                Serial.print((String) "\r\n" + millis() + " *SerialGPS1 buffer cleared!-Normal at startup*");
                 return;
             }
             gps1Stats.update(gps1Available);
@@ -61,7 +61,7 @@ void gpsPoll()
                 }
                 if (gotCR && gotLF)
                 {
-                    
+
                     sendUDPchars(msgBuf);
                     gotCR = false;
                     gotLF = false;
@@ -69,7 +69,6 @@ void gpsPoll()
                     memset(msgBuf, 0, 254);
                     msgBufLen = 0;
                     ubxParser.relPosTimer = 0;
-                    imuPandaSyncTimer = 0;
                     LEDs.toggleTeensyLED();
                 }
             }
@@ -88,7 +87,7 @@ void gpsPoll()
             if (gps2Available > sizeof(GPS2rxbuffer) - 10)
             { // this should not trigger except maybe at boot up
                 SerialGPS2.clear();
-                Serial.print((String) "\r\n" + millis() + " *** SerialGPS2 buffer cleared! ***");
+                Serial.print((String) "\r\n" + millis() + " *SerialGPS2 buffer cleared!-Normal at startup*\r\n");
                 return;
             }
             gps2Stats.update(gps2Available);

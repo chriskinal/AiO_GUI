@@ -36,7 +36,7 @@
         "bool_val": {"type": "bool", "value": false}, 
         "work_sw": {"type": "int", "value": 10}, 
         "gps_pass": {"type": "bool", "value": false}, 
-        "gps_type": {"type": "int", "value": 1, "ui_value": 1}, 
+        "gps_sync": {"type": "int", "value": 6}, 
         "bd_ip1": {"type": "int", "value": 192}, 
         "bd_ip2": {"type": "int", "value": 168}, 
         "bd_ip3": {"type": "int", "value": 5}, 
@@ -67,8 +67,8 @@
                       {"format": "${settings.bd_ip4}", "classes": ""}
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
-                      {"type": "text", "format": "GPS Configuration", "classes": ""},
-                      {"type": "dropdown", "ref": "settings.gps_type", "options": "Single_GPS,Single_GPS_IMU,Dual_GPS,UM982_GGA,UM982_KSXT", "css": "min-width: 10em;", "classes": "", "autosave": true}
+                      {"type": "text", "format": "IMU/GPS Sync Delay", "classes": ""},
+                      {"type": "dropdown", "ref": "settings.gps_sync", "options": "0ms,10ms - UM98x,20ms,30ms,40ms,5oms,60ms - F9P,70ms,80ms,90ms", "css": "min-width: 10em;", "classes": "", "autosave": true}
                     ]},
                   {"type": "container", "classes": "container-h", "layout": [
                       {"type": "text", "format": "GPS -> UDP -> AgIO", "classes": ""},
@@ -82,22 +82,6 @@
               {"type": "container", "classes": "container-h wrap", "layout": []}
             ]}
         ]},
-      {"type": "page", "title": "Switches", "icon": "options", "classes": "page", "layout": [
-          {"type": "container", "classes": "container-h wrap", "css": "align-items: start;", "layout": [
-              {"type": "container", "classes": "panel", "css": "flex: 0 0 22rem;", "layout": [
-                  {"type": "text", "format": "Switches", "classes": "title"},
-                  {"type": "container", "classes": "panel", "layout": [
-                      {"type": "text", "format": "Work Switch", "classes": "title"},
-                      {"type": "container", "classes": "flex", "css": "gap: 1em;", "layout": [
-                          {"type": "gauge", "ref": "settings.work_sw", "min": 0, "max": "200", "color": "rgb(186,230,253)"}
-                        ]}
-                    ], "css": "flex: 0 0 12em;"},
-                  {"type": "container", "classes": "container-h", "layout": [
-                      {"type": "action", "title": "set value", "icon": "arrow-right", "ref": "settings"}
-                    ]}
-                ]}
-            ]}
-        ], "level": "3"},
       {"type": "page", "title": "Firmware Maintenance", "icon": "import", "classes": "page", "layout": [
           {"type": "container", "classes": "container-h wrap", "css": "align-items: start;", "layout": [
               {"type": "container", "classes": "panel", "css": "flex: 0 0 22rem;", "layout": [

@@ -80,7 +80,7 @@ struct settings {
   bool bool_val;
   int work_sw;
   bool gps_pass;
-  int gps_type;
+  int gps_sync;
   int bd_ip1;
   int bd_ip2;
   int bd_ip3;
