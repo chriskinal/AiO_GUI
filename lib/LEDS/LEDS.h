@@ -58,7 +58,7 @@ class LEDS {
 #define LED_INVERT true
 
 private:
-  Adafruit_PWMServoDriver ledDriver = Adafruit_PWMServoDriver(0x70); // RGB instance is 0x70 unless A5 Low solder jumper is closed, then 0x50
+  Adafruit_PWMServoDriver ledDriver = Adafruit_PWMServoDriver(0x70, Wire); // RGB instance is 0x70 unless A5 Low solder jumper is closed, then 0x50
 
   uint8_t mainBrightness = MAX_LED_BRIGHTNESS;     // main brightness level, 0-MAX_LED_BRIGHTNESS, controls all RGB LEDs
   uint8_t redBrightnessScale = MAX_LED_BRIGHTNESS; // sets brightness scaling, 0-MAX_LED_BRIGHTNESS, for balancing R G B elements
@@ -102,7 +102,7 @@ public:
   }
   LEDS(uint16_t _updatePeriod) {
     updatePeriod = _updatePeriod;
-    init();
+    //init();
   }
 
   LEDS(uint16_t _updatePeriod, uint8_t _redScale, uint8_t _greenScale, uint8_t _blueScale) {
@@ -110,7 +110,7 @@ public:
     redBrightnessScale = _redScale;
     greenBrightnessScale = _greenScale;
     blueBrightnessScale = _blueScale;
-    init();
+    //init();
   }
   ~LEDS(void) {
     allLedOff();
@@ -119,8 +119,9 @@ public:
   void init() {
     pinMode(GGA_LED, OUTPUT);
     ledDriver.begin();
+    Wire.setClock(1000000);
     ledDriver.setPWMFreq(120); // 120 hz should be enough to not notice, but increase if flickering
-    ledDriver.setOutputMode(false);
+    ledDriver.setOutputMode(false); // false: open drain, true: totempole (push/pull)
     allLedOff();
     updateLoop();
   }
@@ -296,11 +297,11 @@ public:
     intensity = (intensity * mainBrightness) / MAX_LED_BRIGHTNESS;
     ledDriver.setPin(pinAssingments[led][0], intensity, LED_INVERT);
 
-    intensity = R * MAX_LED_PWM / MAX_LED_BRIGHTNESS;
+    intensity = G * MAX_LED_PWM / MAX_LED_BRIGHTNESS;
     intensity = (intensity * mainBrightness) / MAX_LED_BRIGHTNESS;
     ledDriver.setPin(pinAssingments[led][1], intensity, LED_INVERT);
 
-    intensity = R * MAX_LED_PWM / MAX_LED_BRIGHTNESS;
+    intensity = B * MAX_LED_PWM / MAX_LED_BRIGHTNESS;
     intensity = (intensity * mainBrightness) / MAX_LED_BRIGHTNESS;
     ledDriver.setPin(pinAssingments[led][2], intensity, LED_INVERT);
   }

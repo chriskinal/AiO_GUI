@@ -18,6 +18,7 @@ void setup()
   Serial.print("Firmware version: ");
   Serial.print(inoVersion);
 
+  LEDs.init();
   LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::PWR_ON);
 
   setCpuFrequency(600 * 1000000); // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
