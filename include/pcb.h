@@ -40,8 +40,8 @@ HardwareSerial *SerialIMU = &Serial4; // IMU BNO-085 in RVC serial mode
 #define SerialESP32 Serial2 // ESP32 UART (for ESP32 WiFi Bridge)
 
 // const int32_t baudGPS = 921600;
-const int32_t baudGPS = 460800;
-const int32_t baudRTK = 460800; // most are using Xbee radios with default of 115200
+const int32_t baudGPS = 921600;
+const int32_t baudRTK = 115200; // most are using Xbee radios with default of 115200
 const int32_t baudRS232 = 38400;
 const int32_t baudESP32 = 460800;
 
