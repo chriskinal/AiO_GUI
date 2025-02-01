@@ -105,7 +105,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       sendUDPbytes(helloFromIMU, sizeof(helloFromIMU));
     }
 
-#ifdef MACHINE_H
+/*#ifdef MACHINE_H
     if (machinePTR->isInit)
     {
       uint8_t helloFromMachine[] = {0x80, 0x81, 123, 123, 5, 0, 0, 0, 0, 0, 71};
@@ -113,7 +113,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       helloFromMachine[6] = B01010101;
       sendUDPbytes(helloFromMachine, sizeof(helloFromMachine));
     }
-#endif
+#endif*/
 
     // 0xCA (202) - Scan Request
     if (steer->recv.buf[3] == 202 && steer->recv.len == 9)
@@ -160,7 +160,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
           sendUDPbytes(scanReplyGPS, sizeof(scanReplyGPS));
         }
 
-#ifdef MACHINE_H
+/*#ifdef MACHINE_H
         if (machinePTR->isInit)
         {
           uint8_t scanReplyMachine[] = {128, 129, 123, 203, 7,
@@ -174,7 +174,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
           scanReplyMachine[sizeof(scanReplyMachine) - 1] = CK_A;
           sendUDPbytes(scanReplyMachine, sizeof(scanReplyMachine));
         }
-#endif
+#endif*/
 
         Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", inoVersion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
         Serial.printf("\r\nAgIO IP:   ", steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], steer->rem.ip[3]);

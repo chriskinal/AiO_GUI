@@ -63,9 +63,9 @@ void checkUSBSerial()
       usbRead = Serial.read();
       if (usbRead >= '0' && usbRead <= '5')
       {
-        machinePTR->debugLevel = usbRead - '0'; // convert ASCII numerical char to byte
+        //machinePTR->debugLevel = usbRead - '0'; // convert ASCII numerical char to byte
       }
-      Serial.print((String) "\r\nMachine debugLevel: " + machinePTR->debugLevel);
+      //Serial.print((String) "\r\nMachine debugLevel: " + machinePTR->debugLevel);
     }
 #endif
     else if (usbRead == 'g' && Serial.available() > 0) // temporarily set GPS fix state according to standard GGA fix numbers (see LEDS.h, setGpsLED())
