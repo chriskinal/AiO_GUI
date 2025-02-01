@@ -12,22 +12,25 @@
 
 void setup()
 {
+  setCpuFrequency(600 * 1000000); // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
+  
   delay(3000); // Delay for tesing to allow opening serial terminal to see output
   Serial.begin(115200);
   Serial.print("\r\n\n\n*********************\r\nStarting setup...\r\n");
   Serial.print("Firmware version: ");
   Serial.print(inoVersion);
 
-  LEDs.init();
-  LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::PWR_ON);
-
-  setCpuFrequency(600 * 1000000); // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
-  ipSetup();                      // Load the IP address from EEPROM and setup the gateway and broadcast addresses
-  load_gps();                     // Load the GPS settings from EEPROM
-  load_config();                  // Sync the firmware EEPROM valuse to the GUI
   ethernet_init();                // Bring up the ethernet hardware
   mongoose_init();                // Bring the mongoose services
   udpSetup();                     // Bring up the UDP connections to/from AgIO
+
+  LEDs.init();
+  LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::PWR_ON);
+
+  ipSetup();                      // Load the IP address from EEPROM and setup the gateway and broadcast addresses
+  load_gps();                     // Load the GPS settings from EEPROM
+  load_config();                  // Sync the firmware EEPROM valuse to the GUI
+                    
   serialSetup();                  // Configure the Serial comms
   parserSetup();                  // Load the NMEA parser callbacks
   BNO.begin(SerialIMU);           // Start the IMU
