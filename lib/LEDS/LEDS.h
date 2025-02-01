@@ -118,10 +118,10 @@ public:
 
   void init() {
     pinMode(GGA_LED, OUTPUT);
-    ledDriver.begin();
-    Wire.setClock(1000000);
-    ledDriver.setPWMFreq(120); // 120 hz should be enough to not notice, but increase if flickering
-    ledDriver.setOutputMode(false); // false: open drain, true: totempole (push/pull)
+    //ledDriver.begin();
+    //Wire.setClock(1000000);
+    //ledDriver.setPWMFreq(120); // 120 hz should be enough to not notice, but increase if flickering
+    //ledDriver.setOutputMode(false); // false: open drain, true: totempole (push/pull)
     allLedOff();
     updateLoop();
   }
@@ -278,7 +278,7 @@ public:
     // this function will turn off a specific LED based on argument
     for (u_int8_t innerLoop = 0; innerLoop < 3; innerLoop++) {
       // there are 3 parts to each LED R, G, and B
-      ledDriver.setPin(pinAssingments[led][innerLoop], 0, LED_INVERT);
+      //ledDriver.setPin(pinAssingments[led][innerLoop], 0, LED_INVERT);
     }
   }
 
@@ -295,15 +295,15 @@ public:
     // this maintains parity with previous WS2811 functions
     u_int16_t intensity = R * MAX_LED_PWM / MAX_LED_BRIGHTNESS;
     intensity = (intensity * mainBrightness) / MAX_LED_BRIGHTNESS;
-    ledDriver.setPin(pinAssingments[led][0], intensity, LED_INVERT);
+    //ledDriver.setPin(pinAssingments[led][0], intensity, LED_INVERT);
 
     intensity = G * MAX_LED_PWM / MAX_LED_BRIGHTNESS;
     intensity = (intensity * mainBrightness) / MAX_LED_BRIGHTNESS;
-    ledDriver.setPin(pinAssingments[led][1], intensity, LED_INVERT);
+    //ledDriver.setPin(pinAssingments[led][1], intensity, LED_INVERT);
 
     intensity = B * MAX_LED_PWM / MAX_LED_BRIGHTNESS;
     intensity = (intensity * mainBrightness) / MAX_LED_BRIGHTNESS;
-    ledDriver.setPin(pinAssingments[led][2], intensity, LED_INVERT);
+    //ledDriver.setPin(pinAssingments[led][2], intensity, LED_INVERT);
   }
 
   /*  void printBinary(int var) {
