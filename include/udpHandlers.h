@@ -2,7 +2,7 @@
 #define UDPHANDLERS_H_
 #include "Arduino.h"
 #include "mongoose_glue.h"
-#include "machine.h"
+//#include "machine.h"
 #include "Autosteer.h"
 #include "common.h"
 
