@@ -204,11 +204,12 @@ bool keyaDetected = false;
 // bool USB2DTR = false;
 // End
 
-//#include "clsPCA9555.h" // https://github.com/nicoverduin/PCA9555
-//PCA9555 outputs(0x20);  // 0x20 - I2C addr (A0-A2 grounded), interrupt pin causes boot loop
+// for enabling & controlling AUX, LOCK & Section/Machine outputs
+#define I2C_WIRE       Wire     // used for PCA9685 aux, lock & section outputs (0x44), & RGB LEDs (0x70) in LEDS.h
+#include "Adafruit_PWMServoDriver.h" // https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library
+Adafruit_PWMServoDriver outputs = Adafruit_PWMServoDriver(0x44, I2C_WIRE); // RGB instance is 0x44 unless A2 Low solder jumper is closed, then 0x40
+#include "outputs.h"
 
-//#include "machine.h"
-//MACHINE *machinePTR;
 
 // MultiUSB
 #if defined(USB_DUAL_SERIAL) || defined(USB_TRIPLE_SERIAL)

@@ -31,6 +31,7 @@ void setup()
   LEDs.init();
   LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::PWR_ON);
 
+  outputsInit();                  // Initialize PCA9685 for LOCK, AUX & Sections/Machine outputs, enable LOCK & AUX outputs but leave others Hi-Z
   serialSetup();                  // Configure the Serial comms
   parserSetup();                  // Load the NMEA parser callbacks
   BNO.begin(SerialIMU);           // Start the IMU
@@ -66,6 +67,7 @@ void loop()
 
   MACHusage.timeIn();
   //machinePTR->watchdogCheck();
+  delayMicroseconds(10);
   MACHusage.timeOut();
 
   BNOusage.timeIn();
