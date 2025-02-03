@@ -447,8 +447,9 @@ void rtcmHandler(struct mg_connection *rtcm, int ev, void *ev_data, void *fn_dat
     {
       if (!USB1DTR)
         SerialGPS1.write(rtcm->recv.buf[i]);
-      if (!USB2DTR)
-        SerialGPS2.write(rtcm->recv.buf[i]);
+      // only send to GPS2 if using abnormal setup like OGX receiver on GPS2
+      /*if (!USB2DTR)
+        SerialGPS2.write(rtcm->recv.buf[i]);*/
       LEDs.queueBlueFlash(LED_ID::GPS);
     }
     mg_iobuf_del(&rtcm->recv, 0, rtcm->recv.len);
