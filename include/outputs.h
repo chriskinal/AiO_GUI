@@ -6,8 +6,8 @@ const uint8_t drvCnt = 5;
 
 // these pins needs a DRV8243 sleep reset pulse before they activate
 const uint8_t drvSleepPins[drvCnt] = {
-  14, // AUX nSLEEP
-  15, // LOCK nSLEEP
+  15, // AUX nSLEEP
+  14, // LOCK nSLEEP
   13, // Section 1/2 nSLEEP
    3, // Section 3/4 nSLEEP
    7  // Section 5/6 nSLEEP
