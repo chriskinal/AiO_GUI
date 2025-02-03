@@ -35,6 +35,7 @@ LEDS LEDs = LEDS(1000, 255, 64, 127);
 // End
 
 // Usage stats
+ProcessorUsage GUIusage((char *)"GUI   ");
 ProcessorUsage BNOusage((char *)"BNO   ");
 ProcessorUsage GPS1usage((char *)"GPS1  ");
 ProcessorUsage GPS2usage((char *)"GPS2  ");
@@ -52,11 +53,12 @@ ProcessorUsage DACusage((char *)"DAC   ");
 ProcessorUsage MACHusage((char *)"MACH  ");
 ProcessorUsage LEDSusage((char *)"LEDS  ");
 ProcessorUsage ESP32usage((char *)"ESP32 ");
-const uint8_t numCpuUsageTasks = 17;
+ProcessorUsage KEYAusage((char *)"KEYA  ");
+/*const uint8_t numCpuUsageTasks = 18;
 ProcessorUsage *cpuUsageArray[numCpuUsageTasks] = {
     &BNOusage, &GPS1usage, &GPS2usage, &PGNusage, &ASusage, &NTRIPusage,
     &RS232usage, &LOOPusage, &IMU_Husage, &NMEA_Pusage, &RTKusage, &UBX_Pusage,
-    &UDP_Susage, &DACusage, &MACHusage, &LEDSusage, &ESP32usage};
+    &UDP_Susage, &DACusage, &MACHusage, &LEDSusage, &ESP32usage, &GUIusage};*/
 HighLowHzStats gps2Stats;
 HighLowHzStats gps1Stats;
 HighLowHzStats relJitterStats;
@@ -65,7 +67,7 @@ HighLowHzStats bnoStats;
 
 elapsedMillis bufferStatsTimer;
 uint32_t testCounter;
-bool printCpuUsages = false;
+bool printCpuUsages = true;
 bool printStats = false;
 // End
 

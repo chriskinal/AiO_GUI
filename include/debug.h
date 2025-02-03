@@ -234,8 +234,8 @@ void printTelem()
 
   if (printCpuUsages)
   {
-    // just hammering testCounter++ in the main loop uses some CPU time
-    // baselineProcUsage gets that value, which is used to offset the other usage checks that are hammered in the main loop (or at the same freq)
+    // just hammering testCounter++ in the main loop() uses some CPU time
+    // baselineProcUsage gets that value, which is used to offset the other usage checks that are hammered in the same main loop() (at the same freq)
     uint32_t baselineProcUsage = LOOPusage.reportAve();
     uint32_t dacReport = DACusage.reportAve(); // subracted from AS cpu usage below
 
@@ -243,10 +243,14 @@ void printTelem()
     printCpuPercent(baselineProcUsage);
     Serial.print(" ");
     Serial.print(testCounter / bufferStatsTimer);
-    Serial.print("kHz"); // up to 400k hits/s
+    Serial.print("kHz");
+    // 300,000+ hits/s (300+ khz loop() speed) on prev generation non-UI dev firmware
+    // new Mongoose UI based firmware runs at 100+ khz 
 
+    Serial.print("\r\nGUI    cpu: ");
+    printCpuPercent(GUIusage.reportAve(baselineProcUsage));
     Serial.print("\r\nBNO_R  cpu: ");
-    printCpuPercent(cpuUsageArray[0]->reportAve(baselineProcUsage));
+    printCpuPercent(BNOusage.reportAve(baselineProcUsage));
     Serial.print("\r\nGPS1   cpu: ");
     printCpuPercent(GPS1usage.reportAve(baselineProcUsage));
     Serial.print("\r\nGPS2   cpu: ");
@@ -254,11 +258,11 @@ void printTelem()
     Serial.print("\r\nPGN    cpu: ");
     printCpuPercent(PGNusage.reportAve()); // uses a timed update, virtually no extra time penalty
     Serial.print("\r\nAS     cpu: ");
-    printCpuPercent(ASusage.reportAve() - dacReport); // dac update loop is inside AS update loop (don't want to double count CPU time)
+    printCpuPercent(ASusage.reportAve(dacReport)); // dac update loop is inside AS update loop (don't want to double count CPU time)
     Serial.print("\r\nNTRIP  cpu: ");
     printCpuPercent(NTRIPusage.reportAve()); // uses a timed update, virtually no extra time penalty
-    Serial.print("\r\nIMU_H  cpu: ");
-    printCpuPercent(IMU_Husage.reportAve());
+    //Serial.print("\r\nIMU_H  cpu: ");
+    //printCpuPercent(IMU_Husage.reportAve());
     Serial.print("\r\nNMEA_P cpu: ");
     printCpuPercent(NMEA_Pusage.reportAve());
     Serial.print("\r\nUBX_P  cpu: ");
@@ -269,8 +273,11 @@ void printTelem()
     printCpuPercent(LEDSusage.reportAve(baselineProcUsage));
     Serial.print("\r\nMach   cpu: ");
     printCpuPercent(MACHusage.reportAve(baselineProcUsage));
+    //printCpuPercent(MACHusage.reportAve());
     Serial.print("\r\nESP32  cpu: ");
     printCpuPercent(ESP32usage.reportAve(baselineProcUsage));
+    Serial.print("\r\nKEYA   cpu: ");
+    printCpuPercent(KEYAusage.reportAve(baselineProcUsage));
 
 #ifdef AIOv50a
     Serial.print("\r\nRS232  cpu: ");

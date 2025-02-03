@@ -4256,7 +4256,7 @@ static void settmout(struct mg_connection *c, uint8_t type) {
                                        : MIP_TCP_KEEPALIVE_MS;
   s->timer = ifp->now + n;
   s->ttype = type;
-  MG_VERBOSE(("%lu %d -> %llx", c->id, type, s->timer));
+  MG_VERBOSE(("%lu %d -> %lld", c->id, type, s->timer));
 }
 
 static size_t ether_output(struct mg_tcpip_if *ifp, size_t len) {

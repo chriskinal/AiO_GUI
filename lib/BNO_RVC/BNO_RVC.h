@@ -57,7 +57,7 @@ public:
       }
     }
     
-    Serial.print("\r\n- BNO-085 RVC detected");
+    Serial.print("\r\n\nBNO-085 RVC detected");
     Serial.printf("\r\n- yaw:%i , pitch:%i , roll:%i\r\n\r\n", rvcData.yawX10, rvcData.pitchX10, rvcData.rollX10);
     return true;
   }

@@ -95,12 +95,13 @@ private:
 /*
   This is a class written for the Teensy 4.1 microcontroller
     written by Matt Elias Mar 2024
+      updated Feb 2025
 
   This class attempts to profile the Teensy's processor usage by timing how long it takes to process a "task"
   
   There are some considerations:
     1. A microcontroller is always at 100% load (sometimes doing a lot of "nothing"), unless it's sleeping or unpowered.
-    2. Even thought a function() may do nothing, calling it repeatedly (hammering it) will build up CPU time in that function
+    2. Even though a function() may do nothing, calling it repeatedly (hammering it) will build up CPU time in that function
         ie. if it was the only function in loop() then the CPU would spent "100%" of it's time in that "empty" function
     3. Further to #2, all tasks that are "checked" in the main loop incur extra "time" because they are called so frequently
         use a dummy ProcessorUsage object in the main loop to see how much extra time is incurred
@@ -134,9 +135,12 @@ public:
   }
 
   uint32_t reportAve(uint32_t _offset = 0) {
-    if (isActive) timeOut();  // not sure this should be here. How to deal with an active usage timer when report is called?
+    // there should be no active usage timer when report is called, make certain it's inActive before doing math calcs
+    if (isActive) timeOut();
     uint32_t t = millis();
-    uint32_t oneSecAve = accumulatedTime / ((t - reportStartTime) / 1000) - _offset;
+    uint32_t oneSecAve = accumulatedTime / ((t - reportStartTime) / 1000);
+    if (oneSecAve >= _offset) oneSecAve -= _offset;  // to protect against unsigned negative value "wrap around"
+    else oneSecAve = 0; // should it clear to 0 or just ignore _offset
     reset(t);
     return oneSecAve;
   }

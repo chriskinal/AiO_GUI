@@ -86,7 +86,7 @@ void CalculateChecksum(void)
   strcat(nmea, hex2);
 }
 
-void buildPandaOrPaogi(bool _panda) // only called by GGA_Handler (above)
+void buildPandaOrPaogi(bool _panda) // only called by GGA_GNS_PostProcess()
 {
   gpsActive = true;
   if (_panda)

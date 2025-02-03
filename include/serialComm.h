@@ -72,7 +72,10 @@ void gpsPoll()
                     LEDs.toggleTeensyLED();
                 }
             }
+            GPS1usage.timeOut();
+            RS232usage.timeIn();
             SerialRS232.write(gps1Read);
+            RS232usage.timeOut();
         }
     }
     GPS1usage.timeOut();
@@ -95,7 +98,10 @@ void gpsPoll()
             uint8_t gps2Read = SerialGPS2.read();
             if (nmeaDebug2)
                 Serial << "(" << byte(gps2Read) << ")";
+            GPS2usage.timeOut();
+            UBX_Pusage.timeIn();
             ubxParser.parse(gps2Read);
+            UBX_Pusage.timeOut();
         }
     }
     GPS2usage.timeOut();
@@ -146,14 +152,14 @@ void serialESP32()
 // Serial RTCM
 void serialRTCM()
 {
-    RS232usage.timeIn();
     if (SerialRTK.available())
     { // Check for RTK Radio RTCM data
         uint8_t rtcmByte = SerialRTK.read();
         if (!USB1DTR)
             SerialGPS1.write(rtcmByte); // send to GPS1
-        if (!USB2DTR)
-            SerialGPS2.write(rtcmByte); // send to GPS2
+        // only send to GPS2 if using abnormal setup like OGX receiver on GPS2
+        //if (!USB2DTR)
+            //SerialGPS2.write(rtcmByte); // send to GPS2
         LEDs.queueBlueFlash(LED_ID::GPS);
     }
 
@@ -161,7 +167,6 @@ void serialRTCM()
     {                                     // Check for RS232 data
         Serial.write(SerialRS232.read()); // just print to USB for testing
     }
-    RS232usage.timeOut();
 }
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef PCB_H_
 #define PCB_H_
 #define AIOv50a
-const char inoVersion[] = "AiO v5.0d Web GUI - " __DATE__;
+const char inoVersion[] = "AiO v5.0d Web GUI - " __DATE__ " " __TIME__;
 
 const uint8_t encoderType = 1; // 1 - single input
                                // 2 - dual input (quadrature encoder), uses Kickout_A (Pressure) & Kickout_D (Remote) inputs
