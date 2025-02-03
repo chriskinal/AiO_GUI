@@ -61,7 +61,7 @@ void outputsInit() {
   // wake/activate LOCK & AUX
   Serial.print("\r\n- Enabling LOCK/AUX outputs");
   // LOCK still needs signal from Autosteer code before its output is HIGH
-  outputs.setPin(drvSleepPins[DRV_ID::LOCK_DRV], 187, 1); // LOW pulse, 187/4096 is 30uS at 1532hz, send nSLEEP reset pulse
+  //outputs.setPin(drvSleepPins[DRV_ID::LOCK_DRV], 187, 1); // LOW pulse, 187/4096 is 30uS at 1532hz, send nSLEEP reset pulse
   // AUX's output is HIGH as soon as it wakes up
   outputs.setPin(drvSleepPins[DRV_ID::AUX_DRV], 187, 1); // LOW pulse, 187/4096 is 30uS at 1532hz, send nSLEEP reset pulse
 }
