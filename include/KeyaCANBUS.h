@@ -138,6 +138,13 @@ void SteerKeya(int steerSpeed)
 
 void KeyaBus_Receive()
 {
+  static uint32_t keyaCheckTime;
+  uint32_t millisNow = millis();
+  if (millisNow < keyaCheckTime) return;   // only need to check for new data every ms, not 100s of times per ms
+  //Serial.print((String)"\r\n" + millisNow + " KEYA check " + keyaCheckTime);
+  keyaCheckTime = millisNow + 1;     // allow check every ms
+
+  KEYAusage.timeIn();
   CAN_message_t KeyaBusReceiveData;
   if (Keya_Bus.read(KeyaBusReceiveData))
   {
@@ -386,6 +393,8 @@ void KeyaBus_Receive()
       lnNeeded = false;
     }
   }
+
+  KEYAusage.timeOut();
 }
 
 #endif // KEYACANBUS_H_
