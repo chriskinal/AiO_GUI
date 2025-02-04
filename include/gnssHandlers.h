@@ -427,6 +427,8 @@ void KSXT_Handler()
   char KSXTposqual[3];
   nmeaParser.getArg(9, KSXTposqual);    // KSXT Position Quality
   uint8_t convertedPosQual = atoi(KSXTposqual);
+
+  // UM982 KSXT Pos Qual needs converting to GGA numbering scheme
   if (convertedPosQual == 2) convertedPosQual = 5;  // convert UM982 "KSXT FLOAT" to "GGA FLOAT"
   if (convertedPosQual == 3) convertedPosQual = 4;  // convert UM982 "KSXT RTK FIX" to "GGA RTK FIX"
   LEDs.setGpsLED(convertedPosQual, true);
@@ -445,7 +447,7 @@ void KSXT_Handler()
   nmeaParser.getArg(12, KSXTposqual);    // KSXT Num Master SVs
   Serial.print(" Master SVs: ");
   Serial.print(KSXTposqual);*/
-  
+
   LEDs.toggleTeensyLED();
 }
 

@@ -11,7 +11,7 @@
 static struct settings s_settings = {"edit & save me", 1, 123.12345, false, 10, false, 1, 192, 168, 5, 126, "AiO GUI v5.12"};
 
 void glue_init(void) {
-  MG_DEBUG(("Custom init done"));
+  //MG_DEBUG(("Custom init done"));
 }
 
 // save
