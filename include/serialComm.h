@@ -78,6 +78,29 @@ void gpsPoll()
             RS232usage.timeOut();
         }
     }
+// MultiUSB
+#if defined(USB_DUAL_SERIAL) || defined(USB_TRIPLE_SERIAL)
+    else
+    { // in SerialUSB1<->SerialGPS1 bridge mode, for connecting via u-center
+        if (SerialGPS1.available())
+        {
+            while (SerialGPS1.available())
+            { // seems necessary to keep sentences/packets grouped as tight as possible
+                SerialUSB1.write(SerialGPS1.read());
+                // Serial.write(SerialGPS1.read());
+            }
+        }
+
+        if (SerialUSB1.available())
+        { // seems necessary to ensure UBX msgs from U-Center aren't interrupted by RTCM data (xbee or ntrip)
+            while (SerialUSB1.available())
+            {
+                SerialGPS1.write(SerialUSB1.read());
+            }
+        }
+    }
+#endif
+
     GPS1usage.timeOut();
 
     // GPS2
@@ -104,6 +127,25 @@ void gpsPoll()
             UBX_Pusage.timeOut();
         }
     }
+#if defined(USB_TRIPLE_SERIAL)
+    else
+    { // in SerialUSB2<->SerialGPS2 bridge mode, for connecting via u-center
+        if (SerialGPS2.available())
+        {
+            while (SerialGPS2.available())
+            { // seems necessary to keep sentences/packets grouped as tight as possible
+                SerialUSB2.write(SerialGPS2.read());
+            }
+        }
+        if (SerialUSB2.available())
+        { // seems necessary to ensure UBX msgs from U-Center aren't interrupted by RTCM data (xbee or ntrip)
+            while (SerialUSB2.available())
+            {
+                SerialGPS2.write(SerialUSB2.read());
+            }
+        }
+    }
+#endif
     GPS2usage.timeOut();
 }
 
