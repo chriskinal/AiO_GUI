@@ -52,16 +52,16 @@ void udpSetup()
   strcat(agioURL, ".255:9999");
 
   sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);
-  if (sendAgio == !NULL)
+  if (sendAgio != NULL)
   {
     agioConnect = true;
     MG_DEBUG(("Connected to AgIO"));
-    Serial.println("Connected to AgIO");
+    //Serial.println("Connected to AgIO");
   }
   else
   {
     MG_DEBUG(("Trying to connect to AgIO"));
-    Serial.println("Trying to connect to AgIO");
+    //Serial.println("Trying to connect to AgIO");
     return;
   }
 }
