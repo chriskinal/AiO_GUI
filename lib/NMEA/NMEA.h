@@ -40,12 +40,12 @@ namespace NMEA {
        Error codes
     */
 typedef enum {
-  NO_ERROR,
-  UNEXPECTED_CHAR,
-  BUFFER_FULL,
-  TYPE_TOO_LONG,
-  CRC_ERROR,
-  INTERNAL_ERROR
+  NO_ERROR,         // 0
+  UNEXPECTED_CHAR,  // 1
+  BUFFER_FULL,      // 2
+  TYPE_TOO_LONG,    // 3
+  CRC_ERROR,        // 4
+  INTERNAL_ERROR    // 5
 } ErrorCode;
 }
 
