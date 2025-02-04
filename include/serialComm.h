@@ -26,8 +26,6 @@ void gpsPoll()
       if (nmeaDebug)
         Serial.write(gps1Read);
 
-      nmeaParser << gps1Read;
-
       if (gpsConfig.gpsPass == true)
       {
         switch (gps1Read)
@@ -69,6 +67,9 @@ void gpsPoll()
           ubxParser.relPosTimer = 0;
         }
       }
+
+      nmeaParser << gps1Read;   // process after UDP passthrough check to send data to AgIO first
+
       GPS1usage.timeOut();
       RS232usage.timeIn();
       SerialRS232.write(gps1Read);
