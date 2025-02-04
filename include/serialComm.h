@@ -202,11 +202,6 @@ void serialRTCM()
     // SerialGPS2.write(rtcmByte); // send to GPS2
     LEDs.queueBlueFlash(LED_ID::GPS);
   }
-
-  if (SerialRS232.available())
-  {                                   // Check for RS232 data
-    Serial.write(SerialRS232.read()); // just print to USB for testing
-  }
 }
 
 #endif
