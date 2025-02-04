@@ -140,7 +140,7 @@ const uint8_t ANALOG_TRIG_HYST = 10;
 
 // GNSS processing and variables
 #include "NMEA.h"
-NMEAParser<4> nmeaParser;
+NMEAParser<5> nmeaParser;
 bool nmeaDebug = 0, nmeaDebug2 = 0, extraCRLF;
 
 #include "UBXParser.h"

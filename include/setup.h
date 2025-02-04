@@ -43,6 +43,7 @@ void parserSetup()
   nmeaParser.addHandler("G-GNS", GNS_Handler);
   nmeaParser.addHandler("G-VTG", VTG_Handler);
   nmeaParser.addHandler("G-HPR", HPR_Handler);
+  nmeaParser.addHandler("KSXT", KSXT_Handler);
 }
 
 void resetStartingTimersBuffers()

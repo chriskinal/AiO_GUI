@@ -76,7 +76,12 @@ public:
        are not bufferized, 82 - 6 + 1 = 77 chars  are enough.
        is enough.
     */
-  static const uint8_t kSentenceMaxSize = 90;
+  static const uint8_t kSentenceMaxSize = 150;
+
+  /*
+       mError
+    */
+  NMEA::ErrorCode mError;
 
 private:
   /*
@@ -121,11 +126,6 @@ private:
        Parsing automaton variable
     */
   State mState;
-
-  /*
-       mError
-    */
-  NMEA::ErrorCode mError;
 
   /*
        True if CRC is handled, false otherwise. Defaults to true

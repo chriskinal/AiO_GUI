@@ -53,8 +53,10 @@ bool aogGpsToAutoSteerLoopTimerEnabled;
 // If odd characters showed up
 void errorHandler()
 {
-  if (startup)
-    Serial.print("\r\n*Unexpected characters in NMEA parser - Normal at startup*");
+  if (startup) {
+    Serial.print("\r\n*Unexpected characters in NMEA parser - Normal at startup*\r\n - NMEA Parser ErrorCode: ");
+    Serial.print(nmeaParser.mError);
+  }
 }
 
 void CalculateChecksum(void)
@@ -163,6 +165,7 @@ void buildPandaOrPaogi(bool _panda) // only called by GGA_GNS_PostProcess()
 
 void GGA_GNS_PostProcess() // called by either GGA or GNS handler
 {
+  LEDs.toggleTeensyLED();
   posReady = true; // we have new GGA or GNS sentence
   extraCRLF = true;
   gps1Stats.incHzCount();
@@ -304,7 +307,6 @@ void GNS_Handler() // Rec'd GNS
     Serial.println(atoi(&GGA.fixTime[strlen(GGA.fixTime) - 2]));
   }
   GGA_GNS_PostProcess();
-  LEDs.toggleTeensyLED();
   // gpsLostTimer = 0;  // Used for GGA timeout (LED's ETC)
   NMEA_Pusage.timeOut();
 }
@@ -331,7 +333,6 @@ void GGA_Handler() // Rec'd GGA
     Serial.println(atoi(&GGA.fixTime[strlen(GGA.fixTime) - 2]));
   }
   GGA_GNS_PostProcess();
-  LEDs.toggleTeensyLED();
   // gpsLostTimer = 0;  // Used for GGA timeout (LED's ETC)
   NMEA_Pusage.timeOut();
 }
@@ -421,5 +422,31 @@ void HPR_Handler()
 
   NMEA_Pusage.timeOut();
 }
+
+void KSXT_Handler()
+{
+  char KSXTposqual[3];
+  nmeaParser.getArg(9, KSXTposqual);    // KSXT Position Quality
+  uint8_t convertedPosQual = atoi(GGA.KSXTposqual);
+  if (convertedPosQual == 2) convertedPosQual = 5;  // convert UM982 "KSXT FLOAT" to "GGA FLOAT"
+  if (convertedPosQual == 3) convertedPosQual = 4;  // convert UM982 "KSXT RTK FIX" to "GGA RTK FIX"
+  LEDs.setGpsLED(convertedPosQual);
+  /*Serial.print("\r\nKSXT Pos Qual: ");
+  Serial.print(KSXTposqual);
+
+  nmeaParser.getArg(10, KSXTposqual);    // KSXT Heading Quality
+  Serial.print("\r\nKSXT Hdg Qual: ");
+  Serial.print(KSXTposqual);
+
+  nmeaParser.getArg(11, KSXTposqual);    // KSXT Num Slave SVs
+  Serial.print("\r\nKSXT Slave SVs: ");
+  Serial.print(KSXTposqual);
+
+  nmeaParser.getArg(12, KSXTposqual);    // KSXT Num Master SVs
+  Serial.print("\r\nKSXT Master SVs: ");
+  Serial.print(KSXTposqual);*/
+  LEDs.toggleTeensyLED();
+}
+
 
 #endif // GNSSHANDLERS_H_
