@@ -57,6 +57,10 @@ void checkUSBSerial()
       Serial.print("\r\nSetting Print Stats: ");
       Serial.print(printStats);
     }
+    else if (usbRead == 'R')
+    {
+      SCB_AIRCR = 0x05FA0004;   // Teensy Reboot
+    }
 #ifdef AIOv50a
     else if (usbRead == 'm' && Serial.available() > 0) // set machine debug level
     {
