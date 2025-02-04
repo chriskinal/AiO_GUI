@@ -92,4 +92,8 @@ void loop()
   LOOPusage.timeIn();
   testCounter++;
   LOOPusage.timeOut();
+
+#ifdef RESET_H
+  teensyReset.update(); // reset.h
+#endif
 }
