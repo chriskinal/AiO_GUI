@@ -169,7 +169,7 @@ void GGA_GNS_PostProcess() // called by either GGA or GNS handler
   posReady = true; // we have new GGA or GNS sentence
   extraCRLF = true;
   gps1Stats.incHzCount();
-  LEDs.setGpsLED(atoi(GGA.fixQuality));
+  LEDs.setGpsLED(atoi(GGA.fixQuality), true);
   aogGpsToAutoSteerLoopTimer = 0;
 
   if (!ubxParser.useDual)
@@ -215,14 +215,14 @@ void GGA_GNS_PostProcess() // called by either GGA or GNS handler
       IMU.yawRate[0] = 0;
     }
 
-    buildPandaOrPaogi(PANDA_SINGLE); // build the PANDA sentence right away
+    if (!gpsConfig.gpsPass) buildPandaOrPaogi(PANDA_SINGLE); // build the PANDA sentence right away
     posReady = false;
   }
   else
   { // Dual is in use
     if (ubxParser.relPosNedReady && posReady)
     {                                   // if both GGA & relposNED are ready
-      buildPandaOrPaogi(PAOGI_DUAL);    // build a PAOGI msg
+      if (!gpsConfig.gpsPass) buildPandaOrPaogi(PAOGI_DUAL);    // build a PAOGI msg
       ubxParser.relPosNedReady = false; // reset for next relposned trigger
       ubxParser.relPosNedRcvd = false;
       posReady = false;
@@ -345,8 +345,7 @@ void VTG_Handler()
 
 void PVT_Handler()
 {
-  Serial << "\r\n"
-         << millis() << " PVT received\r\n";
+  Serial << "\r\n" << millis() << " PVT received\r\n";
 }
 
 void HPR_Handler()
@@ -427,10 +426,10 @@ void KSXT_Handler()
 {
   char KSXTposqual[3];
   nmeaParser.getArg(9, KSXTposqual);    // KSXT Position Quality
-  uint8_t convertedPosQual = atoi(GGA.KSXTposqual);
+  uint8_t convertedPosQual = atoi(KSXTposqual);
   if (convertedPosQual == 2) convertedPosQual = 5;  // convert UM982 "KSXT FLOAT" to "GGA FLOAT"
   if (convertedPosQual == 3) convertedPosQual = 4;  // convert UM982 "KSXT RTK FIX" to "GGA RTK FIX"
-  LEDs.setGpsLED(convertedPosQual);
+  LEDs.setGpsLED(convertedPosQual, true);
   Serial.print("\r\nKSXT Pos Qual: ");
   Serial.print(KSXTposqual);
 
