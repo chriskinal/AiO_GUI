@@ -74,6 +74,23 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 
         sendUDPbytes(helloFromAutoSteer, sizeof(helloFromAutoSteer));
       }
+
+      // reply as IMU if equipped
+      if (BNO.isActive)
+      {
+        uint8_t helloFromIMU[] = {128, 129, 121, 121, 5, 0, 0, 0, 0, 0, 71};
+        sendUDPbytes(helloFromIMU, sizeof(helloFromIMU));
+      }
+
+/*#ifdef MACHINE_H
+    if (machinePTR->isInit)
+    {
+      uint8_t helloFromMachine[] = {0x80, 0x81, 123, 123, 5, 0, 0, 0, 0, 0, 71};
+      helloFromMachine[5] = B10101010; // should be changed to read actual machine output states
+      helloFromMachine[6] = B01010101;
+      sendUDPbytes(helloFromMachine, sizeof(helloFromMachine));
+    }
+#endif*/
     }
 
     // Subnet Change
@@ -97,23 +114,6 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       }
       return; // no other processing needed
     }
-
-    // reply as IMU if equipped
-    if (BNO.isActive)
-    {
-      uint8_t helloFromIMU[] = {128, 129, 121, 121, 5, 0, 0, 0, 0, 0, 71};
-      sendUDPbytes(helloFromIMU, sizeof(helloFromIMU));
-    }
-
-/*#ifdef MACHINE_H
-    if (machinePTR->isInit)
-    {
-      uint8_t helloFromMachine[] = {0x80, 0x81, 123, 123, 5, 0, 0, 0, 0, 0, 71};
-      helloFromMachine[5] = B10101010; // should be changed to read actual machine output states
-      helloFromMachine[6] = B01010101;
-      sendUDPbytes(helloFromMachine, sizeof(helloFromMachine));
-    }
-#endif*/
 
     // 0xCA (202) - Scan Request
     if (steer->recv.buf[3] == 202 && steer->recv.len == 9)
