@@ -13,7 +13,7 @@ const float LOW_HIGH_DEGREES = 3.0; // How many degrees before decreasing Max PW
 
 bool testBothWasSensors = false;
 bool adcDebug = false;
-bool useInternalADC = false;
+bool useInternalADC = true;   // v5.0 Proto only uses Teensy ADC
 bool useExternalADS = false;
 
 #include <EEPROM.h>
@@ -30,13 +30,13 @@ void adcSetup()
   analogReadResolution(12);
   analogReadAveraging(16);
   // detect input on Teensy WAS_SENSOR_PIN
-  pinMode(WAS_SENSOR_PIN, INPUT_PULLDOWN);
+  /*pinMode(WAS_SENSOR_PIN, INPUT_PULLDOWN);
   uint16_t pullDown = analogRead(WAS_SENSOR_PIN);
   pinMode(WAS_SENSOR_PIN, INPUT_PULLUP);
   uint16_t pullUp = analogRead(WAS_SENSOR_PIN);
-  uint16_t pullDiff = abs(pullUp - pullDown);
+  uint16_t pullDiff = abs(pullUp - pullDown);*/
   pinMode(WAS_SENSOR_PIN, INPUT_DISABLE); // don't forget to disable the internal resistor !!
-  Serial.printf("\r\n  - Teensy Internal ADC pDn:%4i, pUp:%4i, diff:%4i", pullDown, pullUp, pullDiff);
+  /*Serial.printf("\r\n  - Teensy Internal ADC pDn:%4i, pUp:%4i, diff:%4i", pullDown, pullUp, pullDiff);
 
   if (pullDiff < 500) // v4.0, A0 floating 3960 diff, MCP plugged in 140 diff max
   {
@@ -44,19 +44,18 @@ void adcSetup()
     useInternalADC = true;
     autoSteerEnabled = true;
     LEDs.set(LED_ID::STEER, STEER_STATE::WAS_READY);
-  }
+  }*/
+
+  autoSteerEnabled = true;    // need other checks for valid WAS input but for now enable AS anyways
+
 } // end adcSetup()
 
 void steerConfigInit()
 {
-  if (steerConfig.CytronDriver)
+  if (steerConfig.SteerButton == 0 && steerConfig.SteerSwitch == 0)
   {
-    pinMode(SLEEP_PIN, OUTPUT);
-    if (steerConfig.SteerButton == 0 && steerConfig.SteerSwitch == 0)
-    {
-      // currentState = 0;
-      prevSteerReading = 1;
-    }
+    // currentState = 0;
+    prevSteerReading = 1;
   }
 
   if (steerConfig.PressureSensor)
@@ -165,16 +164,16 @@ void autoSteerUpdate()
         steerState = steerReading; // set OFF
         if (prevSteerReading != steerState)
         {
-          char msg[] = "AutoSteer Switch OFF";
-          char msgTime = 2;
+          //char msg[] = "AutoSteer Switch OFF";
+          //char msgTime = 2;
           LEDs.activateBlueFlash(LED_ID::STEER);
         }
       }
       else if (steerReading == HIGH && prevSteerReading == LOW)
       {                            // switch ON after prev being OFF
         steerState = steerReading; // set ON
-        char msg[] = "AutoSteer Switch ON";
-        char msgTime = 2;
+        //char msg[] = "AutoSteer Switch ON";
+        //char msgTime = 2;
         LEDs.activateBlueFlash(LED_ID::STEER);
       }
       prevSteerReading = steerReading;
@@ -186,12 +185,12 @@ void autoSteerUpdate()
       { // button is pressed
         steerState = !steerState;
         LEDs.activateBlueFlash(LED_ID::STEER);
-        char *msg;
+        /*char *msg;
         if (steerState)
           msg = (char *)"AutoSteer Btn ON";
         else
           msg = (char *)"AutoSteer Btn OFF";
-        char msgTime = 2;
+        char msgTime = 2;*/
         // UDP.SendUdpFreeForm(1, msg, strlen(msg), msgTime, UDP.broadcastIP, UDP.portAgIO_9999);
       }
       prevSteerReading = steerReading; // get ready to detect next press
@@ -264,20 +263,18 @@ void autoSteerUpdate()
     // Current sensor?
     if (steerConfig.CurrentSensor)
     {
-
       if (keyaDetected)
       {
         sensorReading = sensorReading * 0.7 + KeyaCurrentSensorReading * 0.3; // then use keya current data
       }
       else
       { // otherwise continue using analog input on PCB
-
         sensorSample = (float)analogRead(CURRENT_PIN);
-
-        sensorSample = abs(3100 - sensorSample) * 0.0625; // 3100 is like old firmware, 3150 is center (zero current) value on Matt's v4.0 Micro
-
+        //Serial << "\r\n" << sensorSample - 45.0;
+        sensorSample -= 45.0;     // zero current offset
+        //sensorSample = abs(3100 - sensorSample) * 0.0625; // 3100 is like old firmware, 3150 is center (zero current) value on Matt's v4.0 Micro
         sensorReading = sensorReading * 0.7 + sensorSample * 0.3;
-        // Serial << " " << sensorReading << " max:" << steerConfig.PulseCountMax;
+        //Serial << " " << sensorReading << " max:" << steerConfig.PulseCountMax;
         if (sensorReading >= steerConfig.PulseCountMax)
         {
           steerState = 0; // turn OFF autoSteer
@@ -363,7 +360,7 @@ void autoSteerUpdate()
       calcSteeringPID(); // do the pid
       motorDrive();      // out to motors the pwm value
 
-      LEDs.set(LED_ID::STEER, STEER_STATE::AUTOSTEER_ACTIVE);
+      LEDs.set(LED_ID::STEER, STEER_STATE::AUTOSTEER_ACTIVE, true);
     }
     else
     {
@@ -377,12 +374,14 @@ void autoSteerUpdate()
       jdDac.steerEnable(false);
       // jdDac.ch4Enable(false);
 #else
-      digitalWrite(SLEEP_PIN, LOW);
+      digitalWrite(SLEEP_PIN, LOW);   // sleep mode
+      //digitalWrite(PWM1_PIN, LOW);    // if both PWM pins are low, even if !sleep, the outputs are Hi-Z
+      //digitalWrite(PWM2_PIN, LOW);
 #endif
 
       motorDrive(); // out to motors the pwm value
 
-      LEDs.set(LED_ID::STEER, STEER_STATE::AUTOSTEER_READY);
+      LEDs.set(LED_ID::STEER, STEER_STATE::AUTOSTEER_READY, true);
     }
   }
 
