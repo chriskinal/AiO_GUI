@@ -100,11 +100,15 @@ public:
 
     if (sum != buffer[16]) return false;
 
-    //clean out any remaining bytes in case teensy was busy
+    // clean out any remaining bytes in case teensy was busy
+    // - rather then keep the old data and disgard the newest, 
+    //   - instead dump everything up to the next 0xAA start byte?
     uint16_t extra = serial_dev->available();
     if (extra > 0 && !_clear) { Serial.print((String)"\r\n" + millis() + " *** BNO serial input buffer had " + extra + " bytes leftover! ***"); }
     while (serial_dev->available() > 0) serial_dev->read();
 
+    // it appears some BNOs run at 99.8hz compared to Teensy's clock
+    // - in 5s (500 updates), it "lagged/lost" 13ms
     //Serial.print((String)"\r\nBNO update " + millis());
 
     int16_t temp;
