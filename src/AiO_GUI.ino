@@ -1,3 +1,5 @@
+const char inoVersion[] = "AiO v5.0d Web GUI - " __DATE__ " " __TIME__;
+
 #include "Arduino.h"
 #include "common.h"
 #include "debug.h"
@@ -10,8 +12,6 @@
 #include "AutosteerPID.h"
 #include "serialComm.h"
 
-const char inoVersion[] = "AiO v5.0d Web GUI - " __DATE__ " " __TIME__;
-
 void setup()
 {
   delay(3000);              // Delay for tesing to allow opening serial terminal to see output
@@ -22,7 +22,7 @@ void setup()
 
   setCpuFrequency(600 * 1000000); // Set CPU speed, default is 600mhz, setup.ino
 
-  // IP loading & Mongoose/Eth init needs to be first
+  // ** IP loading & Mongoose/Eth init needs to be first **
   ipSetup();                      // Load the IP address from EEPROM and setup the gateway & broadcast addresses
   load_gps();                     // Load the GPS settings from EEPROM
   load_config();                  // Sync the firmware EEPROM values to the GUI
@@ -62,7 +62,7 @@ void loop()
   autoSteerUpdate();                    // run autosteer loop
   serialRTCM();                         // check for RTCM data on Xbee/Radio UART
 
-  GUIusage.timeIn();                    // *usage objects are used to track cpu usage on certain sections of code, see debug.h for details
+  GUIusage.timeIn();                    // *usage objects are used to track cpu usage on certain sections of code, see debug.h or misc.h
   mongoose_poll();                      // update all Mongoose processes, UDP/PGN/Web UI
   GUIusage.timeOut();
 
@@ -78,7 +78,7 @@ void loop()
   if (BNO.read())                       // read IMU UART and check for completed RVC updated
   {                                     // there should be new data every 10ms (100hz)
     bnoRing.pushOverwrite(BNO.rvcData); // added IMU update to ring buffer
-    bnoStats.incHzCount();              // *Stats objects are used to diag missing/skipped updates for GPS & IMU
+    bnoStats.incHzCount();              // *Stats objects are used to diag missing/skipped updates for GPS & IMU, see debug.h or misc.h
     bnoStats.update(1);                 // 1 dummy value, normally used to track UART hardware buffer usage
   }
   BNOusage.timeOut();
