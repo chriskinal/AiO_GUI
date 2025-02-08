@@ -1,3 +1,9 @@
+// AIO_GUI is copyright 2025 by the AOG Group
+// AiO_GUI is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+// AiO_GUI is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+// You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>.
+// Like most Arduino code, portions of this are based on other open source Arduino code with a compatiable license.
+
 #ifndef UDPHANDLERS_H_
 #define UDPHANDLERS_H_
 #include "Arduino.h"
@@ -403,6 +409,67 @@ void rtcmHandler(struct mg_connection *rtcm, int ev, void *ev_data, void *fn_dat
     mg_iobuf_del(&rtcm->recv, 0, rtcm->recv.len);
   }
   NTRIPusage.timeOut();
+}
+
+// Setup UDP comms channels
+void udpSetup()
+{
+  g_mgr.ifp->enable_dhcp_client = 0;
+  g_mgr.ifp->ip = ipv4ary(netConfig.currentIP);
+  g_mgr.ifp->gw = ipv4ary(netConfig.gatewayIP);
+  g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
+
+  char steerListen[50];
+  char rtcmListen[50];
+  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
+  // Serial.println(steerListen);
+  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
+  // Serial.println(rtcmListen);
+  bool listenSteer = false;
+  bool listenRtcm = false;
+  bool agioConnect = false;
+
+  if (mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL)
+  {
+    listenSteer = true;
+    MG_DEBUG(("Listening for AgIO on UDP 8888"));
+  }
+  else
+  {
+    MG_DEBUG(("AgIO on UDP 8888 did not open"));
+  }
+
+  if (mg_listen(&g_mgr, rtcmListen, rtcmHandler, NULL) != NULL)
+  {
+    listenRtcm = true;
+    MG_DEBUG(("Listening for RTCM on UDP 2233"));
+  }
+  else
+  {
+    MG_DEBUG(("RTCM on UDP 2233 did not open"));
+  }
+
+  // Create UDP connection to broadcast address
+  char agioURL[25];
+  strcpy(agioURL, "udp://");
+  itoa(netConfig.currentIP[0], agioURL + strlen(agioURL), 10);
+  strcat(agioURL, ".");
+  itoa(netConfig.currentIP[1], agioURL + strlen(agioURL), 10);
+  strcat(agioURL, ".");
+  itoa(netConfig.currentIP[2], agioURL + strlen(agioURL), 10);
+  strcat(agioURL, ".255:9999");
+
+  sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);
+  if (sendAgio == !NULL)
+  {
+    agioConnect = true;
+    MG_DEBUG(("Connected to AgIO"));
+  }
+  else
+  {
+    MG_DEBUG(("Trying to connect to AgIO"));
+    return;
+  }
 }
 
 #endif // UDPHANDLERS_H_

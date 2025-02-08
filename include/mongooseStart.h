@@ -1,3 +1,9 @@
+// AIO_GUI is copyright 2025 by the AOG Group
+// AiO_GUI is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+// AiO_GUI is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+// You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>.
+// Like most Arduino code, portions of this are based on other open source Arduino code with a compatiable license.
+
 #ifndef MONGOOSE_START_H_
 #define MONGOOSR_START_H_
 #include "Arduino.h"
@@ -104,6 +110,52 @@ extern "C"
     }
     return true;
   }
+
+// Custom log
+#if MG_ENABLE_CUSTOM_LOG
+  static void *s_log_func_param = NULL;
+
+  static mg_pfn_t s_log_func = mg_pfn_stdout;
+
+  static void logc(unsigned char c)
+  {
+    s_log_func((char)c, s_log_func_param);
+  }
+
+  static void logs(const char *buf, size_t len)
+  {
+    size_t i;
+    for (i = 0; i < len; i++)
+      logc(((unsigned char *)buf)[i]);
+  }
+
+  void mg_log_prefix(int level, const char *file, int line, const char *fname)
+  {
+    const char *p = strrchr(file, '/');
+    char buf[60];
+    size_t n;
+    if (p == NULL)
+      p = strrchr(file, '\\');
+    n = mg_snprintf(buf, sizeof(buf), "%-6lld %d %s:%d:%s", mg_millis(), level,
+                    p == NULL ? file : p + 1, line, fname);
+    if (n > sizeof(buf) - 2)
+      n = sizeof(buf) - 2;
+    while (n < sizeof(buf))
+      buf[n++] = '-';
+    buf[sizeof(buf) - 2] = '>';
+    logs(buf, n - 1);
+  }
+
+  void mg_log(const char *fmt, ...)
+  {
+    va_list ap;
+    va_start(ap, fmt);
+    mg_vxprintf(s_log_func, s_log_func_param, fmt, &ap);
+    va_end(ap);
+    logs("\r\n", 2);
+  }
+#endif
+  // end custom log
 }
 
 #define CLRSET(reg, clear, set) ((reg) = ((reg) & ~(clear)) | (set))
