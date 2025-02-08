@@ -10,7 +10,7 @@
 #include "mongoose.h"
 #include "udpHandlers.h"
 
-void udpSetup()
+/*void udpSetup()
 {
   g_mgr.ifp->enable_dhcp_client = 0;
   g_mgr.ifp->ip = ipv4ary(netConfig.currentIP);
@@ -70,7 +70,7 @@ void udpSetup()
     //Serial.println("Trying to connect to AgIO");
     return;
   }
-}
+}*/
 
 extern "C"
 {
