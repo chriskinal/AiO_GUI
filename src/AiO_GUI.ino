@@ -1,3 +1,9 @@
+// AIO_GUI is copyright 2025 by the AOG Group
+// AiO_GUI is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+// AiO_GUI is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+// You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>.
+// Like most Arduino code, portions of this are based on other open source Arduino code with a compatiable license.
+
 #include "Arduino.h"
 #include "common.h"
 #include "debug.h"
@@ -23,9 +29,9 @@ void setup()
   setCpuFrequency(600 * 1000000); // Set CPU speed, default is 600mhz, 150mhz still seems fast enough, setup.ino
   ipSetup();                      // Load the IP address from EEPROM and setup the gateway and broadcast addresses
   load_gps();                     // Load the GPS settings from EEPROM
-  load_config();                  // Sync the firmware EEPROM valuse to the GUI
+  load_config();                  // Sync the firmware EEPROM values to the GUI
   ethernet_init();                // Bring up the ethernet hardware
-  mongoose_init();                // Bring the mongoose services
+  mongoose_init();                // Bring up the mongoose services
   udpSetup();                     // Bring up the UDP connections to/from AgIO
   serialSetup();                  // Configure the Serial comms
   parserSetup();                  // Load the NMEA parser callbacks

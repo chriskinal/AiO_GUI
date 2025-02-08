@@ -1,3 +1,9 @@
+// AIO_GUI is copyright 2025 by the AOG Group
+// AiO_GUI is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+// AiO_GUI is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+// You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>.
+// Like most Arduino code, portions of this are based on other open source Arduino code with a compatiable license.
+
 #ifndef SERIALCOMM_H_
 #define SERIALCOMM_H_
 
@@ -17,7 +23,8 @@ void gpsPoll()
             if (gps1Available > sizeof(GPS1rxbuffer) - 10)
             { // this should not trigger except maybe at boot up
                 SerialGPS1.clear();
-                Serial.print((String) "\r\n" + millis() + " *SerialGPS1 buffer cleared!-Normal at startup*");
+                //Serial.print((String) "\r\n" + millis() + " *SerialGPS1 buffer cleared!-Normal at startup*");
+                MG_DEBUG(("*SerialGPS1 buffer cleared!-Normal at startup*"));
                 return;
             }
             gps1Stats.update(gps1Available);
@@ -87,7 +94,7 @@ void gpsPoll()
             if (gps2Available > sizeof(GPS2rxbuffer) - 10)
             { // this should not trigger except maybe at boot up
                 SerialGPS2.clear();
-                Serial.print((String) "\r\n" + millis() + " *SerialGPS2 buffer cleared!-Normal at startup*\r\n");
+                MG_DEBUG(("*SerialGPS2 buffer cleared!-Normal at startup*"));
                 return;
             }
             gps2Stats.update(gps2Available);
@@ -135,7 +142,7 @@ void serialESP32()
             }
             else
             {
-                Serial.print("\r\n\nCR/LF detected but [0]/[1] bytes != 128/129\r\n");
+                MG_DEBUG(("CR/LF detected but [0]/[1] bytes != 128/129"));
             }
             incomingIndex = 0;
         }

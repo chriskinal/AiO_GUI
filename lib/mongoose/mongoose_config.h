@@ -9,6 +9,7 @@
 #define MG_TCPIP_PHY_ADDR 0              // PHY address
 #define MG_OTA MG_OTA_RT1060             // Enable OTA
 #define MG_TLS MG_TLS_BUILTIN            // Enable built-in TLS
+#define MG_ENABLE_CUSTOM_LOG 1           // User custom log
 
 // Match Teensy's linker script - required for OTA to work
 #define MG_IRAM __attribute__((noinline, section(".fastrun")))
