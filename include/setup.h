@@ -9,16 +9,14 @@
 void setCpuFrequency(uint32_t _freq)
 {
   set_arm_clock(_freq);
-  Serial.printf("\r\n\nCPU speed set to: %i MHz\r\n\r\n", F_CPU_ACTUAL / 1000000);
+  Serial.printf("\r\n\nCPU speed set to: %i MHz\r\n", F_CPU_ACTUAL / 1000000);
   delay(10); // ?
 }
 
 void serialSetup()
 {
-  pinMode(PIEZO1, OUTPUT);
-  pinMode(PIEZO2, OUTPUT);
-  digitalWrite(PIEZO1, LOW);
-  digitalWrite(PIEZO2, LOW);
+  pinMode(BUZZER, OUTPUT);
+  digitalWrite(BUZZER, LOW);  // disables the buzzer's FET driver
 
   // setup GPS serial ports here
   SerialGPS1.begin(baudGPS);
@@ -51,6 +49,7 @@ void parserSetup()
   nmeaParser.addHandler("G-GNS", GNS_Handler);
   nmeaParser.addHandler("G-VTG", VTG_Handler);
   nmeaParser.addHandler("G-HPR", HPR_Handler);
+  nmeaParser.addHandler("KSXT", KSXT_Handler);
 }
 
 void resetStartingTimersBuffers()

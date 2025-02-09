@@ -2995,7 +2995,7 @@ void mg_log_prefix(int level, const char *file, int line, const char *fname) {
   char buf[41];
   size_t n;
   if (p == NULL) p = strrchr(file, '\\');
-  n = mg_snprintf(buf, sizeof(buf), "%-6llx %d %s:%d:%s", mg_millis(), level,
+  n = mg_snprintf(buf, sizeof(buf), "%-6lld %d %s:%d:%s", mg_millis(), level,
                   p == NULL ? file : p + 1, line, fname);
   if (n > sizeof(buf) - 2) n = sizeof(buf) - 2;
   while (n < sizeof(buf)) buf[n++] = ' ';
@@ -4256,7 +4256,7 @@ static void settmout(struct mg_connection *c, uint8_t type) {
                                        : MIP_TCP_KEEPALIVE_MS;
   s->timer = ifp->now + n;
   s->ttype = type;
-  MG_VERBOSE(("%lu %d -> %llx", c->id, type, s->timer));
+  MG_VERBOSE(("%lu %d -> %lld", c->id, type, s->timer));
 }
 
 static size_t ether_output(struct mg_tcpip_if *ifp, size_t len) {

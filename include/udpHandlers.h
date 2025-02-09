@@ -8,12 +8,12 @@
 #define UDPHANDLERS_H_
 #include "Arduino.h"
 #include "mongoose_glue.h"
-#include "machine.h"
+//#include "machine.h"
 #include "Autosteer.h"
 #include "common.h"
 
 // Send byte arrays to AgIO
-void sendUDPbytes(char *message, int msgLen)
+void sendUDPbytes(uint8_t *message, int msgLen)
 {
   UDP_Susage.timeIn();
   if (g_mgr.ifp->state != MG_TCPIP_STATE_READY)
@@ -80,6 +80,23 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 
         sendUDPbytes(helloFromAutoSteer, sizeof(helloFromAutoSteer));
       }
+
+      // reply as IMU if equipped
+      if (BNO.isActive)
+      {
+        uint8_t helloFromIMU[] = {128, 129, 121, 121, 5, 0, 0, 0, 0, 0, 71};
+        sendUDPbytes(helloFromIMU, sizeof(helloFromIMU));
+      }
+
+/*#ifdef MACHINE_H
+    if (machinePTR->isInit)
+    {
+      uint8_t helloFromMachine[] = {0x80, 0x81, 123, 123, 5, 0, 0, 0, 0, 0, 71};
+      helloFromMachine[5] = B10101010; // should be changed to read actual machine output states
+      helloFromMachine[6] = B01010101;
+      sendUDPbytes(helloFromMachine, sizeof(helloFromMachine));
+    }
+#endif*/
     }
 
     // Subnet Change
@@ -103,23 +120,6 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       }
       return; // no other processing needed
     }
-
-    // reply as IMU if equipped
-    if (BNO.isActive)
-    {
-      uint8_t helloFromIMU[] = {128, 129, 121, 121, 5, 0, 0, 0, 0, 0, 71};
-      sendUDPbytes(helloFromIMU, sizeof(helloFromIMU));
-    }
-
-#ifdef MACHINE_H
-    if (machinePTR->isInit)
-    {
-      uint8_t helloFromMachine[] = {0x80, 0x81, 123, 123, 5, 0, 0, 0, 0, 0, 71};
-      helloFromMachine[5] = B10101010; // should be changed to read actual machine output states
-      helloFromMachine[6] = B01010101;
-      sendUDPbytes(helloFromMachine, sizeof(helloFromMachine));
-    }
-#endif
 
     // 0xCA (202) - Scan Request
     if (steer->recv.buf[3] == 202 && steer->recv.len == 9)
@@ -166,7 +166,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
           sendUDPbytes(scanReplyGPS, sizeof(scanReplyGPS));
         }
 
-#ifdef MACHINE_H
+/*#ifdef MACHINE_H
         if (machinePTR->isInit)
         {
           uint8_t scanReplyMachine[] = {128, 129, 123, 203, 7,
@@ -180,7 +180,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
           scanReplyMachine[sizeof(scanReplyMachine) - 1] = CK_A;
           sendUDPbytes(scanReplyMachine, sizeof(scanReplyMachine));
         }
-#endif
+#endif*/
 
         Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", inoVersion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
         Serial.printf("\r\nAgIO IP:   ", steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], steer->rem.ip[3]);
@@ -200,88 +200,38 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     if (steer->recv.buf[3] == 251 && steer->recv.len == 14)
     {
       uint8_t sett = steer->recv.buf[5]; // setting0
-      if (bitRead(sett, 0))
-        steerConfig.InvertWAS = 1;
-      else
-        steerConfig.InvertWAS = 0;
-      if (bitRead(sett, 1))
-        steerConfig.IsRelayActiveHigh = 1;
-      else
-        steerConfig.IsRelayActiveHigh = 0;
-      if (bitRead(sett, 2))
-        steerConfig.MotorDriveDirection = 1;
-      else
-        steerConfig.MotorDriveDirection = 0;
-      if (bitRead(sett, 3))
-        steerConfig.SingleInputWAS = 1;
-      else
-        steerConfig.SingleInputWAS = 0;
-      if (bitRead(sett, 4))
-        steerConfig.CytronDriver = 1;
-      else
-        steerConfig.CytronDriver = 0;
-      if (bitRead(sett, 5))
-        steerConfig.SteerSwitch = 1;
-      else
-        steerConfig.SteerSwitch = 0;
-      if (bitRead(sett, 6))
-        steerConfig.SteerButton = 1;
-      else
-        steerConfig.SteerButton = 0;
-      if (bitRead(sett, 7))
-        steerConfig.ShaftEncoder = 1;
-      else
-        steerConfig.ShaftEncoder = 0;
+      if (bitRead(sett, 0)) steerConfig.InvertWAS = 1; else steerConfig.InvertWAS = 0;
+      if (bitRead(sett, 1)) steerConfig.IsRelayActiveHigh = 1; else steerConfig.IsRelayActiveHigh = 0;
+      if (bitRead(sett, 2)) steerConfig.MotorDriveDirection = 1; else steerConfig.MotorDriveDirection = 0;
+      if (bitRead(sett, 3)) steerConfig.SingleInputWAS = 1; else steerConfig.SingleInputWAS = 0;
+      if (bitRead(sett, 4)) steerConfig.CytronDriver = 1; else steerConfig.CytronDriver = 0;
+      if (bitRead(sett, 5)) steerConfig.SteerSwitch = 1; else steerConfig.SteerSwitch = 0;
+      if (bitRead(sett, 6)) steerConfig.SteerButton = 1; else steerConfig.SteerButton = 0;
+      if (bitRead(sett, 7)) steerConfig.ShaftEncoder = 1; else steerConfig.ShaftEncoder = 0;
 
       steerConfig.PulseCountMax = steer->recv.buf[6];
       steerConfig.MinSpeed = steer->recv.buf[7];
 
       sett = steer->recv.buf[8]; // setting1 - Danfoss valve etc
-      if (bitRead(sett, 0))
-        steerConfig.IsDanfoss = 1;
-      else
-        steerConfig.IsDanfoss = 0;
-      if (bitRead(sett, 1))
-        steerConfig.PressureSensor = 1;
-      else
-        steerConfig.PressureSensor = 0;
-      if (bitRead(sett, 2))
-        steerConfig.CurrentSensor = 1;
-      else
-        steerConfig.CurrentSensor = 0;
-      if (bitRead(sett, 3))
-        steerConfig.IsUseY_Axis = 1;
-      else
-        steerConfig.IsUseY_Axis = 0;
+      if (bitRead(sett, 0)) steerConfig.IsDanfoss = 1; else steerConfig.IsDanfoss = 0;
+      if (bitRead(sett, 1)) steerConfig.PressureSensor = 1; else steerConfig.PressureSensor = 0;
+      if (bitRead(sett, 2)) steerConfig.CurrentSensor = 1; else steerConfig.CurrentSensor = 0;
+      if (bitRead(sett, 3)) steerConfig.IsUseY_Axis = 1; else steerConfig.IsUseY_Axis = 0;
 
-      Serial.print("\r\nInvertWAS ");
-      Serial.print(steerConfig.InvertWAS);
-      Serial.print("\r\nIsRelayActiveHigh ");
-      Serial.print(steerConfig.IsRelayActiveHigh);
-      Serial.print("\r\nMotorDriveDirection ");
-      Serial.print(steerConfig.MotorDriveDirection);
-      Serial.print("\r\nSingleInputWAS ");
-      Serial.print(steerConfig.SingleInputWAS);
-      Serial.print("\r\nCytronDriver ");
-      Serial.print(steerConfig.CytronDriver);
-      Serial.print("\r\nSteerSwitch ");
-      Serial.print(steerConfig.SteerSwitch);
-      Serial.print("\r\nSteerButton ");
-      Serial.print(steerConfig.SteerButton);
-      Serial.print("\r\nShaftEncoder ");
-      Serial.print(steerConfig.ShaftEncoder);
-      Serial.print("\r\nIsDanfoss ");
-      Serial.print(steerConfig.IsDanfoss);
-      Serial.print("\r\nPressureSensor ");
-      Serial.print(steerConfig.PressureSensor);
-      Serial.print("\r\nCurrentSensor ");
-      Serial.print(steerConfig.CurrentSensor);
-      Serial.print("\r\nIsUseY_Axis ");
-      Serial.print(steerConfig.IsUseY_Axis);
-      Serial.print("\r\nPulseCountMax ");
-      Serial.print(steerConfig.PulseCountMax);
-      Serial.print("\r\nMinSpeed ");
-      Serial.print(steerConfig.MinSpeed);
+      Serial.print("\r\nInvertWAS "); Serial.print(steerConfig.InvertWAS);
+      Serial.print("\r\nIsRelayActiveHigh "); Serial.print(steerConfig.IsRelayActiveHigh);
+      Serial.print("\r\nMotorDriveDirection "); Serial.print(steerConfig.MotorDriveDirection);
+      Serial.print("\r\nSingleInputWAS "); Serial.print(steerConfig.SingleInputWAS);
+      Serial.print("\r\nCytronDriver "); Serial.print(steerConfig.CytronDriver);
+      Serial.print("\r\nSteerSwitch "); Serial.print(steerConfig.SteerSwitch);
+      Serial.print("\r\nSteerButton "); Serial.print(steerConfig.SteerButton);
+      Serial.print("\r\nShaftEncoder "); Serial.print(steerConfig.ShaftEncoder);
+      Serial.print("\r\nIsDanfoss "); Serial.print(steerConfig.IsDanfoss);
+      Serial.print("\r\nPressureSensor "); Serial.print(steerConfig.PressureSensor);
+      Serial.print("\r\nCurrentSensor "); Serial.print(steerConfig.CurrentSensor);
+      Serial.print("\r\nIsUseY_Axis "); Serial.print(steerConfig.IsUseY_Axis);
+      Serial.print("\r\nPulseCountMax "); Serial.print(steerConfig.PulseCountMax);
+      Serial.print("\r\nMinSpeed "); Serial.print(steerConfig.MinSpeed);
       Serial.println();
 
       EEPROM.put(200, steerConfig);
@@ -317,20 +267,13 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       steerSettings.wasOffset = newWasOffset;
       steerSettings.AckermanFix = (float)steer->recv.buf[12] * 0.01;
 
-      Serial.print("\r\n Kp ");
-      Serial.print(steerSettings.Kp);
-      Serial.print("\r\n highPWM ");
-      Serial.print(steerSettings.highPWM);
-      Serial.print("\r\n lowPWM ");
-      Serial.print(steerSettings.lowPWM);
-      Serial.print("\r\n minPWM ");
-      Serial.print(steerSettings.minPWM);
-      Serial.print("\r\n steerSensorCounts ");
-      Serial.print(steerSettings.steerSensorCounts);
-      Serial.print("\r\n wasOffset ");
-      Serial.print(steerSettings.wasOffset);
-      Serial.print("\r\n AckermanFix ");
-      Serial.print(steerSettings.AckermanFix);
+      Serial.print("\r\n Kp "); Serial.print(steerSettings.Kp);
+      Serial.print("\r\n highPWM "); Serial.print(steerSettings.highPWM);
+      Serial.print("\r\n lowPWM "); Serial.print(steerSettings.lowPWM);
+      Serial.print("\r\n minPWM "); Serial.print(steerSettings.minPWM);
+      Serial.print("\r\n steerSensorCounts "); Serial.print(steerSettings.steerSensorCounts);
+      Serial.print("\r\n wasOffset "); Serial.print(steerSettings.wasOffset);
+      Serial.print("\r\n AckermanFix "); Serial.print(steerSettings.AckermanFix);
 
       EEPROM.put(100, steerSettings);
       steerSettingsInit();
@@ -439,6 +382,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
   {
     mg_iobuf_del(&steer->recv, 0, steer->recv.len);
   }
+  PGNusage.timeOut();   // ensure we stop counting cpu time
 }
 
 // Process data received on port 2233
@@ -453,8 +397,9 @@ void rtcmHandler(struct mg_connection *rtcm, int ev, void *ev_data, void *fn_dat
     {
       if (!USB1DTR)
         SerialGPS1.write(rtcm->recv.buf[i]);
-      if (!USB2DTR)
-        SerialGPS2.write(rtcm->recv.buf[i]);
+      // only send to GPS2 if using abnormal setup like OGX receiver on GPS2
+      /*if (!USB2DTR)
+        SerialGPS2.write(rtcm->recv.buf[i]);*/
       LEDs.queueBlueFlash(LED_ID::GPS);
     }
     mg_iobuf_del(&rtcm->recv, 0, rtcm->recv.len);
