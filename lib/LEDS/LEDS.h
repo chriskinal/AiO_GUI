@@ -33,6 +33,7 @@ typedef enum {
   STAGE2_RED_BLINK,
   STAGE3_GREEN_BLINK,
   STAGE4_GREEN,
+  STAGE5_AMBER,
 } LED_STAGE;
 
 typedef enum {
@@ -153,6 +154,10 @@ public:
       case 8: // 8: Simulation mode
         set(LED_ID::GPS, STAGE4_GREEN, _debug);
         return;
+      case 9:
+        set(LED_ID::GPS, STAGE5_AMBER, _debug); // UDP pass through
+        blueFlashEnabled = false;
+        return;
       case 3:
       case 7:
       default: // 3: Not applicable, 7: Manual input mode
@@ -173,6 +178,9 @@ public:
     } else if (_stage == STAGE1_RED || _stage == STAGE2_RED_BLINK) {
       data[_id].redValue = redBrightnessScale;
       data[_id].greenValue = 0;
+    } else if (_stage == STAGE5_AMBER){
+      data[_id].redValue = redBrightnessScale * 0.75;
+      data[_id].greenValue = greenBrightnessScale * 0.8;
     } else { // any other value, set OFF (stage: 0)
       _stage = 0;
       data[_id].redValue = 0;

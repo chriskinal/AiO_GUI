@@ -1,0 +1,2 @@
+The firmware.hex file is for Teensy loader.
+The firmware.bin file is for web updater.

@@ -73,7 +73,7 @@ HighLowHzStats bnoStats;
 
 elapsedMillis bufferStatsTimer;
 uint32_t testCounter;
-bool printCpuUsages = true;
+bool printCpuUsages = false;
 bool printStats = false;
 // End
 

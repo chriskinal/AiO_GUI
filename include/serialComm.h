@@ -34,6 +34,7 @@ void gpsPoll()
 
       if (gpsConfig.gpsPass == true)
       {
+        LEDs.setGpsLED(9, true);
         switch (gps1Read)
         {
         case '$':
@@ -63,7 +64,6 @@ void gpsPoll()
         }
         if (gotCR && gotLF)
         {
-
           sendUDPchars(msgBuf);
           gotCR = false;
           gotLF = false;
@@ -71,10 +71,13 @@ void gpsPoll()
           memset(msgBuf, 0, 254);
           msgBufLen = 0;
           ubxParser.relPosTimer = 0;
+          LEDs.toggleTeensyLED();
         }
       }
-
+      else
+      {
       nmeaParser << gps1Read;   // process after UDP passthrough check to send data to AgIO first
+      }
 
       GPS1usage.timeOut();
       RS232usage.timeIn();
