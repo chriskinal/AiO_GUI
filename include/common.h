@@ -35,12 +35,13 @@ struct mg_connection *sendAgio;
 const uint16_t EE_ver = 2404; // if value in eeprom does not match, overwrite with defaults
 
 // Led indicators. 1000ms RGB update, 255/64/127 RGB brightness balance levels for v5.0a
-// #include "LEDS.h"
-#include "LEDS_old.h"
+#include "LEDS.h"
+//#include "LEDS_old.h"
 LEDS LEDs = LEDS(1000, 255, 64, 127);
 // End
 
 // Usage stats
+ProcessorUsage GUIusage((char *)"GUI   ");
 ProcessorUsage BNOusage((char *)"BNO   ");
 ProcessorUsage GPS1usage((char *)"GPS1  ");
 ProcessorUsage GPS2usage((char *)"GPS2  ");
@@ -58,11 +59,12 @@ ProcessorUsage DACusage((char *)"DAC   ");
 ProcessorUsage MACHusage((char *)"MACH  ");
 ProcessorUsage LEDSusage((char *)"LEDS  ");
 ProcessorUsage ESP32usage((char *)"ESP32 ");
-const uint8_t numCpuUsageTasks = 17;
+ProcessorUsage KEYAusage((char *)"KEYA  ");
+/*const uint8_t numCpuUsageTasks = 18;
 ProcessorUsage *cpuUsageArray[numCpuUsageTasks] = {
     &BNOusage, &GPS1usage, &GPS2usage, &PGNusage, &ASusage, &NTRIPusage,
     &RS232usage, &LOOPusage, &IMU_Husage, &NMEA_Pusage, &RTKusage, &UBX_Pusage,
-    &UDP_Susage, &DACusage, &MACHusage, &LEDSusage, &ESP32usage};
+    &UDP_Susage, &DACusage, &MACHusage, &LEDSusage, &ESP32usage, &GUIusage};*/
 HighLowHzStats gps2Stats;
 HighLowHzStats gps1Stats;
 HighLowHzStats relJitterStats;
@@ -71,7 +73,7 @@ HighLowHzStats bnoStats;
 
 elapsedMillis bufferStatsTimer;
 uint32_t testCounter;
-bool printCpuUsages = false;
+bool printCpuUsages = true;
 bool printStats = false;
 // End
 
@@ -144,7 +146,7 @@ const uint8_t ANALOG_TRIG_HYST = 10;
 
 // GNSS processing and variables
 #include "NMEA.h"
-NMEAParser<4> nmeaParser;
+NMEAParser<5> nmeaParser;
 bool nmeaDebug = 0, nmeaDebug2 = 0, extraCRLF;
 
 #include "UBXParser.h"
@@ -205,133 +207,10 @@ int8_t KeyaCurrentSensorReading = 0;
 bool keyaDetected = false;
 // End
 
-// USB Port tracking variables
-// bool USB1DTR = false;               // to track bridge mode state
-// bool USB2DTR = false;
-// End
-
-#include "clsPCA9555.h" // https://github.com/nicoverduin/PCA9555
-PCA9555 outputs(0x20);  // 0x20 - I2C addr (A0-A2 grounded), interrupt pin causes boot loop
-
-#include "machine.h"
-MACHINE *machinePTR;
-
-// MultiUSB
-#if defined(USB_DUAL_SERIAL) || defined(USB_TRIPLE_SERIAL)
-else
-{ // in SerialUSB1<->SerialGPS1 bridge mode, for connecting via u-center
-  if (SerialGPS1.available())
-  {
-    while (SerialGPS1.available())
-    { // seems necessary to keep sentences/packets grouped as tight as possible
-      SerialUSB1.write(SerialGPS1.read());
-      // Serial.write(SerialGPS1.read());
-    }
-  }
-  if (SerialUSB1.available())
-  { // seems necessary to ensure UBX msgs from U-Center aren't interrupted by RTCM data (xbee or ntrip)
-    while (SerialUSB1.available())
-    {
-      SerialGPS1.write(SerialUSB1.read());
-    }
-  }
-}
-#endif
-
-#if defined(USB_TRIPLE_SERIAL)
-else
-{ // in SerialUSB2<->SerialGPS2 bridge mode, for connecting via u-center
-  if (SerialGPS2.available())
-  {
-    while (SerialGPS2.available())
-    { // seems necessary to keep sentences/packets grouped as tight as possible
-      SerialUSB2.write(SerialGPS2.read());
-    }
-  }
-  if (SerialUSB2.available())
-  { // seems necessary to ensure UBX msgs from U-Center aren't interrupted by RTCM data (xbee or ntrip)
-    while (SerialUSB2.available())
-    {
-      SerialGPS2.write(SerialUSB2.read());
-    }
-  }
-}
-#endif
-
-#if defined(USB_DUAL_SERIAL) || defined(USB_TRIPLE_SERIAL)
-static bool prevUSB1DTR;
-USB1DTR = SerialUSB1.dtr();
-if (USB1DTR != prevUSB1DTR)
-{
-  Serial << "\r\n**SerialUSB1 " << (USB1DTR ? "bridged with GPS1" : "disconnected");
-  if (USB1DTR)
-  {
-    if (SerialUSB1.baud() == GPS1BAUD)
-      Serial << ", baud set at " << baudGPS << " (default)";
-  }
-  else
-  {
-    if (GPS1BAUD != baudGPS)
-    {
-      SerialGPS1.begin(baudGPS);
-      GPS1BAUD = baudGPS;
-      Serial << ", baud reverted back to default " << GPS1BAUD;
-    }
-  }
-  prevUSB1DTR = USB1DTR;
-}
-
-if (USB1DTR)
-{
-  if (SerialUSB1.baud() != GPS1BAUD)
-  {
-    SerialGPS1.begin(SerialUSB1.baud());
-    GPS1BAUD = SerialUSB1.baud();
-    Serial << "\r\n**GPS1 baud changed to " << GPS1BAUD;
-    if (GPS1BAUD == baudGPS)
-      Serial << " (default)";
-  }
-}
-#endif
-
-#if defined(USB_TRIPLE_SERIAL)
-static bool prevUSB2DTR;
-USB2DTR = SerialUSB2.dtr();
-if (USB2DTR != prevUSB2DTR)
-{
-  Serial << "\r\n**SerialUSB2 " << (USB2DTR ? "bridged with GPS2" : "disconnected");
-  if (USB2DTR)
-  {
-    if (SerialUSB2.baud() == GPS2BAUD)
-      Serial << ", baud set at " << baudGPS << " (default)";
-  }
-  else
-  {
-    if (GPS2BAUD != baudGPS)
-    {
-      SerialGPS2.begin(baudGPS);
-      GPS2BAUD = baudGPS;
-      Serial << ", baud reverted back to default " << GPS2BAUD;
-    }
-  }
-  prevUSB2DTR = USB2DTR;
-}
-
-if (USB2DTR)
-{
-  if (SerialUSB2.baud() != GPS2BAUD)
-  {
-    SerialGPS2.begin(SerialUSB2.baud());
-    GPS2BAUD = SerialUSB2.baud();
-    Serial << "\r\n**GPS2 baud changed to " << GPS2BAUD;
-    if (GPS2BAUD == baudGPS)
-      Serial << " (default)";
-  }
-}
-#endif
-
-#ifdef RESET_H
-teensyReset.update(); // reset.h
-#endif
+// for enabling & controlling AUX, LOCK & Section/Machine outputs
+#define I2C_WIRE       Wire     // used for PCA9685 aux, lock & section outputs (0x44), & RGB LEDs (0x70) in LEDS.h
+#include "Adafruit_PWMServoDriver.h" // https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library
+Adafruit_PWMServoDriver outputs = Adafruit_PWMServoDriver(0x44, I2C_WIRE); // RGB instance is 0x44 unless A2 Low solder jumper is closed, then 0x40
+#include "outputs.h"
 
 #endif // COMMON_H_

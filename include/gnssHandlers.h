@@ -59,8 +59,10 @@ bool aogGpsToAutoSteerLoopTimerEnabled;
 // If odd characters showed up
 void errorHandler()
 {
-  if (startup)
-    Serial.print("\r\n*Unexpected characters in NMEA parser - Normal at startup*");
+  if (startup) {
+    Serial.print("\r\n*Unexpected characters in NMEA parser - Normal at startup*\r\n - NMEA Parser ErrorCode: ");
+    Serial.print(nmeaParser.mError);
+  }
 }
 
 void CalculateChecksum(void)
@@ -92,7 +94,7 @@ void CalculateChecksum(void)
   strcat(nmea, hex2);
 }
 
-void buildPandaOrPaogi(bool _panda) // only called by GGA_Handler (above)
+void buildPandaOrPaogi(bool _panda) // only called by GGA_GNS_PostProcess()
 {
   gpsActive = true;
   if (_panda)
@@ -169,10 +171,11 @@ void buildPandaOrPaogi(bool _panda) // only called by GGA_Handler (above)
 
 void GGA_GNS_PostProcess() // called by either GGA or GNS handler
 {
+  LEDs.toggleTeensyLED();
   posReady = true; // we have new GGA or GNS sentence
   extraCRLF = true;
   gps1Stats.incHzCount();
-  LEDs.setGpsLED(atoi(GGA.fixQuality));
+  LEDs.setGpsLED(atoi(GGA.fixQuality), true);
   aogGpsToAutoSteerLoopTimer = 0;
 
   if (!ubxParser.useDual)
@@ -218,14 +221,14 @@ void GGA_GNS_PostProcess() // called by either GGA or GNS handler
       IMU.yawRate[0] = 0;
     }
 
-    buildPandaOrPaogi(PANDA_SINGLE); // build the PANDA sentence right away
+    if (!gpsConfig.gpsPass) buildPandaOrPaogi(PANDA_SINGLE); // build the PANDA sentence right away
     posReady = false;
   }
   else
   { // Dual is in use
     if (ubxParser.relPosNedReady && posReady)
     {                                   // if both GGA & relposNED are ready
-      buildPandaOrPaogi(PAOGI_DUAL);    // build a PAOGI msg
+      if (!gpsConfig.gpsPass) buildPandaOrPaogi(PAOGI_DUAL);    // build a PAOGI msg
       ubxParser.relPosNedReady = false; // reset for next relposned trigger
       ubxParser.relPosNedRcvd = false;
       posReady = false;
@@ -310,7 +313,6 @@ void GNS_Handler() // Rec'd GNS
     Serial.println(atoi(&GGA.fixTime[strlen(GGA.fixTime) - 2]));
   }
   GGA_GNS_PostProcess();
-  LEDs.toggleTeensyLED();
   // gpsLostTimer = 0;  // Used for GGA timeout (LED's ETC)
   NMEA_Pusage.timeOut();
 }
@@ -337,7 +339,6 @@ void GGA_Handler() // Rec'd GGA
     Serial.println(atoi(&GGA.fixTime[strlen(GGA.fixTime) - 2]));
   }
   GGA_GNS_PostProcess();
-  LEDs.toggleTeensyLED();
   // gpsLostTimer = 0;  // Used for GGA timeout (LED's ETC)
   NMEA_Pusage.timeOut();
 }
@@ -350,8 +351,7 @@ void VTG_Handler()
 
 void PVT_Handler()
 {
-  Serial << "\r\n"
-         << millis() << " PVT received\r\n";
+  Serial << "\r\n" << millis() << " PVT received\r\n";
 }
 
 void HPR_Handler()
@@ -427,5 +427,35 @@ void HPR_Handler()
 
   NMEA_Pusage.timeOut();
 }
+
+void KSXT_Handler()
+{
+  char KSXTposqual[3];
+  nmeaParser.getArg(9, KSXTposqual);    // KSXT Position Quality
+  uint8_t convertedPosQual = atoi(KSXTposqual);
+
+  // UM982 KSXT Pos Qual needs converting to GGA numbering scheme
+  if (convertedPosQual == 2) convertedPosQual = 5;  // convert UM982 "KSXT FLOAT" to "GGA FLOAT"
+  if (convertedPosQual == 3) convertedPosQual = 4;  // convert UM982 "KSXT RTK FIX" to "GGA RTK FIX"
+  LEDs.setGpsLED(convertedPosQual, true);
+  
+  /*Serial.print("\r\nKSXT Pos Qual: ");
+  Serial.print(KSXTposqual);
+
+  nmeaParser.getArg(10, KSXTposqual);    // KSXT Heading Quality
+  Serial.print(" Hdg Qual: ");
+  Serial.print(KSXTposqual);
+
+  nmeaParser.getArg(11, KSXTposqual);    // KSXT Num Slave SVs
+  Serial.print(" Slave SVs: ");
+  Serial.print(KSXTposqual);
+
+  nmeaParser.getArg(12, KSXTposqual);    // KSXT Num Master SVs
+  Serial.print(" Master SVs: ");
+  Serial.print(KSXTposqual);*/
+
+  LEDs.toggleTeensyLED();
+}
+
 
 #endif // GNSSHANDLERS_H_

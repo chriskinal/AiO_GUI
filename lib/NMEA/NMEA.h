@@ -40,12 +40,12 @@ namespace NMEA {
        Error codes
     */
 typedef enum {
-  NO_ERROR,
-  UNEXPECTED_CHAR,
-  BUFFER_FULL,
-  TYPE_TOO_LONG,
-  CRC_ERROR,
-  INTERNAL_ERROR
+  NO_ERROR,         // 0
+  UNEXPECTED_CHAR,  // 1
+  BUFFER_FULL,      // 2
+  TYPE_TOO_LONG,    // 3
+  CRC_ERROR,        // 4
+  INTERNAL_ERROR    // 5
 } ErrorCode;
 }
 
@@ -76,7 +76,12 @@ public:
        are not bufferized, 82 - 6 + 1 = 77 chars  are enough.
        is enough.
     */
-  static const uint8_t kSentenceMaxSize = 90;
+  static const uint8_t kSentenceMaxSize = 150;
+
+  /*
+       mError
+    */
+  NMEA::ErrorCode mError;
 
 private:
   /*
@@ -121,11 +126,6 @@ private:
        Parsing automaton variable
     */
   State mState;
-
-  /*
-       mError
-    */
-  NMEA::ErrorCode mError;
 
   /*
        True if CRC is handled, false otherwise. Defaults to true
