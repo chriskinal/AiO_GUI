@@ -53,7 +53,7 @@ void outputsInit() {
   // put all DRVs to sleep (Hi-Z outputs & they're ready to wake up)
   Serial.print("\r\n    - All LOCK/AUX/Section DRVs set to sleep (Hi-Z outputs)");
   for (uint8_t drvNum = 0; drvNum < drvCnt; drvNum++){
-    outputs.setPin(drvSleepPins[drvNum], 0, 0); // sets PCA9685 pin LOW 0V
+    outputs.setPin(drvSleepPins[drvNum], 0, 0); // sets PCA9685 pin LOW 0V, puts DRV in Sleep mode
   }
 
   delayMicroseconds(150);  // wait max tSLEEP (120uS) for Sleep mode to settle in
@@ -66,3 +66,41 @@ void outputsInit() {
   outputs.setPin(drvSleepPins[DRV_ID::AUX_DRV], 187, 1); // LOW pulse, 187/4096 is 30uS at 1532hz, send nSLEEP reset pulse
 }
 
+const uint8_t numMachineOutputs = 6;
+const uint8_t machinePCA9685OutputPins[numMachineOutputs] = { 0, 1, 4, 5, 10, 9 };
+//const uint8_t Machine_PCA9685_DRV_OFF_Pins[3] = { 2, 6, 8 };
+//const uint8_t Machine_PCA9685_DRV_Sleep_Pins[3] = { 13, 3, 7 };
+
+void initMachineOutputs() {
+  // set all DRV signals HIGH before waking so that outputs are Hi-Z (PWM bridge mode)
+  for (uint8_t i = 0; i < numMachineOutputs; i++) {
+    //digitalWrite(machineOutputPins[i], !machine.config.isPinActiveHigh);  // set OFF
+    outputs.setPin(machinePCA9685OutputPins[i], 0, !machine.config.isPinActiveHigh); // HIGH signal sets DRV output HI-Z
+  }
+
+  // issue DRV nSLEEP reset pulse to wake them up
+  outputs.setPin(drvSleepPins[DRV_ID::SEC12_DRV], 187, 1); // LOW pulse, 187/4096 is 30uS at 1532hz
+  outputs.setPin(drvSleepPins[DRV_ID::SEC34_DRV], 187, 1);
+  outputs.setPin(drvSleepPins[DRV_ID::SEC56_DRV], 187, 1);
+}
+
+// callback function triggered by Machine class to update "machine" outputs
+// this updates the Machine Module Pin Configuration outputs
+// - sections 1-16, Hyd Up/Down, Tramline Right/Left, Geo Stop
+void updateMachineOutputs()
+{
+  Serial.println("Machine Outputs update!");
+
+  for (uint8_t i = 1; i <= numMachineOutputs; i++) {
+    /*Serial.print("\r\n- Pin ");
+    Serial.print((machineOutputPins[i] < 10 ? " " : ""));
+    Serial.print(machineOutputPins[i]); Serial.print(": ");
+    Serial.print(machine.state.functions[machine.config.pinFunction[i - 1]]);
+    Serial.print(" ");
+    Serial.print(machine.functionNames[machine.config.pinFunction[i - 1]]);*/
+
+    //digitalWrite(machineOutputPins[i], machine.state.functions[machine.config.pinFunction[i]] == machine.config.isPinActiveHigh); // == does a XOR bit operation
+    //outputs.setPin(drvSleepPins[drvNum], 0, 1); // sets PCA9685 pin HIGH 5V, initiate wake-up -> Standby state
+    outputs.setPin()
+  }
+}

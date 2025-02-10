@@ -1,5 +1,4 @@
 Need new RingBuffer if pgn parsing in UDP handler too sloe
-Need new machine.h
 
 Change IP programatically
 After mg_mgr_init(), you can do this:

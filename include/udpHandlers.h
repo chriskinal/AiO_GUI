@@ -472,4 +472,11 @@ void udpSetup()
   }
 }
 
+// callback function for Machine class to send data back to AgIO/AOG
+void machinePgnReplies(const uint8_t *pgnData, uint8_t len, IPAddress destIP)
+{
+  //udpServer.writeTo(pgnData, len, destIP, udpSendPort);
+  Serial.println("\r\n*** Need to setup UDP replies for Mongoose connection ***");
+}
+
 #endif // UDPHANDLERS_H_
