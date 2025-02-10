@@ -1,4 +1,4 @@
-![AgOpenGPS](https://github.com/chriskinal/AiO_GUI/blob/Matt-Readme/media/agopengps%20name%20logo.png)
+![AgOpenGPS](https://github.com/chriskinal/AiO_GUI/blob/main/media/agopengps%20name%20logo.png)
 [AOG Download](https://github.com/agopengps-official/AgOpenGPS/releases)<br>
 [AOG Forum](https://discourse.agopengps.com/)<br>
 [AOG YouTube](https://youtube.com/@AgOpenGPS)
@@ -15,5 +15,6 @@ too many to list, much many changes coming
 ### To Contribute
 There is a lot of active dev work expected in the next few months. The planned work flow for contributing is to create a branch from main, make some changes/improvments and create a pull request back to main but for now if you have a feature request it might be better to create an issue so that there's a log and we don't forget about it. We might also already be working/planning on it.
 
-![PCB 3D Top](https://github.com/chriskinal/AiO_GUI/blob/Matt-Readme/media/top%203d.png)
-![PCB 2D Top](https://github.com/chriskinal/AiO_GUI/blob/Matt-Readme/media/top%202d.png)
+![PCB 3D Top](https://github.com/chriskinal/AiO_GUI/blob/main/media/top%203d.png)
+![PCB 2D Top](https://github.com/chriskinal/AiO_GUI/blob/main/media/top%202d.png)
+
