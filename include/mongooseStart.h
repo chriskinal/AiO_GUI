@@ -27,7 +27,7 @@
   bool listenRtcm = false;
   bool agioConnect = false;
 
-  if (mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL)
+  if (mg_listen(&g_mgr, steerListen, pgnHandler, NULL) != NULL)
   {
     listenSteer = true;
     Serial.println("Listening for AgIO on UDP 8888");

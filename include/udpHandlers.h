@@ -41,7 +41,7 @@ void sendUDPchars(char *stuff)
 }
 
 // Process data received on port 8888
-void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_data)
+void pgnHandler(struct mg_connection *udpPacket, int ev, void *ev_data, void *fn_data)
 {
   if (g_mgr.ifp->state != MG_TCPIP_STATE_READY)
     return; // Check if IP stack is up.
@@ -49,20 +49,19 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
   {
     Serial.printf("Error: %s", (char *)ev_data);
   }
-  if (ev == MG_EV_READ && mg_ntohs(steer->rem.port) == 9999 && steer->recv.len >= 5)
+  if (ev == MG_EV_READ && mg_ntohs(udpPacket->rem.port) == 9999 && udpPacket->recv.len >= 5)
   {
     // Verify first 3 PGN header bytes
-    PGNusage.timeIn();
-    if (steer->recv.buf[0] != 128 || steer->recv.buf[1] != 129 || steer->recv.buf[2] != 127)
+    if (udpPacket->recv.buf[0] != 128 || udpPacket->recv.buf[1] != 129 || udpPacket->recv.buf[2] != 127)
       return;
 
     // 0x64 (100) - Corrected Position
-    if (steer->recv.buf[3] == 100 && steer->recv.len == 22)
+    if (udpPacket->recv.buf[3] == 100 && udpPacket->recv.len == 22)
     {
     }
 
     // 0xC8 (200) - Hello from AgIO
-    if (steer->recv.buf[3] == 200 && steer->recv.len == 9)
+    if (udpPacket->recv.buf[3] == 200 && udpPacket->recv.len == 9)
     {
       LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::AGIO_CONNECTED, true);
       uint8_t helloFromAutoSteer[] = {128, 129, 126, 126, 5, 0, 0, 0, 0, 0, 71};
@@ -100,16 +99,16 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     }
 
     // Subnet Change
-    if (steer->recv.buf[3] == 201 && steer->recv.len == 11)
+    if (udpPacket->recv.buf[3] == 201 && udpPacket->recv.len == 11)
     {
       Serial.println("Subnet Change");
 
-      if (steer->recv.buf[4] == 5 && steer->recv.buf[5] == 201 && steer->recv.buf[6] == 201) // save in EEPROM and restart
+      if (udpPacket->recv.buf[4] == 5 && udpPacket->recv.buf[5] == 201 && udpPacket->recv.buf[6] == 201) // save in EEPROM and restart
       {
         // Serial << "\r\n- IP changed from " << currentIP;
-        netConfig.currentIP[0] = steer->recv.buf[7];
-        netConfig.currentIP[1] = steer->recv.buf[8];
-        netConfig.currentIP[2] = steer->recv.buf[9];
+        netConfig.currentIP[0] = udpPacket->recv.buf[7];
+        netConfig.currentIP[1] = udpPacket->recv.buf[8];
+        netConfig.currentIP[2] = udpPacket->recv.buf[9];
 
         // Serial << " to " << currentIP;
         Serial << "\r\n- Saving to EEPROM and restarting Teensy";
@@ -122,14 +121,14 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     }
 
     // 0xCA (202) - Scan Request
-    if (steer->recv.buf[3] == 202 && steer->recv.len == 9)
+    if (udpPacket->recv.buf[3] == 202 && udpPacket->recv.len == 9)
     {
-      if (steer->recv.buf[4] == 3 && steer->recv.buf[5] == 202 && steer->recv.buf[6] == 202)
+      if (udpPacket->recv.buf[4] == 3 && udpPacket->recv.buf[5] == 202 && udpPacket->recv.buf[6] == 202)
       {
 
         uint8_t scanReplySteer[] = {128, 129, 126, 203, 7,
                                     netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3],
-                                    steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
+                                    udpPacket->rem.ip[0], udpPacket->rem.ip[1], udpPacket->rem.ip[2], 23};
         int16_t CK_A = 0;
         for (uint8_t i = 2; i < sizeof(scanReplySteer) - 1; i++)
         {
@@ -142,7 +141,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         {
           uint8_t scanReplyIMU[] = {128, 129, 121, 203, 7,
                                     netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3],
-                                    steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
+                                    udpPacket->rem.ip[0], udpPacket->rem.ip[1], udpPacket->rem.ip[2], 23};
           CK_A = 0;
           for (uint8_t i = 2; i < sizeof(scanReplyIMU) - 1; i++)
           {
@@ -156,7 +155,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         {
           uint8_t scanReplyGPS[] = {128, 129, 120, 203, 7,
                                     netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3],
-                                    steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
+                                    udpPacket->rem.ip[0], udpPacket->rem.ip[1], udpPacket->rem.ip[2], 23};
           CK_A = 0;
           for (uint8_t i = 2; i < sizeof(scanReplyGPS) - 1; i++)
           {
@@ -171,7 +170,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
         {
           uint8_t scanReplyMachine[] = {128, 129, 123, 203, 7,
                                         netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3],
-                                        steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], 23};
+                                        udpPacket->rem.ip[0], udpPacket->rem.ip[1], udpPacket->rem.ip[2], 23};
           CK_A = 0;
           for (uint8_t i = 2; i < sizeof(scanReplyMachine) - 1; i++)
           {
@@ -183,7 +182,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 #endif*/
 
         Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", inoVersion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
-        Serial.printf("\r\nAgIO IP:   ", steer->rem.ip[0], steer->rem.ip[1], steer->rem.ip[2], steer->rem.ip[3]);
+        Serial.printf("\r\nAgIO IP:   ", udpPacket->rem.ip[0], udpPacket->rem.ip[1], udpPacket->rem.ip[2], udpPacket->rem.ip[3]);
         Serial.printf("\r\nModule IP: ", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3]);
 
         if (BNO.isActive)
@@ -197,9 +196,9 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     }
 
     // 0xFB (251) - SteerConfig
-    if (steer->recv.buf[3] == 251 && steer->recv.len == 14)
+    if (udpPacket->recv.buf[3] == 251 && udpPacket->recv.len == 14)
     {
-      uint8_t sett = steer->recv.buf[5]; // setting0
+      uint8_t sett = udpPacket->recv.buf[5]; // setting0
       if (bitRead(sett, 0)) steerConfig.InvertWAS = 1; else steerConfig.InvertWAS = 0;
       if (bitRead(sett, 1)) steerConfig.IsRelayActiveHigh = 1; else steerConfig.IsRelayActiveHigh = 0;
       if (bitRead(sett, 2)) steerConfig.MotorDriveDirection = 1; else steerConfig.MotorDriveDirection = 0;
@@ -209,10 +208,10 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       if (bitRead(sett, 6)) steerConfig.SteerButton = 1; else steerConfig.SteerButton = 0;
       if (bitRead(sett, 7)) steerConfig.ShaftEncoder = 1; else steerConfig.ShaftEncoder = 0;
 
-      steerConfig.PulseCountMax = steer->recv.buf[6];
-      steerConfig.MinSpeed = steer->recv.buf[7];
+      steerConfig.PulseCountMax = udpPacket->recv.buf[6];
+      steerConfig.MinSpeed = udpPacket->recv.buf[7];
 
-      sett = steer->recv.buf[8]; // setting1 - Danfoss valve etc
+      sett = udpPacket->recv.buf[8]; // setting1 - Danfoss valve etc
       if (bitRead(sett, 0)) steerConfig.IsDanfoss = 1; else steerConfig.IsDanfoss = 0;
       if (bitRead(sett, 1)) steerConfig.PressureSensor = 1; else steerConfig.PressureSensor = 0;
       if (bitRead(sett, 2)) steerConfig.CurrentSensor = 1; else steerConfig.CurrentSensor = 0;
@@ -240,21 +239,21 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     } // 0xFB (251) - SteerConfig
 
     // 0xFC (252) - Steer Settings
-    if (steer->recv.buf[3] == 252 && steer->recv.len == 14)
+    if (udpPacket->recv.buf[3] == 252 && udpPacket->recv.len == 14)
     {
       // PID values
-      steerSettings.Kp = ((float)steer->recv.buf[5]);   // read Kp from AgOpenGPS
-      steerSettings.highPWM = steer->recv.buf[6];       // read high pwm
-      steerSettings.lowPWM = (float)steer->recv.buf[7]; // read lowPWM from AgOpenGPS
-      steerSettings.minPWM = steer->recv.buf[8];        // read the minimum amount of PWM for instant on
+      steerSettings.Kp = ((float)udpPacket->recv.buf[5]);   // read Kp from AgOpenGPS
+      steerSettings.highPWM = udpPacket->recv.buf[6];       // read high pwm
+      steerSettings.lowPWM = (float)udpPacket->recv.buf[7]; // read lowPWM from AgOpenGPS
+      steerSettings.minPWM = udpPacket->recv.buf[8];        // read the minimum amount of PWM for instant on
 
       float temp = (float)steerSettings.minPWM * 1.2;
       steerSettings.lowPWM = (byte)temp;
 
-      steerSettings.steerSensorCounts = steer->recv.buf[9]; // sent as setting displayed in AOG
+      steerSettings.steerSensorCounts = udpPacket->recv.buf[9]; // sent as setting displayed in AOG
 
-      int16_t newWasOffset = (steer->recv.buf[10]); // read was zero offset Lo
-      newWasOffset |= (steer->recv.buf[11] << 8);   // read was zero offset Hi
+      int16_t newWasOffset = (udpPacket->recv.buf[10]); // read was zero offset Lo
+      newWasOffset |= (udpPacket->recv.buf[11] << 8);   // read was zero offset Hi
 
 #ifdef JD_DAC_H
       jdDac.setMaxPWM(steerSettings.highPWM);
@@ -265,7 +264,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
 #endif
 
       steerSettings.wasOffset = newWasOffset;
-      steerSettings.AckermanFix = (float)steer->recv.buf[12] * 0.01;
+      steerSettings.AckermanFix = (float)udpPacket->recv.buf[12] * 0.01;
 
       Serial.print("\r\n Kp "); Serial.print(steerSettings.Kp);
       Serial.print("\r\n highPWM "); Serial.print(steerSettings.highPWM);
@@ -281,18 +280,18 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
     } // 0xFC (252) - Steer Settings
 
     // 0xFE (254) - Steer Data (sent at GPS freq, ie 10hz (100ms))
-    if (steer->recv.buf[3] == 254 && steer->recv.len == 14)
+    if (udpPacket->recv.buf[3] == 254 && udpPacket->recv.len == 14)
     {
 
-      gpsSpeed = ((float)(steer->recv.buf[5] | steer->recv.buf[6] << 8)) * 0.1; // speed data comes in as km/hr x10
+      gpsSpeed = ((float)(udpPacket->recv.buf[5] | udpPacket->recv.buf[6] << 8)) * 0.1; // speed data comes in as km/hr x10
       speedPulse.updateSpeed(gpsSpeed);
 
       prevGuidanceStatus = guidanceStatus;
-      guidanceStatus = steer->recv.buf[7];
+      guidanceStatus = udpPacket->recv.buf[7];
       guidanceStatusChanged = (guidanceStatus != prevGuidanceStatus);
 
       // Bit 8,9    set point steer angle * 100 is sent
-      steerAngleSetPoint = ((float)(steer->recv.buf[8] | ((int8_t)steer->recv.buf[9]) << 8)) * 0.01; // high low bytes
+      steerAngleSetPoint = ((float)(udpPacket->recv.buf[8] | ((int8_t)udpPacket->recv.buf[9]) << 8)) * 0.01; // high low bytes
 
       // udpData[10] is XTE (cross track error)
       // udpData[11 & 12] is section 1-16
@@ -309,7 +308,7 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       }
 
       // Bit 10 XTE
-      xte = steer->recv.buf[10];
+      xte = udpPacket->recv.buf[10];
       // Serial.print("\r\nXTE:"); Serial.print(xte-127);
 
       // Bit 11
@@ -375,12 +374,12 @@ void steerHandler(struct mg_connection *steer, int ev, void *ev_data, void *fn_d
       return; // no other processing needed
     } // 0xFE (254) - Steer Data
 
-    mg_iobuf_del(&steer->recv, 0, steer->recv.len);
+    mg_iobuf_del(&udpPacket->recv, 0, udpPacket->recv.len);
     PGNusage.timeOut();
   }
   else
   {
-    mg_iobuf_del(&steer->recv, 0, steer->recv.len);
+    mg_iobuf_del(&udpPacket->recv, 0, udpPacket->recv.len);
   }
   PGNusage.timeOut();   // ensure we stop counting cpu time
 }
@@ -429,7 +428,7 @@ void udpSetup()
   bool listenRtcm = false;
   bool agioConnect = false;
 
-  if (mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL)
+  if (mg_listen(&g_mgr, steerListen, pgnHandler, NULL) != NULL)
   {
     listenSteer = true;
     MG_DEBUG(("Listening for AgIO on UDP 8888"));
