@@ -14,7 +14,7 @@
    Like all Arduino code - copied from somewhere else :)
    So don't claim it as your own
 */
-const uint8_t PWM_Frequency = 2;
+const uint8_t PWM_Frequency = 3;
 const float LOW_HIGH_DEGREES = 3.0; // How many degrees before decreasing Max PWM
 
 bool testBothWasSensors = false;
@@ -105,6 +105,11 @@ void autosteerSetup()
   {
     analogWriteFrequency(PWM1_PIN, 3921);
     analogWriteFrequency(PWM2_PIN, 3921);
+  } 
+  else if (PWM_Frequency == 3) 
+  {
+    analogWriteFrequency(PWM1_PIN, 9155);
+    analogWriteFrequency(PWM2_PIN, 9155);
   }
 
   pinMode(SLEEP_PIN, OUTPUT);
