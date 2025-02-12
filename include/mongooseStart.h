@@ -10,68 +10,6 @@
 #include "mongoose.h"
 #include "udpHandlers.h"
 
-/*void udpSetup()
-{
-  g_mgr.ifp->enable_dhcp_client = 0;
-  g_mgr.ifp->ip = ipv4ary(netConfig.currentIP);
-  g_mgr.ifp->gw = ipv4ary(netConfig.gatewayIP);
-  g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
-
-  char steerListen[50];
-  char rtcmListen[50];
-  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
-  // Serial.println(steerListen);
-  mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
-  // Serial.println(rtcmListen);
-  bool listenSteer = false;
-  bool listenRtcm = false;
-  bool agioConnect = false;
-
-  if (mg_listen(&g_mgr, steerListen, steerHandler, NULL) != NULL)
-  {
-    listenSteer = true;
-    Serial.println("Listening for AgIO on UDP 8888");
-  }
-  else
-  {
-    Serial.println("AgIO on UDP 8888 did not open");
-  }
-
-  if (mg_listen(&g_mgr, rtcmListen, rtcmHandler, NULL) != NULL)
-  {
-    listenRtcm = true;
-    Serial.println("Listening for RTCM on UDP 2233");
-  }
-  else
-  {
-    Serial.println("RTCM on UDP 2233 did not open");
-  }
-
-  // Create UDP connection to broadcast address
-  char agioURL[25];
-  strcpy(agioURL, "udp://");
-  itoa(netConfig.currentIP[0], agioURL + strlen(agioURL), 10);
-  strcat(agioURL, ".");
-  itoa(netConfig.currentIP[1], agioURL + strlen(agioURL), 10);
-  strcat(agioURL, ".");
-  itoa(netConfig.currentIP[2], agioURL + strlen(agioURL), 10);
-  strcat(agioURL, ".255:9999");
-
-  sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);
-  if (sendAgio != NULL)
-  {
-    agioConnect = true;
-    MG_DEBUG(("Connected to AgIO"));
-    //Serial.println("Connected to AgIO");
-  }
-  else
-  {
-    MG_DEBUG(("Trying to connect to AgIO"));
-    //Serial.println("Trying to connect to AgIO");
-    return;
-  }
-}*/
-
 extern "C"
 {
 // #include "mongoose_glue.h"

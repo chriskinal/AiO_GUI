@@ -39,21 +39,20 @@ void setup()
   LEDs.init();
   LEDs.set(LED_ID::PWR_ETH, PWR_ETH_STATE::PWR_ON);
 
-  outputsInit();                  // Initialize PCA9685 for LOCK, AUX & Sections/Machine outputs, enable AUX output but leave others Hi-Z
   serialSetup();                  // Configure the Serial comms
   parserSetup();                  // Load the NMEA parser callbacks
   BNO.begin(SerialIMU);           // Start the IMU
   autosteerSetup();               // Initialize autosteer
   CAN_Setup();                    // Start CAN3 for Keya
 
-  /*machinePTR = new MACHINE;
-  const uint8_t pcaOutputPinNumbers[8] = {1, 0, 12, 15, 9, 8, 6, 7}; // all 8 PCA9555 section/machine output pin numbers on v5.0a
-  const uint8_t pcaInputPinNumbers[] = {14, 13, 11, 10, 2, 3, 4, 5}; // all 8 PCA9555 section/machine output "sensing" pin numbers on v5.0a
-  if (outputs.begin())
-  {
-    Serial.print("\r\nSection outputs (PCA9555) detected (8 channels, low side switching)");
-    machinePTR->init(&outputs, pcaOutputPinNumbers, pcaInputPinNumbers, 500); // mach.h
-  }*/
+  outputsInit();                  // Initialize PCA9685 for LOCK, AUX & Sections/Machine outputs, enable AUX output but leave others Hi-Z
+  machinePTR = new MACHINE;
+  machinePTR->init(500);    // 500 is starting address for machine EEPROM storage
+  //machinePTR.setSectionOutputsHandler(updateSectionOutputs);
+  machinePTR->setMachineOutputsHandler(updateMachineOutputs);
+  machinePTR->setUdpReplyHandler(machinePgnReplies);
+  initMachineOutputs();
+
 
   Serial.println("\r\n\nEnd of setup, waiting for GPS...\r\n");
   delay(1);
@@ -62,22 +61,22 @@ void setup()
 
 void loop()
 {
+  GUIusage.timeIn();                    // *usage objects are used to track cpu usage on certain sections of code, see debug.h or misc.h
+  mongoose_poll();                      // update all Mongoose processes, UDP/PGN/Web UI
+  GUIusage.timeOut();
+
   gpsPoll();                            // check for data on GPS1 & GPS2 UARTs
   serialESP32();                        // check for PGN replies on ESP32 UART
   KeyaBus_Receive();                    // check for Keya data on can bus 3
   autoSteerUpdate();                    // run autosteer loop
   serialRTCM();                         // check for RTCM data on Xbee/Radio UART
 
-  GUIusage.timeIn();                    // *usage objects are used to track cpu usage on certain sections of code, see debug.h or misc.h
-  mongoose_poll();                      // update all Mongoose processes, UDP/PGN/Web UI
-  GUIusage.timeOut();
-
   LEDSusage.timeIn();
   LEDs.updateLoop();                    // update frontplate RGB LEDs
   LEDSusage.timeOut();
 
   MACHusage.timeIn();
-  //machinePTR->watchdogCheck();
+  machinePTR->watchdogCheck();          // update machine safety timeout
   MACHusage.timeOut();
 
   BNOusage.timeIn();

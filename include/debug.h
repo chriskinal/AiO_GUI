@@ -19,15 +19,48 @@ void checkUSBSerial()
   {
     uint8_t usbRead = Serial.read();
 
-    if (usbRead == 'r')
+
+    if (usbRead == 'c') // output cpu usage stats
     {
-      Serial.print("\r\n\n* Resetting hi/lo stats *");
-      gps1Stats.resetAll();
-      gps2Stats.resetAll();
-      relJitterStats.resetAll();
-      relTtrStats.resetAll();
-      bnoStats.resetAll();
+      printCpuUsages = !printCpuUsages;
+      Serial.print("\r\nSetting CPU usage debug: ");
+      Serial.print(printCpuUsages);
     }
+
+
+    else if (usbRead == 'g' && Serial.available() > 0) // temporarily set GPS fix state according to standard GGA fix numbers (see LEDS.h, setGpsLED())
+    {
+      usbRead = Serial.read();
+      if (usbRead >= '0' && usbRead <= '5')
+      {
+        LEDs.setGpsLED(usbRead - '0', true);
+      }
+    }
+
+
+    else if (usbRead == 'l' && Serial.available() > 0) // set RGB brightness
+    {
+      usbRead = Serial.read();
+      if (usbRead >= '0' && usbRead <= '5')
+      {
+        LEDs.setBrightness((usbRead - '0') * 50);
+        Serial.print("\r\nSetting RGB brightness: ");
+        Serial.print((usbRead - '0') * 50);
+      }
+    }
+
+
+    else if (usbRead == 'm' && Serial.available() > 0) // set machine debug level
+    {
+      usbRead = Serial.read();
+      if (usbRead >= '0' && usbRead <= '5')
+      {
+        machinePTR->debugLevel = usbRead - '0'; // convert ASCII numerical char to byte
+      }
+      Serial.print((String)"\r\nMachine debugLevel: " + machinePTR->debugLevel);
+    }
+
+
     else if (usbRead == 'n') // output realtime GPS position update data
     {
       uint8_t usbRead2 = 0;
@@ -51,52 +84,34 @@ void checkUSBSerial()
         Serial.print(nmeaDebug);
       }
     }
-    else if (usbRead == 'c') // output cpu usage stats
+
+
+    else if (usbRead == 'r')
     {
-      printCpuUsages = !printCpuUsages;
-      Serial.print("\r\nSetting CPU usage debug: ");
-      Serial.print(printCpuUsages);
+      Serial.print("\r\n\n* Resetting hi/lo stats *");
+      gps1Stats.resetAll();
+      gps2Stats.resetAll();
+      relJitterStats.resetAll();
+      relTtrStats.resetAll();
+      bnoStats.resetAll();
     }
+
+
     else if (usbRead == 's') // output GPS, BNO update freq & buffer stats
     {
       printStats = !printStats;
       Serial.print("\r\nSetting Print Stats: ");
       Serial.print(printStats);
     }
+
+
     else if (usbRead == 'R')
     {
       SCB_AIRCR = 0x05FA0004;   // Teensy Reboot
     }
-#ifdef AIOv50a
-    else if (usbRead == 'm' && Serial.available() > 0) // set machine debug level
-    {
-      usbRead = Serial.read();
-      if (usbRead >= '0' && usbRead <= '5')
-      {
-        //machinePTR->debugLevel = usbRead - '0'; // convert ASCII numerical char to byte
-      }
-      //Serial.print((String) "\r\nMachine debugLevel: " + machinePTR->debugLevel);
-    }
-#endif
-    else if (usbRead == 'g' && Serial.available() > 0) // temporarily set GPS fix state according to standard GGA fix numbers (see LEDS.h, setGpsLED())
-    {
-      usbRead = Serial.read();
-      if (usbRead >= '0' && usbRead <= '5')
-      {
-        LEDs.setGpsLED(usbRead - '0', true);
-      }
-    }
-    else if (usbRead == 'l' && Serial.available() > 0) // set RGB brightness
-    {
-      usbRead = Serial.read();
-      if (usbRead >= '0' && usbRead <= '5')
-      {
-        LEDs.setBrightness((usbRead - '0') * 50);
-        Serial.print("\r\nSetting RGB brightness: ");
-        Serial.print((usbRead - '0') * 50);
-      }
-    }
-    else if (usbRead == '1')      // drv9243 testing, cycle LOCK through sleep, standby, active
+
+
+    else if (usbRead == '1')      // drv8243 testing, cycle LOCK through sleep, standby, active
     {
       uint32_t t1 = micros();
       static uint8_t state = 0; // sleep
@@ -117,7 +132,8 @@ void checkUSBSerial()
       Serial << "\r\nLOCK " << t2 - t1 << "uS";
     }
 
-    else if (usbRead == '2')      // drv9243 testing, cycle AUX through sleep, standby, active
+
+    else if (usbRead == '2')      // drv8243 testing, cycle AUX through sleep, standby, active
     {
       uint32_t t1 = micros();
       static uint8_t state = 0; // sleep
@@ -138,28 +154,44 @@ void checkUSBSerial()
       Serial << "\r\nAUX " << t2 - t1 << "uS";
     }
 
-    else if (usbRead == '5')      // drv9243 testing, Sleep all DRVs (no LEDs)
+
+    else if (usbRead == '3')      // drv8243 testing, turn on sec2
+    {
+      outputs.setPin(1, 0, 0);
+    }
+
+
+    else if (usbRead == '4')      // drv8243 testing, turn off sec2
+    {
+      outputs.setPin(1, 0, 1);
+    }
+
+
+    else if (usbRead == '5')      // drv8243 testing, Sleep all DRVs (no LEDs)
     {
       for (uint8_t drvNum = 0; drvNum < drvCnt; drvNum++){
         outputs.setPin(drvSleepPins[drvNum], 0, 0);
       }
     }
 
-    else if (usbRead == '6')      // drv9243 testing, Standby all DRVs (red LEDs on LOCK & AUX)
+
+    else if (usbRead == '6')      // drv8243 testing, Standby all DRVs (red LEDs on LOCK & AUX)
     {
       for (uint8_t drvNum = 0; drvNum < drvCnt; drvNum++){
         outputs.setPin(drvSleepPins[drvNum], 0, 1); // sets PCA9685 pin HIGH 5V, initiate wake-up -> Standby state
       }
     }
 
-    else if (usbRead == '7')      // drv9243 testing, Active all DRVs, AUX green LED, the others white LED if output is active
+
+    else if (usbRead == '7')      // drv8243 testing, Active all DRVs, AUX green LED, the others white LED if output is active
     {
       for (uint8_t drvNum = 0; drvNum < drvCnt; drvNum++){
         outputs.setPin(drvSleepPins[drvNum], 187, 1);  // Sleep reset pulse
       }
     }
 
-    else if (usbRead == '8')      // drv9243, sleep, wake, activate all DRVs
+
+    else if (usbRead == '8')      // drv8243, sleep, wake, activate all DRVs
     {
       for (uint8_t drvNum = 0; drvNum < drvCnt; drvNum++){
         outputs.setPin(drvSleepPins[drvNum], 0, 0); // sets PCA9685 pin LOW 0V, put DRVs to sleep
@@ -189,27 +221,30 @@ void checkUSBSerial()
       }*/
     }
 
-    else if (usbRead == '9')      // drv9243 searching
+
+    else if (usbRead == '9')      // drv8243 searching
     {
       Wire.beginTransmission(0x44);
-      Serial.print("\r\n  - Section DRV8243 ");
+      Serial.print("\r\n- Section DRV8243 ");
       if (Wire.endTransmission() == 0)
         Serial.print("found");
       else
         Serial.print("*NOT found!*");
 
       Wire.beginTransmission(0x70);
-      Serial.print("\r\n  - RGB DRV8243 ");
+      Serial.print("\r\n- RGB DRV8243 ");
       if (Wire.endTransmission() == 0)
         Serial.print("found");
       else
         Serial.print("*NOT found!*");
     }
 
-    else if (usbRead == '0')      // Sections drv9243 reset
+
+    else if (usbRead == '0')      // Sections drv8243 reset
     {
       //outputs.reset();
     }
+
 
     else if (usbRead == 13 || usbRead == 10) // ignore CR or LF
     {

@@ -207,9 +207,12 @@ int8_t KeyaCurrentSensorReading = 0;
 bool keyaDetected = false;
 // End
 
+#include "Machine.h"
+MACHINE* machinePTR;
+
 // for enabling & controlling AUX, LOCK & Section/Machine outputs
-#define I2C_WIRE       Wire     // used for PCA9685 aux, lock & section outputs (0x44), & RGB LEDs (0x70) in LEDS.h
-#include "Adafruit_PWMServoDriver.h" // https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library
+#define I2C_WIRE       Wire           // used for PCA9685 aux, lock & section outputs (0x44), & RGB LEDs (0x70) in LEDS.h
+#include "Adafruit_PWMServoDriver.h"  // https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library
 Adafruit_PWMServoDriver outputs = Adafruit_PWMServoDriver(0x44, I2C_WIRE); // RGB instance is 0x44 unless A2 Low solder jumper is closed, then 0x40
 #include "outputs.h"
 
