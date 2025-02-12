@@ -55,6 +55,20 @@ void pgnHandler(struct mg_connection *udpPacket, int ev, void *ev_data, void *fn
     if (udpPacket->recv.buf[0] != 128 || udpPacket->recv.buf[1] != 129 || udpPacket->recv.buf[2] != 127)
       return;
 
+    #ifdef MACHINE_H
+      // 0xE5 (229) - 64 Section Data
+      // 0xEB (235) - Section Dimensions
+      // 0xEC (236) - Machine Pin Config
+      // 0xEE (238) - Machine Config
+      // 0xEF (239) - Machine Data
+      if (machinePTR->parsePGN(udpPacket->recv.buf, udpPacket->recv.len, udpPacket->rem.ip, netConfig.currentIP))     // look for Machine PGNs, return TRUE if machine specific PGN was found
+      {
+        return;   // abort further PGN processing if machine specific PGN as received/parsed
+      }
+    #endif
+
+    PGNusage.timeIn();
+
     // 0x64 (100) - Corrected Position
     if (udpPacket->recv.buf[3] == 100 && udpPacket->recv.len == 22)
     {
@@ -165,25 +179,9 @@ void pgnHandler(struct mg_connection *udpPacket, int ev, void *ev_data, void *fn
           sendUDPbytes(scanReplyGPS, sizeof(scanReplyGPS));
         }
 
-/*#ifdef MACHINE_H
-        if (machinePTR->isInit)
-        {
-          uint8_t scanReplyMachine[] = {128, 129, 123, 203, 7,
-                                        netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3],
-                                        udpPacket->rem.ip[0], udpPacket->rem.ip[1], udpPacket->rem.ip[2], 23};
-          CK_A = 0;
-          for (uint8_t i = 2; i < sizeof(scanReplyMachine) - 1; i++)
-          {
-            CK_A = (CK_A + scanReplyMachine[i]);
-          }
-          scanReplyMachine[sizeof(scanReplyMachine) - 1] = CK_A;
-          sendUDPbytes(scanReplyMachine, sizeof(scanReplyMachine));
-        }
-#endif*/
-
-        Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:%.1f CPU Speed:%iMhz GPS Baud:%i", inoVersion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
-        Serial.printf("\r\nAgIO IP:   ", udpPacket->rem.ip[0], udpPacket->rem.ip[1], udpPacket->rem.ip[2], udpPacket->rem.ip[3]);
-        Serial.printf("\r\nModule IP: ", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3]);
+        Serial.printf("\r\n ---------\r\n%s\r\nCPU Temp:  %.1f°C\r\nCPU Speed: %iMhz\r\nGPS Baud:  %i", inoVersion, tempmonGetTemp(), F_CPU_ACTUAL / 1000000, baudGPS);
+        Serial.printf("\r\nAgIO IP:   %i.%i.%i.%i", udpPacket->rem.ip[0], udpPacket->rem.ip[1], udpPacket->rem.ip[2], udpPacket->rem.ip[3]);
+        Serial.printf("\r\nModule IP: %i.%i.%i.%i", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2], netConfig.currentIP[3]);
 
         if (BNO.isActive)
           Serial.print("\r\nBNO08x available via Serial/RVC Mode");
@@ -472,10 +470,14 @@ void udpSetup()
 }
 
 // callback function for Machine class to send data back to AgIO/AOG
-void machinePgnReplies(const uint8_t *pgnData, uint8_t len, IPAddress destIP)
+void machinePgnReplies(uint8_t *pgnData, uint8_t len, IPAddress destIP)
 {
-  //udpServer.writeTo(pgnData, len, destIP, udpSendPort);
-  Serial.println("\r\n*** Need to setup UDP replies for Mongoose connection ***");
+  sendUDPbytes(pgnData, len);
+  /*Serial.printf("\r\nSending PGN reply: %i >", len);
+  for (uint8_t i = 0; i < len; i++){
+    Serial.print(pgnData[i]);
+    Serial.print(":");
+  }*/
 }
 
 #endif // UDPHANDLERS_H_

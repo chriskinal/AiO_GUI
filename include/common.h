@@ -208,8 +208,7 @@ bool keyaDetected = false;
 // End
 
 #include "Machine.h"
-MACHINE machine;
-MACHINE::States machineStates;   
+MACHINE* machinePTR;
 
 // for enabling & controlling AUX, LOCK & Section/Machine outputs
 #define I2C_WIRE       Wire           // used for PCA9685 aux, lock & section outputs (0x44), & RGB LEDs (0x70) in LEDS.h

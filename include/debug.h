@@ -138,7 +138,20 @@ void checkUSBSerial()
       Serial << "\r\nAUX " << t2 - t1 << "uS";
     }
 
-    else if (usbRead == '5')      // drv9243 testing, Sleep all DRVs (no LEDs)
+
+    else if (usbRead == '3')      // drv8243 testing, turn on sec2
+    {
+      outputs.setPin(1, 0, 0);
+    }
+
+
+    else if (usbRead == '4')      // drv8243 testing, turn off sec2
+    {
+      outputs.setPin(1, 0, 1);
+    }
+
+
+    else if (usbRead == '5')      // drv8243 testing, Sleep all DRVs (no LEDs)
     {
       for (uint8_t drvNum = 0; drvNum < drvCnt; drvNum++){
         outputs.setPin(drvSleepPins[drvNum], 0, 0);

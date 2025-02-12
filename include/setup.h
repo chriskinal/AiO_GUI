@@ -54,7 +54,6 @@ void parserSetup()
 
 void resetStartingTimersBuffers()
 {
-  // machine.watchdogTimer = 0;
   if (BNO.isActive)
     while (!BNO.read(true))
       ;
@@ -63,7 +62,7 @@ void resetStartingTimersBuffers()
 #ifdef AIOv50a
   SerialESP32.clear();
 #endif
-  // machine.watchdogTimer = 0;
+  //machinePTR->watchdogTimer = 0;
   startup = true;
 }
 
