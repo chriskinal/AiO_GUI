@@ -507,8 +507,9 @@ void glue_update_state(void) {
 // Mongoose event handler function, gets called by the mg_mgr_poll()
 static void http_ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 #if WIZARD_ENABLE_HTTP_UI
-  handle_uploads(c, ev, ev_data);
-  if (ev == MG_EV_POLL && c->data[0] == 'A') {
+  // We're checking c->is_websocket cause WS connection use c->data
+  if (c->is_websocket == 0) handle_uploads(c, ev, ev_data);
+  if (ev == MG_EV_POLL && c->is_websocket == 0 && c->data[0] == 'A') {
     // Check if action in progress is complete
     struct action_state *as = (struct action_state *) c->data;
     if (as->fn() == false) {
@@ -517,7 +518,7 @@ static void http_ev_handler(struct mg_connection *c, int ev, void *ev_data) {
     }
   } else
 #endif
-      if (ev == MG_EV_HTTP_MSG && c->data[0] != 'U') {
+      if (ev == MG_EV_HTTP_MSG && c->is_websocket == 0 && c->data[0] != 'U') {
     struct mg_http_message *hm = (struct mg_http_message *) ev_data;
 #if WIZARD_ENABLE_HTTP_UI
     struct apihandler *h = find_handler(hm);
@@ -633,7 +634,11 @@ static void websocket_timer(void *arg) {
   struct mg_mgr *mgr = (struct mg_mgr *) arg;
   struct mg_connection *c;
   for (c = mgr->conns; c != NULL; c = c->next) {
-    if (c->is_websocket) glue_websocket_on_timer(c);
+    if (c->is_websocket) {
+      // Prevent stale connections to grow infinitely
+      if (c->send.len > 2048) continue;
+      glue_websocket_on_timer(c);
+    }
   }
 }
 #endif

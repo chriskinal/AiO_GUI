@@ -82,14 +82,14 @@ void motorDrive(void)
   // Cytron drv8701P Driver PWM1 + PWM2 Signal (like prev IBT2 option)
   if (pwmDrive > 0)
   {
-    analogWrite(PWM2_PIN, 0); // Turn off before other one on
-    analogWrite(PWM1_PIN, pwmDrive);
+    analogWrite(PWM2_PIN, 255); // Turn off before other one on
+    analogWrite(PWM1_PIN, 255-pwmDrive);
   }
   else
   {
     pwmDrive = -1 * pwmDrive;
-    analogWrite(PWM1_PIN, 0); // Turn off before other one on
-    analogWrite(PWM2_PIN, pwmDrive);
+    analogWrite(PWM1_PIN, 255); // Turn off before other one on
+    analogWrite(PWM2_PIN, 255-pwmDrive);
   }
 
   pwmDisplay = pwmDrive;
