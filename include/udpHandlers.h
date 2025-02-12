@@ -416,19 +416,19 @@ void udpSetup()
   g_mgr.ifp->gw = ipv4ary(netConfig.gatewayIP);
   g_mgr.ifp->mask = MG_IPV4(255, 255, 255, 0);
 
-  char steerListen[50];
+  char pgnListenURL[50];
   char rtcmListen[50];
-  mg_snprintf(steerListen, sizeof(steerListen), "udp://%d.%d.%d.126:8888", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
+  mg_snprintf(pgnListenURL, sizeof(pgnListenURL), "udp://%d.%d.%d.126:8888", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
   // Serial.println(steerListen);
   mg_snprintf(rtcmListen, sizeof(rtcmListen), "udp://%d.%d.%d.126:2233", netConfig.currentIP[0], netConfig.currentIP[1], netConfig.currentIP[2]);
   // Serial.println(rtcmListen);
-  bool listenSteer = false;
-  bool listenRtcm = false;
-  bool agioConnect = false;
+  //bool listenPGNs = false;
+  //bool listenRtcm = false;
+  //bool agioConnect = false;
 
-  if (mg_listen(&g_mgr, steerListen, pgnHandler, NULL) != NULL)
+  if (mg_listen(&g_mgr, pgnListenURL, pgnHandler, NULL) != NULL)
   {
-    listenSteer = true;
+    //listenPGNs = true;
     MG_DEBUG(("Listening for AgIO on UDP 8888"));
   }
   else
@@ -438,7 +438,7 @@ void udpSetup()
 
   if (mg_listen(&g_mgr, rtcmListen, rtcmHandler, NULL) != NULL)
   {
-    listenRtcm = true;
+    //listenRtcm = true;
     MG_DEBUG(("Listening for RTCM on UDP 2233"));
   }
   else
@@ -459,7 +459,7 @@ void udpSetup()
   sendAgio = mg_connect(&g_mgr, agioURL, NULL, NULL);
   if (sendAgio == !NULL)
   {
-    agioConnect = true;
+    //agioConnect = true;
     MG_DEBUG(("Connected to AgIO"));
   }
   else
